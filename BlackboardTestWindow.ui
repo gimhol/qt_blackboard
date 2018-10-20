@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>938</width>
-    <height>568</height>
+    <width>800</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,58 +17,58 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QPushButton" name="pointer">
+      <widget class="QPushButton" name="picker">
        <property name="text">
-        <string>POINTER</string>
+        <string>选择&amp;&amp;移动</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pen">
        <property name="text">
-        <string>PEN</string>
+        <string>画笔</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="text">
        <property name="text">
-        <string>TEXT</string>
+        <string>文本</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="straight">
        <property name="text">
-        <string>STRAIGHT</string>
+        <string>直线</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="picker">
+      <widget class="QPushButton" name="pointer">
        <property name="text">
-        <string>PICKER</string>
+        <string>激光笔(预备抛弃)</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="remove">
        <property name="text">
-        <string>REMOVE</string>
+        <string>移除</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="clear">
        <property name="text">
-        <string>CLAER</string>
+        <string>清除</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="repaint">
        <property name="text">
-        <string>REPAINT</string>
+        <string>重绘</string>
        </property>
       </widget>
      </item>
@@ -89,9 +89,6 @@
    </item>
    <item>
     <widget class="Blackboard" name="graphicsView"/>
-   </item>
-   <item>
-    <widget class="Blackboard" name="graphicsView_2"/>
    </item>
   </layout>
  </widget>

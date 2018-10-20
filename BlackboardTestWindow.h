@@ -11,11 +11,19 @@ class BlackboardTestWindow : public QWidget
 {
     Q_OBJECT
 
-public:
     explicit BlackboardTestWindow(QWidget *parent = nullptr);
+
+    static void bindBlackboard(Blackboard * blackboard0,Blackboard *blackboard1);
+
+    Blackboard * blackboard();
+public:
+
     ~BlackboardTestWindow();
 
-    void bindBlackboard(Blackboard * blackboard0,Blackboard *blackboard1);
+    static void start();
+
+
+
 private slots:
     void on_pointer_clicked();
 

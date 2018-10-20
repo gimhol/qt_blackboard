@@ -11,9 +11,6 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    bindBlackboard(ui->graphicsView,ui->graphicsView_2);
-    bindBlackboard(ui->graphicsView_2,ui->graphicsView);
-
     for(auto blackboard : findChildren<Blackboard*>())
     {
         blackboard->setToolType(BBTT_Pointer);
@@ -25,11 +22,30 @@ BlackboardTestWindow::~BlackboardTestWindow()
     delete ui;
 }
 
+void BlackboardTestWindow::start()
+{
+    static BlackboardTestWindow win0, win1;
+    win0.setWindowTitle(u8"测试窗口0");
+    win1.setWindowTitle(u8"测试窗口1");
+    win0.show();
+    win1.show();
+    win0.move(0,0);
+    win1.move(win0.width(),0);
+    bindBlackboard(win0.blackboard(),win1.blackboard());
+    bindBlackboard(win1.blackboard(),win0.blackboard());
+}
+
 void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *blackboard1)
 {
-    static QPixmap pm(":/res/images/cursor-lazer-pen.png");
-    blackboard0->setCanvasSize(800,800);
-    blackboard0->setPointerPixmap(pm);
+    static QPixmap * pm;
+    if(!pm)
+    {
+        pm = new QPixmap(5,5);
+        pm->fill("red");
+    }
+
+    blackboard0->setCanvasSize(800,8000);
+    blackboard0->setPointerPixmap(*pm);
     connect(blackboard0,&Blackboard::resized,[](float scale){qDebug()<< "resized, scale : " << scale;});
 
     connect(blackboard0,&Blackboard::textAdded,[blackboard1](BbItemText *item){
@@ -138,60 +154,44 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     });
 }
 
+Blackboard *BlackboardTestWindow::blackboard()
+{
+    return ui->graphicsView;
+}
+
 void BlackboardTestWindow::on_pointer_clicked()
 {
-    for(auto blackboard : findChildren<Blackboard*>())
-    {
-        blackboard->setToolType(BBTT_Pointer);
-    }
+    blackboard()->setToolType(BBTT_Pointer);
 }
 
 void BlackboardTestWindow::on_pen_clicked()
 {
-    for(auto blackboard : findChildren<Blackboard*>())
-    {
-        blackboard->setToolType(BBTT_Pen);
-    }
+     blackboard()->setToolType(BBTT_Pen);
 }
 
 void BlackboardTestWindow::on_clear_clicked()
 {
-    for(auto blackboard : findChildren<Blackboard*>())
-    {
-        blackboard->clearItems();
-    }
+    blackboard()->clearItems();
 }
 
 void BlackboardTestWindow::on_remove_clicked()
 {
-    for(auto blackboard : findChildren<Blackboard*>())
-    {
-        blackboard->removeSelectedElement();
-    }
+    blackboard()->removeSelectedElement();
 }
 
 void BlackboardTestWindow::on_picker_clicked()
 {
-    for(auto blackboard : findChildren<Blackboard*>())
-    {
-        blackboard->setToolType(BBTT_Picker);
-    }
+    blackboard()->setToolType(BBTT_Picker);
 }
 
 void BlackboardTestWindow::on_straight_clicked()
 {
-    for(auto blackboard : findChildren<Blackboard*>())
-    {
-        blackboard->setToolType(BBTT_STRAIGHT);
-    }
+    blackboard()->setToolType(BBTT_STRAIGHT);
 }
 
 void BlackboardTestWindow::on_text_clicked()
 {
-    for(auto blackboard : findChildren<Blackboard*>())
-    {
-        blackboard->setToolType(BBTT_Text);
-    }
+    blackboard()->setToolType(BBTT_Text);
 }
 
 void BlackboardTestWindow::on_repaint_clicked()
