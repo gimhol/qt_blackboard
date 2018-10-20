@@ -15,77 +15,113 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QPushButton" name="picker">
-       <property name="text">
-        <string>选择&amp;&amp;移动</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pen">
-       <property name="text">
-        <string>画笔</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="text">
-       <property name="text">
-        <string>文本</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="straight">
-       <property name="text">
-        <string>直线</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pointer">
-       <property name="text">
-        <string>激光笔(预备抛弃)</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="remove">
-       <property name="text">
-        <string>移除</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="clear">
-       <property name="text">
-        <string>清除</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="repaint">
-       <property name="text">
-        <string>重绘</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
+    <widget class="QWidget" name="toolbar" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QPushButton" name="picker">
+        <property name="text">
+         <string>选择&amp;&amp;移动</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pen">
+        <property name="text">
+         <string>画笔</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="penSize">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="text">
+        <property name="text">
+         <string>文本</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="straight">
+        <property name="text">
+         <string>直线</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pointer">
+        <property name="text">
+         <string>激光笔</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="remove">
+        <property name="text">
+         <string>移除</string>
+        </property>
+        <property name="shortcut">
+         <string>Del</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="clear">
+        <property name="text">
+         <string>清除</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="repaint">
+        <property name="text">
+         <string>重绘</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <widget class="Blackboard" name="graphicsView"/>

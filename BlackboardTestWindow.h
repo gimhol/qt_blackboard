@@ -41,6 +41,8 @@ private slots:
 
     void on_repaint_clicked();
 
+    void on_penSize_sliderMoved(int position);
+
 private:
     Ui::BlackboardTestWindow *ui;
 };

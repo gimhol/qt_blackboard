@@ -11,6 +11,13 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    QButtonGroup * buttonGroup = new QButtonGroup(this);
+    buttonGroup->addButton(ui->pen);
+    buttonGroup->addButton(ui->text);
+    buttonGroup->addButton(ui->pointer);
+    buttonGroup->addButton(ui->picker);
+    buttonGroup->addButton(ui->straight);
+
     for(auto blackboard : findChildren<Blackboard*>())
     {
         blackboard->setToolType(BBTT_Pointer);
@@ -203,4 +210,10 @@ void BlackboardTestWindow::on_repaint_clicked()
         blackboard->clearItems();
         blackboard->readByteArray(ba);
     }
+}
+#include <BbItemPenData.h>
+void BlackboardTestWindow::on_penSize_sliderMoved(int position)
+{
+    blackboard();
+    BbItemPenData::defaultPen.setWidthF(BbItemPenData::minWidth + 0.1*position*(BbItemPenData::maxWidth-BbItemPenData::minWidth));
 }
