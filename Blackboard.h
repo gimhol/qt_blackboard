@@ -1,7 +1,6 @@
 ﻿#ifndef CANVASVIEW3_H
 #define CANVASVIEW3_H
 
-#include <GoodScrollBar.h>
 #include <QGraphicsView>
 #include "BbToolType.h"
 #include "BlackboardScene.h"

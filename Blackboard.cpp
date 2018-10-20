@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <QLabel>
+#include <QScrollBar>
 
 Blackboard::Blackboard(QWidget *parent):
     QGraphicsView(parent),

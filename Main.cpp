@@ -6,5 +6,5 @@ int main(int argc, char *argv[])
 
     BlackboardTestWindow::start();
 	
-    return appCentre->exec();
+    return appCentre.exec();
 }
