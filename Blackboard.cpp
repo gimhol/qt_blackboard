@@ -1,6 +1,7 @@
 ﻿#include "BbItemData.h"
 #include "BbItemPenData.h"
 #include "BbItemTextData.h"
+#include "BbItemStraightData.h"
 #include "Blackboard.h"
 #include "BlackboardScene.h"
 #include <QGraphicsTextItem>
@@ -14,6 +15,12 @@ Blackboard::Blackboard(QWidget *parent):
     QGraphicsView(parent),
     _scaleRatio(1)
 {
+    _pen = BbItemPenData::defaultPen;
+    _straightPen = BbItemStraightData::defaultPen;
+
+    _font = BbItemTextData::defalutFont;
+    _textColor = BbItemTextData::defalutColor;
+
     setToolCursor(BBTT_Pen,Qt::CrossCursor);
     setToolCursor(BBTT_Text,Qt::IBeamCursor);
     setToolCursor(BBTT_Picker,Qt::ArrowCursor);
@@ -368,34 +375,119 @@ void Blackboard::onToolChanged(BbToolType previous, BbToolType current)
     emit toolChanged(previous,current);
 }
 
-void Blackboard::setPen(const QPen &pen)
+void Blackboard::setDefaultPen(const QPen &pen)
 {
     BbItemPenData::defaultPen = pen;
 }
 
-const QPen &Blackboard::pen()
+const QPen &Blackboard::defaultPen()
 {
     return BbItemPenData::defaultPen;
 }
 
-void Blackboard::setFont(const QFont &font)
+void Blackboard::setDefaultFont(const QFont &font)
 {
     BbItemTextData::defalutFont = font;
 }
 
-const QFont &Blackboard::font()
+const QFont &Blackboard::defaultFont()
 {
     return BbItemTextData::defalutFont;
 }
 
-void Blackboard::setTextColor(const QColor &color)
+void Blackboard::setDefaultTextColor(const QColor &color)
 {
     BbItemTextData::defalutColor = color;
 }
 
-const QColor &Blackboard::textColor()
+const QColor &Blackboard::defaultTextColor()
 {
     return BbItemTextData::defalutColor;
+}
+
+void Blackboard::setStraightPen(const QPen &pen)
+{
+    _straightPen = pen;
+}
+
+const QPen &Blackboard::straightPen()
+{
+    return _straightPen;
+}
+
+void Blackboard::setPen(const QPen &pen)
+{
+    _pen = pen;
+}
+
+void Blackboard::setFont(const QFont &font)
+{
+    _font = font;
+}
+
+const QFont &Blackboard::font()
+{
+    return _font;
+}
+
+void Blackboard::setTextColor(const QColor &color)
+{
+    _textColor = color;
+}
+
+const QColor &Blackboard::textColor()
+{
+    return _textColor;
+}
+
+void Blackboard::setPenWeight(const qreal &weight)
+{
+    _penWeight = weight;
+}
+
+void Blackboard::setStraightPenWeight(const qreal &weight)
+{
+    _straightPenWeight = weight;
+}
+
+void Blackboard::setTextPointWeight(const qreal &weight)
+{
+    _textPointWeight = weight;
+}
+
+qreal Blackboard::textPointWeight()
+{
+    return _textPointWeight;
+}
+
+qreal Blackboard::penWeight()
+{
+    return _penWeight;
+}
+
+qreal Blackboard::straightPenWeight()
+{
+    return _straightPenWeight;
+}
+
+QColor Blackboard::penColor()
+{
+    return _pen.color();
+}
+
+void Blackboard::setPenColor(const QColor &color)
+{
+    _pen.setColor(color);
+}
+
+QColor Blackboard::straightPenColor()
+{
+    return _straightPen.color();
+}
+
+void Blackboard::setStraightPenColor(const QColor &color)
+{
+    _straightPen.setColor(color);
 }
 
 void Blackboard::writeStream(QDataStream &stream)

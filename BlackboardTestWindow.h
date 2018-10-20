@@ -41,7 +41,11 @@ private slots:
 
     void on_repaint_clicked();
 
-    void on_penSize_sliderMoved(int position);
+    void on_penWeight_valueChanged(int arg1);
+
+    void on_straightWeight_valueChanged(int arg1);
+
+    void on_textWeight_valueChanged(int arg1);
 
 private:
     Ui::BlackboardTestWindow *ui;

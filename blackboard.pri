@@ -12,8 +12,7 @@ HEADERS += \
     $$PWD/BbItemTextData.h \
     $$PWD/BbItemData.h \
     $$PWD/BbItemStraightData.h \
-    $$PWD/BbItemStraight.h \
-    $$PWD/BlackboardTestWindow.h
+    $$PWD/BbItemStraight.h
 
 SOURCES += \
     $$PWD/Blackboard.cpp \
@@ -24,8 +23,6 @@ SOURCES += \
     $$PWD/BbItemTextData.cpp \
     $$PWD/BbItemData.cpp \
     $$PWD/BbItemStraightData.cpp \
-    $$PWD/BbItemStraight.cpp \
-    $$PWD/BlackboardTestWindow.cpp
+    $$PWD/BbItemStraight.cpp
 
-FORMS += \
-    $$PWD/BlackboardTestWindow.ui
+FORMS +=

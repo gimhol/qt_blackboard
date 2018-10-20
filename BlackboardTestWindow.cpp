@@ -2,8 +2,10 @@
 #include "BbItemStraight.h"
 #include "BbItemText.h"
 #include "BlackboardTestWindow.h"
+#include "ColorPanel.h"
 #include "ui_BlackboardTestWindow.h"
 #include <QDebug>
+#include <BbItemPenData.h>
 
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     QWidget(parent),
@@ -22,6 +24,56 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     {
         blackboard->setToolType(BBTT_Pointer);
     }
+
+    ui->penWeight->setValue(blackboard()->penWeight() * 100);
+    ui->penColor->setColor(blackboard()->penColor());
+    connect(ui->penColor,&ColorDisplayer::clicked,[&](){
+        static ColorPanel * cp = nullptr;
+        if(!cp)
+        {
+            cp = new ColorPanel();
+            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
+            cp->setWindowTitle(u8"调色");
+            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setPenColor);
+            connect(cp,&ColorPanel::colorChanged,ui->penColor,&ColorDisplayer::setColor);
+        }
+        cp->setColor(blackboard()->penColor());
+        cp->show();
+    });
+
+    ui->straightWeight->setValue(blackboard()->straightPenWeight() * 100);
+    ui->straightColor->setColor(blackboard()->straightPenColor());
+    connect(ui->straightColor,&ColorDisplayer::clicked,[&](){
+        static ColorPanel * cp = nullptr;
+        if(!cp)
+        {
+            cp = new ColorPanel();
+            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
+            cp->setWindowTitle(u8"调色");
+            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setStraightPenColor);
+            connect(cp,&ColorPanel::colorChanged,ui->straightColor,&ColorDisplayer::setColor);
+        }
+        cp->setColor(blackboard()->straightPenColor());
+        cp->show();
+    });
+
+
+
+    ui->textWeight->setValue(blackboard()->textPointWeight() * 100);
+    ui->textColor->setColor(blackboard()->textColor());
+    connect(ui->textColor,&ColorDisplayer::clicked,[&](){
+        static ColorPanel * cp = nullptr;
+        if(!cp)
+        {
+            cp = new ColorPanel();
+            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
+            cp->setWindowTitle(u8"调色");
+            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setTextColor);
+            connect(cp,&ColorPanel::colorChanged,ui->textColor,&ColorDisplayer::setColor);
+        }
+        cp->setColor(blackboard()->straightPenColor());
+        cp->show();
+    });
 }
 
 BlackboardTestWindow::~BlackboardTestWindow()
@@ -51,7 +103,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         pm->fill("red");
     }
 
-    blackboard0->setCanvasSize(800,8000);
+    blackboard0->setCanvasSize(blackboard0->width(),blackboard0->width()*10);
     blackboard0->setPointerPixmap(*pm);
     connect(blackboard0,&Blackboard::resized,[](float scale){qDebug()<< "resized, scale : " << scale;});
 
@@ -211,9 +263,18 @@ void BlackboardTestWindow::on_repaint_clicked()
         blackboard->readByteArray(ba);
     }
 }
-#include <BbItemPenData.h>
-void BlackboardTestWindow::on_penSize_sliderMoved(int position)
+
+void BlackboardTestWindow::on_penWeight_valueChanged(int arg1)
 {
-    blackboard();
-    BbItemPenData::defaultPen.setWidthF(BbItemPenData::minWidth + 0.1*position*(BbItemPenData::maxWidth-BbItemPenData::minWidth));
+    blackboard()->setPenWeight(arg1 * 0.01);
+}
+
+void BlackboardTestWindow::on_straightWeight_valueChanged(int arg1)
+{
+    blackboard()->setStraightPenWeight(arg1 * 0.01);
+}
+
+void BlackboardTestWindow::on_textWeight_valueChanged(int arg1)
+{
+    blackboard()->setTextPointWeight(arg1 * 0.01);
 }

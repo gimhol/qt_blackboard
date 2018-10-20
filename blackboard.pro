@@ -2,5 +2,26 @@ QT += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-SOURCES += Main.cpp
 include(blackboard.pri)
+
+HEADERS += \
+    ColorPanel.h \
+    BlackboardTestWindow.h \
+    SaturationValueZone.h \
+    AlphaBar.h \
+    HueBar.h \
+    AlphaBar.h \
+    ColorDisplayer.h
+
+SOURCES += Main.cpp \
+    ColorPanel.cpp \
+    BlackboardTestWindow.cpp \
+    SaturationValueZone.cpp \
+    AlphaBar.cpp \
+    HueBar.cpp \
+    AlphaBar.cpp \
+    ColorDisplayer.cpp
+
+FORMS += \
+    ColorPanel.ui \
+    BlackboardTestWindow.ui

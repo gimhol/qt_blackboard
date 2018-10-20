@@ -340,6 +340,8 @@ void BlackboardScene::keyReleaseEvent(QKeyEvent *e)
 void BlackboardScene::localStraightBegin(const QPointF &pos)
 {
     BbItemStraight * straight = new BbItemStraight();
+    straight->setColor(blackboard()->straightPenColor());
+    straight->setWeight(blackboard()->straightPenWeight());
     add(straight);
 
     straight->begin(pos);
@@ -373,6 +375,9 @@ void BlackboardScene::localStraightDone()
 void BlackboardScene::localPenDown(const QPointF & mousePos)
 {
     BbItemPen *pen = new BbItemPen();
+
+    pen->setWeight(blackboard()->penWeight());
+    pen->setColor(blackboard()->penColor());
     add(pen);
 
     pen->penDown(mousePos);
@@ -418,6 +423,9 @@ void BlackboardScene::localPenDone()
 void BlackboardScene::localTextAdded(const QPointF &pos)
 {
     BbItemText *text = new BbItemText();
+    text->setFont(blackboard()->font());
+    text->setWeight(blackboard()->textPointWeight());
+    text->setColor(blackboard()->textColor());
     add(text);
     text->setTextInteractionFlags(Qt::TextEditorInteraction);
     text->setFocus();

@@ -25,6 +25,20 @@ protected:
     QPoint _mousePos;
 
     QPoint _scrollValue;
+
+    QPen _pen;
+
+    qreal _penWeight;
+
+    QPen _straightPen;
+
+    qreal _straightPenWeight;
+
+    QFont _font;
+
+    QColor _textColor;
+
+    qreal _textPointWeight;
 public:
     Blackboard(QWidget *parent = Q_NULLPTR);
 
@@ -107,17 +121,54 @@ public:
 
     void onToolChanged(BbToolType previous, BbToolType current);
 
-    static void setPen(const QPen & pen);
+    static void setDefaultPen(const QPen & defaultPen);
 
-    static const QPen & pen();
+    static const QPen & defaultPen();
 
-    static void setFont(const QFont & font);
+    static void setDefaultFont(const QFont & defaultFont);
 
-    static const QFont & font();
+    static const QFont & defaultFont();
 
-    static void setTextColor(const QColor & color);
+    static void setDefaultTextColor(const QColor & color);
 
-    static const QColor & textColor();
+    static const QColor & defaultTextColor();
+
+    void setStraightPen(const QPen & pen);
+
+    const QPen & straightPen();
+
+    void setPen(const QPen & pen);
+
+    const QPen & pen(){return _pen;}
+
+    void setFont(const QFont & font);
+
+    const QFont & font();
+
+    void setTextColor(const QColor & color);
+
+    const QColor & textColor();
+
+    void setPenWeight(const qreal & weight);
+
+    void setStraightPenWeight(const qreal & weight);
+
+    void setTextPointWeight(const qreal & weight);
+
+    qreal textPointWeight();
+
+    qreal penWeight();
+
+    qreal straightPenWeight();
+
+    QColor penColor();
+
+    void setPenColor(const QColor & color);
+
+    QColor straightPenColor();
+
+    void setStraightPenColor(const QColor & color);
+
 
 signals:
     void resized(float scale);

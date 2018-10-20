@@ -85,6 +85,39 @@ void BbItemText::repaintWithItemData()
     update();
 }
 
+void BbItemText::setFont(const QFont &font)
+{
+    _myData->font = font;
+    QGraphicsTextItem::setFont(_myData->font);
+}
+
+const QFont &BbItemText::font()
+{
+    return _myData->font;
+}
+
+void BbItemText::setColor(const QColor &color)
+{
+    _myData->color = color;
+    setDefaultTextColor(color);
+}
+
+const QColor &BbItemText::color()
+{
+    return _myData->color;
+}
+
+void BbItemText::setWeight(qreal weight)
+{
+    _myData->setPointWeight(weight);
+    QGraphicsTextItem::setFont(_myData->font);
+}
+
+qreal BbItemText::weight()
+{
+    return _myData->pointWeight();
+}
+
 void BbItemText::writeStream(QDataStream &stream)
 {
     _myData->text = toPlainText();

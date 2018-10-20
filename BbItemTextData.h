@@ -12,6 +12,10 @@
 class BbItemTextData : public BbItemData
 {
 public:
+    static qreal minPointSize;
+
+    static qreal maxPointSize;
+
     /**
      * @brief defalutFont 创建文本时，文本的字体
      */
@@ -54,6 +58,10 @@ public:
      * @param stream 数据流
      */
     void readStream(QDataStream &stream);
+
+    void setPointWeight(qreal pointWeight);
+
+    qreal pointWeight();
 };
 
 #endif // BBITEMTEXTDATA_H

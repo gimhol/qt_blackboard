@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ColorPanel</class>
+ <widget class="QWidget" name="ColorPanel">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>357</width>
+    <height>261</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>9</number>
+   </property>
+   <property name="topMargin">
+    <number>9</number>
+   </property>
+   <property name="rightMargin">
+    <number>9</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
+   <item row="1" column="0">
+    <widget class="AlphaBar" name="alphaBar" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="SaturationValueZone" name="svZone" native="true"/>
+   </item>
+   <item row="0" column="1">
+    <widget class="HueBar" name="hueBar" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>24</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="ColorDisplayer" name="colorDisplay" native="true"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SaturationValueZone</class>
+   <extends>QWidget</extends>
+   <header>SaturationValueZone.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>HueBar</class>
+   <extends>QWidget</extends>
+   <header>HueBar.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AlphaBar</class>
+   <extends>QWidget</extends>
+   <header>AlphaBar.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ColorDisplayer</class>
+   <extends>QWidget</extends>
+   <header>ColorDisplayer.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

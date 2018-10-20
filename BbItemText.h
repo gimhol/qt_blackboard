@@ -44,6 +44,18 @@ public:
 
     void repaintWithItemData();
 
+    void setFont(const QFont & font);
+
+    const QFont & font();
+
+    void setColor(const QColor & color);
+
+    const QColor & color();
+
+    void setWeight(qreal weight);
+
+    qreal weight();
+
     // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;

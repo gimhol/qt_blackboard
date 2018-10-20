@@ -1,6 +1,12 @@
 ﻿#include "BbItemTextData.h"
 
-QFont BbItemTextData::defalutFont = QFont(u8"宋体",18);
+#include <QDebug>
+
+qreal BbItemTextData::minPointSize = 9;
+
+qreal BbItemTextData::maxPointSize = 72;
+
+QFont BbItemTextData::defalutFont = QFont(u8"宋体", BbItemTextData::minPointSize);
 
 QColor BbItemTextData::defalutColor = QColor(100,100,180);
 
@@ -50,4 +56,16 @@ void BbItemTextData::readStream(QDataStream &stream)
     font.setItalic(italic);
     font.setBold(bold);
     color.setRgb(rgba);
+}
+void BbItemTextData::setPointWeight(qreal weight)
+{
+    qreal pointSize = minPointSize + weight * (maxPointSize - minPointSize);
+    font.setPointSizeF(pointSize);
+
+    qDebug() << font.pointSize();
+}
+
+qreal BbItemTextData::pointWeight()
+{
+    return (font.pointSizeF()-minPointSize)/(maxPointSize-minPointSize);
 }

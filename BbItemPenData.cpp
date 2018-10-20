@@ -55,5 +55,5 @@ void BbItemPenData::readStream(QDataStream &stream)
 
 void BbItemPenData::setWeight(qreal weight)
 {
-    pen.setWidthF(BbItemPenData::minWidth + weight * (BbItemPenData::maxWidth - BbItemPenData::minWidth));
+    pen.setWidthF(minWidth + weight * (maxWidth - minWidth));
 }
