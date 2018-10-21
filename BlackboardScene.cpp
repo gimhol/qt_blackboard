@@ -396,10 +396,15 @@ void BlackboardScene::loaclPenDraw(const QPointF &mousePos)
     BbItemPen *pen = dynamic_cast<BbItemPen *>(_curElement);
     if(pen)
     {
-        pen->penDraw(mousePos);
         if(!pen->straight())
         {
+            pen->penDraw(mousePos);
             emit blackboard()->penDraw(pen);
+        }
+        else
+        {
+            pen->penStraighting(mousePos);
+            emit blackboard()->penStraighting(pen);
         }
     }
 }

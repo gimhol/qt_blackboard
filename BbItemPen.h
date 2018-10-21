@@ -54,6 +54,8 @@ public:
 
     void penDraw(const QPointF &point);
 
+    void penStraighting(const QPointF &point);
+
     void done();
 
     QColor color();
@@ -73,6 +75,8 @@ public:
     bool straight();
 
     void setStraight(const bool & straight);
+
+    QPointF straightTo();
 
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) override;

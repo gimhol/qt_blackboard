@@ -110,6 +110,8 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     connect(blackboard0,&Blackboard::textAdded,[blackboard1](BbItemText *item){
         auto copy = new BbItemText();
         blackboard1->scene()->add(copy);
+        copy->setFont(item->font());
+        copy->setColor(item->color());
         copy->setPos(item->pos());
         copy->setId(item->id());
     });
@@ -202,6 +204,10 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         {
             copy->penDraw(point);
         }
+    });
+    connect(blackboard0,&Blackboard::penStraighting,[blackboard1](BbItemPen *item){
+        auto copy = blackboard1->scene()->find<BbItemPen>(item->id());
+        copy->penStraighting(item->straightLineTo());
     });
     connect(blackboard0, &Blackboard::penDown, [blackboard1](BbItemPen *item){
         auto copy = new BbItemPen();

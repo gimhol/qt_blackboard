@@ -131,27 +131,32 @@ void BbItemPen::penDown(const QPointF &point){
 
 void BbItemPen::penDraw(const QPointF &point)
 {
+    setStraight(false);
+
     _changed.clear();
 
-    qreal halfPenW = 0.5 * _myData->pen.widthF();
-
-    if(!_straight)
-    {
-        _mousePos = point;
+    _mousePos = point;
 
 #if LINE_SMOOTHING
-        appendPointSmoothing(point);
+    appendPointSmoothing(point);
 #else
-        addPointToPath(point);
+    addPointToPath(point);
 #endif
-        setRect(_rect);
-    }
-    else
-    {
-        straightLineDragging(point);
+    setRect(_rect);
 
-        setRect(_rect);
-    }
+    update();
+}
+
+void BbItemPen::penStraighting(const QPointF &point)
+{
+    setStraight(true);
+
+    _changed.clear();
+
+    straightLineDragging(point);
+
+    setRect(_rect);
+
     update();
 }
 
@@ -491,6 +496,11 @@ void BbItemPen::setStraight(const bool & straight)
         }
     }
     _straight = straight;
+}
+
+QPointF BbItemPen::straightTo()
+{
+    return _straightLineTo + pos();
 }
 
 void BbItemPen::writeStream(QDataStream &stream)

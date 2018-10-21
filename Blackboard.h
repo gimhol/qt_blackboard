@@ -184,6 +184,7 @@ signals:
     void penDraw(BbItemPen *item);
     void penDone(BbItemPen *item);
     void penMoved(BbItemPen *item);
+    void penStraighting(BbItemPen *item);
     void penDelete(BbItemPen *item);
 
     void textAdded(BbItemText *item);
