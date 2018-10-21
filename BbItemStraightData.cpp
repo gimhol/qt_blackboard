@@ -9,7 +9,7 @@ QPen BbItemStraightData::defaultPen = QPen(QColor(100,100,180), BbItemStraightDa
 BbItemStraightData::BbItemStraightData(CoordMode mode):
     BbItemData(mode)
 {
-    tooltype = BBTT_STRAIGHT;
+    tooltype = BBTT_Straight;
 }
 
 void BbItemStraightData::writeStream(QDataStream &stream)

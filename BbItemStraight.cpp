@@ -165,15 +165,7 @@ void BbItemStraight::setFortyFive(const bool &fortyFive)
         return;
     }
     _fortyFive = fortyFive;
-    if(_fortyFive)
-    {
-        _myData->b = toFortyFive(_myData->b);
-    }
-    else
-    {
-        _myData->b = _mousePos;
-    }
-    update();
+    drag(_mousePos);
 }
 
 QPointF BbItemStraight::a()

@@ -4,6 +4,7 @@
 #include "BbItemStraightData.h"
 #include "Blackboard.h"
 #include "BlackboardScene.h"
+#include "BbItemRectData.h"
 #include <QGraphicsTextItem>
 #include <QResizeEvent>
 #include <QDebug>
@@ -20,6 +21,9 @@ Blackboard::Blackboard(QWidget *parent):
 
     _font = BbItemTextData::defalutFont;
     _textColor = BbItemTextData::defalutColor;
+
+    _rectBrush = BbItemRectData::defaultBrush;
+    _rectPen = BbItemRectData::defaultPen;
 
     setToolCursor(BBTT_Pen,Qt::CrossCursor);
     setToolCursor(BBTT_Text,Qt::IBeamCursor);
@@ -488,6 +492,36 @@ QColor Blackboard::straightPenColor()
 void Blackboard::setStraightPenColor(const QColor &color)
 {
     _straightPen.setColor(color);
+}
+
+QColor Blackboard::rectPenColor()
+{
+    return _rectPen.color();
+}
+
+QColor Blackboard::rectBrushColor()
+{
+    return _rectBrush.color();
+}
+
+qreal Blackboard::rectWeight()
+{
+    return _rectWeight;
+}
+
+void Blackboard::setRectPenColor(const QColor &color)
+{
+    _rectPen.setColor(color);
+}
+
+void Blackboard::setRectBrushColor(const QColor &color)
+{
+    _rectBrush.setColor(color);
+}
+
+void Blackboard::setRectWeight(const qreal &weight)
+{
+    _rectWeight = weight;
 }
 
 void Blackboard::writeStream(QDataStream &stream)

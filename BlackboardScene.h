@@ -16,6 +16,8 @@ class BbItemTextData;
 class BbItemStraight;
 class BbItemStraightData;
 class BbItemData;
+class BbItemRect;
+class BbItemRectData;
 class Blackboard;
 class BlackboardScene: public QGraphicsScene, public IStreamWR
 {
@@ -106,6 +108,8 @@ public:
 
     void readStraightData(BbItemStraightData *straightData);
 
+    void readRectData(BbItemRectData *rectData);
+
     bool isMouseLeftButtonDown();
 protected:
 
@@ -120,6 +124,12 @@ protected:
     virtual void keyPressEvent(QKeyEvent *e) override;
 
     virtual void keyReleaseEvent(QKeyEvent *e) override;
+
+    void localRectBegin(const QPointF &pos);
+
+    void localRectDrag(const QPointF &pos);
+
+    void localRectDone();
 
     void localStraightBegin(const QPointF &pos);
 

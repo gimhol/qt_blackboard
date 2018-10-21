@@ -7,6 +7,8 @@
 #include "BbItemData.h"
 #include "BbItemStraight.h"
 #include "BbItemStraightData.h"
+#include "BbItemRect.h"
+#include "BbItemRectData.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include <QDateTime>
@@ -54,28 +56,31 @@ BbToolType BlackboardScene::toolType()
 
 void BlackboardScene::removeSelectedItems()
 {
-    for(auto item: selectedItems()){
+    for(auto item: selectedItems())
+    {
         IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
-        switch(idx->toolType()){
-            case BBTT_Text:
-            {
-                emit blackboard()->textDelete(dynamic_cast<BbItemText *>(item));
-                remove(item);
-                break;
-            }
-            case BBTT_Pen:
-            {
-                emit blackboard()->penDelete(dynamic_cast<BbItemPen *>(item));
-                remove(item);
-                break;
-            }
+        if(!idx)
+        {
+            continue;
+        }
+
+#define REMOVE_ITEM_INDEX(_TYPE_,_CLASS_,_SIGNAL_) \
+    case _TYPE_: \
+        emit blackboard()->_SIGNAL_(dynamic_cast<_CLASS_ *>(item)); \
+        remove(item); \
+        break
+
+        switch(idx->toolType())
+        {
+            REMOVE_ITEM_INDEX(BBTT_Rectangle,BbItemRect,rectDelete);
+            REMOVE_ITEM_INDEX(BBTT_Straight,BbItemStraight,straightDelete);
+            REMOVE_ITEM_INDEX(BBTT_Text,BbItemText,textDelete);
+            REMOVE_ITEM_INDEX(BBTT_Pen,BbItemPen,penDelete);
             default:
             {
-                qDebug() << "Try to delete unkowning element!" << endl;
                 break;
             }
         }
-
     }
 }
 
@@ -90,8 +95,14 @@ void BlackboardScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if(event->button() == Qt::MouseButton::LeftButton)
     {
         _mouseLeftButtonDown = true;
+
         switch(_toolType)
         {
+            case BBTT_Rectangle:
+            {
+                localRectBegin(_mouseBeginPos);
+                return;
+            }
             case BBTT_Pen:
             {
                 localPenDown(_mouseBeginPos);
@@ -102,7 +113,7 @@ void BlackboardScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 localTextAdded(_mouseBeginPos);
                 return;
             }
-            case BBTT_STRAIGHT:
+            case BBTT_Straight:
             {
                 localStraightBegin(_mouseBeginPos);
                 break;
@@ -126,6 +137,14 @@ void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     QPointF mousePos = event->scenePos();
     switch(_toolType)
     {
+        case BBTT_Rectangle:
+        {
+            if(_mouseLeftButtonDown)
+            {
+                localRectDrag(mousePos);
+            }
+            break;
+        }
         case BBTT_Pen:
         {
             if(_mouseLeftButtonDown)
@@ -134,7 +153,7 @@ void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             }
             break;
         }
-        case BBTT_STRAIGHT:
+        case BBTT_Straight:
         {
             if(_mouseLeftButtonDown)
             {
@@ -158,6 +177,11 @@ void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                         }
                         switch(idx->toolType())
                         {
+                            case BBTT_Rectangle:
+                            {
+                                emit blackboard()->rectMoved(dynamic_cast<BbItemRect *>(item));
+                                break;
+                            }
                             case BBTT_Text:
                             {
                                 emit blackboard()->textMoved(dynamic_cast<BbItemText *>(item));
@@ -168,7 +192,7 @@ void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                                 emit blackboard()->penMoved(dynamic_cast<BbItemPen *>(item));
                                 break;
                             }
-                            case BBTT_STRAIGHT:
+                            case BBTT_Straight:
                             {
                                 emit blackboard()->straightMoved(dynamic_cast<BbItemStraight *>(item));
                                 break;
@@ -203,10 +227,14 @@ void BlackboardScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsScene::mouseReleaseEvent(event);
     if(event->button() == Qt::MouseButton::LeftButton)
     {
-        QPointF mousePos = event->scenePos();
         _mouseLeftButtonDown = false;
         switch(_toolType)
         {
+            case BBTT_Rectangle:
+            {
+                localRectDone();
+                break;
+            }
             case BBTT_Pen:
             {
                 localPenDone();
@@ -217,7 +245,7 @@ void BlackboardScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 _pickerRect->hide();
                 break;
             }
-            case BBTT_STRAIGHT:
+            case BBTT_Straight:
             {
                 localStraightDone();
                 break;
@@ -265,15 +293,29 @@ void BlackboardScene::keyPressEvent(QKeyEvent *e)
     {
         case Qt::Key_Shift:
         {
+            BbItemPen * pen = dynamic_cast<BbItemPen *>(_curElement);
+            if(pen)
+            {
+                pen->setStraight(true);
+                break;
+            }
+            BbItemStraight * straight = dynamic_cast<BbItemStraight *>(_curElement);
+            if(straight)
+            {
+                straight->setFortyFive(true);
+                emit blackboard()->straightDragged(straight);
+                break;
+            }
+            BbItemRect * rect = dynamic_cast<BbItemRect *>(_curElement);
+            if(rect)
+            {
+                rect->setSquare(true);
+                emit blackboard()->rectDragged(rect);
+                break;
+            }
             if(!(e->modifiers() & Qt::ControlModifier) && !(e->modifiers() & Qt::AltModifier))
             {
                 _onlyShiftDown = true;
-
-                BbItemPen * pen = dynamic_cast<BbItemPen *>(_curElement);
-                if(pen)
-                {
-                    pen->setStraight(true);
-                }
             }
             break;
         }
@@ -282,11 +324,6 @@ void BlackboardScene::keyPressEvent(QKeyEvent *e)
             if(!(e->modifiers() & Qt::ControlModifier) && !(e->modifiers() & Qt::ShiftModifier))
             {
                 _onlyAltDown = true;
-                BbItemStraight * straight = dynamic_cast<BbItemStraight *>(_curElement);
-                if(straight)
-                {
-                    straight->setFortyFive(true);
-                }
             }
             break;
         }
@@ -304,15 +341,30 @@ void BlackboardScene::keyReleaseEvent(QKeyEvent *e)
     {
         case Qt::Key_Shift:
         {
+            BbItemPen * pen = dynamic_cast<BbItemPen *>(_curElement);
+            if(pen)
+            {
+                pen->setStraight(false);
+                emit blackboard()->penDraw(pen);
+                break;
+            }
+            BbItemStraight * straight = dynamic_cast<BbItemStraight *>(_curElement);
+            if(straight)
+            {
+                straight->setFortyFive(false);
+                emit blackboard()->straightDragged(straight);
+                break;
+            }
+            BbItemRect * rect = dynamic_cast<BbItemRect *>(_curElement);
+            if(rect)
+            {
+                rect->setSquare(false);
+                emit blackboard()->rectDragged(rect);
+                break;
+            }
             if(_onlyShiftDown)
             {
                 _onlyShiftDown = false;
-                BbItemPen * pen = dynamic_cast<BbItemPen *>(_curElement);
-                if(pen)
-                {
-                    pen->setStraight(false);
-                    emit blackboard()->penDraw(pen);
-                }
             }
             break;
         }
@@ -320,11 +372,6 @@ void BlackboardScene::keyReleaseEvent(QKeyEvent *e)
         {
             if(_onlyAltDown)
             {
-                BbItemStraight * straight = dynamic_cast<BbItemStraight *>(_curElement);
-                if(straight)
-                {
-                    straight->setFortyFive(false);
-                }
                 _onlyAltDown = false;
             }
             break;
@@ -337,6 +384,42 @@ void BlackboardScene::keyReleaseEvent(QKeyEvent *e)
     QGraphicsScene::keyReleaseEvent(e);
 }
 
+void BlackboardScene::localRectBegin(const QPointF &pos)
+{
+    BbItemRect * rect = new BbItemRect();
+    rect->setPenColor(blackboard()->rectPenColor());
+    rect->setWeight(blackboard()->rectWeight());
+    rect->setBrushColor(blackboard()->rectBrushColor());
+    add(rect);
+
+    rect->begin(pos);
+    rect->setId(generatItemId());
+    rect->setSquare(_onlyShiftDown);
+    _curElement = rect;
+    emit blackboard()->rectBegun(rect);
+}
+
+void BlackboardScene::localRectDrag(const QPointF &pos)
+{
+    BbItemRect *rect = dynamic_cast<BbItemRect *>(_curElement);
+    if(rect)
+    {
+        rect->drag(pos);
+        emit blackboard()->rectDragged(rect);
+    }
+}
+
+void BlackboardScene::localRectDone()
+{
+    BbItemRect *rect = dynamic_cast<BbItemRect *>(_curElement);
+    if(rect)
+    {
+        rect->done();
+        emit blackboard()->rectDone(rect);
+    }
+    _curElement = nullptr;
+}
+
 void BlackboardScene::localStraightBegin(const QPointF &pos)
 {
     BbItemStraight * straight = new BbItemStraight();
@@ -346,8 +429,8 @@ void BlackboardScene::localStraightBegin(const QPointF &pos)
 
     straight->begin(pos);
     straight->setId(generatItemId());
+    straight->setFortyFive(_onlyShiftDown);
     _curElement = straight;
-
     emit blackboard()->straightBegun(straight);
 }
 
@@ -382,12 +465,9 @@ void BlackboardScene::localPenDown(const QPointF & mousePos)
 
     pen->penDown(mousePos);
     pen->setId(generatItemId());
+    pen->setStraight(_onlyShiftDown);
     _curElement = pen;
 
-    if(_onlyShiftDown)
-    {
-        pen->setStraight(true);
-    }
     emit blackboard()->penDown(pen);
 }
 
@@ -515,9 +595,14 @@ void BlackboardScene::onToolChanged(BbToolType previous, BbToolType current)
             localPenDone();
             break;
         }
-        case BBTT_STRAIGHT:
+        case BBTT_Straight:
         {
             localStraightDone();
+            break;
+        }
+        case BBTT_Rectangle:
+        {
+            localRectDone();
             break;
         }
         default:
@@ -553,7 +638,7 @@ void BlackboardScene::readPenData(BbItemPenData *penData)
 {
     if(!penData)
     {
-        qDebug() << "[BlackboardScene::addPen] data can't be nullptr";
+        qDebug() << "[BlackboardScene::readPenData] data can't be nullptr";
         return;
     }
 
@@ -566,7 +651,7 @@ void BlackboardScene::readTextData(BbItemTextData *textData)
 {
     if(!textData)
     {
-        qDebug() << "[BlackboardScene::addText] data can't be nullptr";
+        qDebug() << "[BlackboardScene::readTextData] data can't be nullptr";
         return;
     }
 
@@ -579,13 +664,25 @@ void BlackboardScene::readStraightData(BbItemStraightData *straightData)
 {
     if(!straightData)
     {
-        qDebug() << "[BlackboardScene::addStraight] data can't be nullptr";
+        qDebug() << "[BlackboardScene::readStraightData] data can't be nullptr";
         return;
     }
 
     BbItemStraight *straight = new BbItemStraight(straightData);
     add(straight);
     straight->repaintWithItemData();
+}
+
+void BlackboardScene::readRectData(BbItemRectData *rectData)
+{
+    if(!rectData)
+    {
+        qDebug() << "[BlackboardScene::readRectData] data can't be nullptr";
+        return;
+    }
+    BbItemRect *rect = new BbItemRect(rectData);
+    add(rect);
+    rect->repaintWithItemData();
 }
 
 void BlackboardScene::remove(QGraphicsItem *item)
@@ -653,9 +750,15 @@ void BlackboardScene::readItemData(BbItemData *itemData)
             readTextData(dynamic_cast<BbItemTextData *>(itemData));
             return;
         }
-        case BBTT_STRAIGHT:
+        case BBTT_Straight:
         {
             readStraightData(dynamic_cast<BbItemStraightData *>(itemData));
+            return;
+        }
+        case BBTT_Rectangle:
+        {
+            readRectData(dynamic_cast<BbItemRectData *>(itemData));
+            return;
         }
         default:
         {
@@ -664,7 +767,8 @@ void BlackboardScene::readItemData(BbItemData *itemData)
     }
 }
 
-void BlackboardScene::setItemIdGenerator(ItemIDGenerator3 itemIdGenerator){
+void BlackboardScene::setItemIdGenerator(ItemIDGenerator3 itemIdGenerator)
+{
     _itemIdGenerator = itemIdGenerator;
 }
 
@@ -693,13 +797,16 @@ void BlackboardScene::readStream(QDataStream &stream)
         break;\
     }
 
-    while(!stream.atEnd()){
+    while(!stream.atEnd())
+    {
         int type;
         stream >> type;
-        switch(static_cast<BbToolType>(type)){
+        switch(static_cast<BbToolType>(type))
+        {
             CREATE_ITEM_AND_READ_DATA(BBTT_Pen,BbItemPen);
             CREATE_ITEM_AND_READ_DATA(BBTT_Text,BbItemText);
-            CREATE_ITEM_AND_READ_DATA(BBTT_STRAIGHT,BbItemStraight);
+            CREATE_ITEM_AND_READ_DATA(BBTT_Straight,BbItemStraight);
+            CREATE_ITEM_AND_READ_DATA(BBTT_Rectangle,BbItemRect);
             default:
             {
                 break;

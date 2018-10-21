@@ -1,4 +1,5 @@
 ﻿#include "BbItemPen.h"
+#include "BbItemRect.h"
 #include "BbItemStraight.h"
 #include "BbItemText.h"
 #include "BlackboardTestWindow.h"
@@ -74,6 +75,39 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         cp->setColor(blackboard()->straightPenColor());
         cp->show();
     });
+
+
+    ui->rectWeight->setValue(blackboard()->rectWeight() * 100);
+    ui->rectPenColor->setColor(blackboard()->rectPenColor());
+    ui->rectBrushColor->setColor(blackboard()->rectBrushColor());
+    connect(ui->rectPenColor,&ColorDisplayer::clicked,[&](){
+        static ColorPanel * cp = nullptr;
+        if(!cp)
+        {
+            cp = new ColorPanel();
+            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
+            cp->setWindowTitle(u8"调色");
+            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setRectPenColor);
+            connect(cp,&ColorPanel::colorChanged,ui->rectPenColor,&ColorDisplayer::setColor);
+        }
+        cp->setColor(blackboard()->straightPenColor());
+        cp->show();
+    });
+    connect(ui->rectBrushColor,&ColorDisplayer::clicked,[&](){
+        static ColorPanel * cp = nullptr;
+        if(!cp)
+        {
+            cp = new ColorPanel();
+            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
+            cp->setWindowTitle(u8"调色");
+            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setRectBrushColor);
+            connect(cp,&ColorPanel::colorChanged,ui->rectBrushColor,&ColorDisplayer::setColor);
+        }
+        cp->setColor(blackboard()->straightPenColor());
+        cp->show();
+    });
+
+
 }
 
 BlackboardTestWindow::~BlackboardTestWindow()
@@ -106,6 +140,33 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     blackboard0->setCanvasSize(blackboard0->width(),blackboard0->width()*10);
     blackboard0->setPointerPixmap(*pm);
     connect(blackboard0,&Blackboard::resized,[](float scale){qDebug()<< "resized, scale : " << scale;});
+
+    connect(blackboard0,&Blackboard::rectBegun,[blackboard1](BbItemRect *item){
+        auto copy = new BbItemRect();
+        blackboard1->scene()->add(copy);
+        copy->setPenColor(item->penColor());
+        copy->setWeight(item->weight());
+        copy->setBrushColor(item->brushColor());
+        copy->begin(item->beginPos());
+        copy->setId(item->id());
+    });
+    connect(blackboard0,&Blackboard::rectDragged,[blackboard1](BbItemRect *item){
+        auto copy = blackboard1->scene()->find<BbItemRect>(item->id());
+        copy->drag(item->dragPos());
+    });
+    connect(blackboard0,&Blackboard::rectDone,[blackboard1](BbItemRect *item){
+        auto copy = blackboard1->scene()->find<BbItemRect>(item->id());
+        copy->done();
+    });
+    connect(blackboard0,&Blackboard::rectMoved,[blackboard1](BbItemRect *item){
+        auto copy = blackboard1->scene()->find<BbItemRect>(item->id());
+        copy->setPos(item->pos());
+    });
+    connect(blackboard0,&Blackboard::rectDelete,[blackboard1](BbItemRect *item){
+        auto copy = blackboard1->scene()->find<BbItemRect>(item->id());
+        blackboard1->scene()->remove(copy);
+    });
+
 
     connect(blackboard0,&Blackboard::textAdded,[blackboard1](BbItemText *item){
         auto copy = new BbItemText();
@@ -207,7 +268,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     });
     connect(blackboard0,&Blackboard::penStraighting,[blackboard1](BbItemPen *item){
         auto copy = blackboard1->scene()->find<BbItemPen>(item->id());
-        copy->penStraighting(item->straightLineTo());
+        copy->penStraighting(item->straightTo());
     });
     connect(blackboard0, &Blackboard::penDown, [blackboard1](BbItemPen *item){
         auto copy = new BbItemPen();
@@ -251,7 +312,7 @@ void BlackboardTestWindow::on_picker_clicked()
 
 void BlackboardTestWindow::on_straight_clicked()
 {
-    blackboard()->setToolType(BBTT_STRAIGHT);
+    blackboard()->setToolType(BBTT_Straight);
 }
 
 void BlackboardTestWindow::on_text_clicked()
@@ -283,4 +344,9 @@ void BlackboardTestWindow::on_straightWeight_valueChanged(int arg1)
 void BlackboardTestWindow::on_textWeight_valueChanged(int arg1)
 {
     blackboard()->setTextPointWeight(arg1 * 0.01);
+}
+
+void BlackboardTestWindow::on_rect_clicked()
+{
+    blackboard()->setToolType(BBTT_Rectangle);
 }

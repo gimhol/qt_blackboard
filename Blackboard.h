@@ -28,17 +28,24 @@ protected:
 
     QPen _pen;
 
-    qreal _penWeight;
+    qreal _penWeight = 0;
 
     QPen _straightPen;
 
-    qreal _straightPenWeight;
+    qreal _straightPenWeight = 0;
 
     QFont _font;
 
     QColor _textColor;
 
-    qreal _textPointWeight;
+    qreal _textPointWeight = 0;
+
+    QPen _rectPen;
+
+    QBrush _rectBrush;
+
+    qreal _rectWeight = 0;
+
 public:
     Blackboard(QWidget *parent = Q_NULLPTR);
 
@@ -169,7 +176,13 @@ public:
 
     void setStraightPenColor(const QColor & color);
 
+    QColor rectPenColor();
+    QColor rectBrushColor();
+    qreal rectWeight();
 
+    void setRectPenColor(const QColor & color);
+    void setRectBrushColor(const QColor & color);
+    void setRectWeight(const qreal & weight);
 signals:
     void resized(float scale);
     void scrolled(float x, float y);
@@ -201,6 +214,12 @@ signals:
     void cursorMoved(QPoint localPoint);
     void cursorHidden(QPoint localPoint);
     void toolChanged(BbToolType previous, BbToolType current);
+
+    void rectBegun(BbItemRect *item);
+    void rectDragged(BbItemRect *item);
+    void rectDone(BbItemRect *item);
+    void rectMoved(BbItemRect *item);
+    void rectDelete(BbItemRect *item);
 
     // ItemDataWR interface
 public:

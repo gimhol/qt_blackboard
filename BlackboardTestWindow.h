@@ -47,6 +47,8 @@ private slots:
 
     void on_textWeight_valueChanged(int arg1);
 
+    void on_rect_clicked();
+
 private:
     Ui::BlackboardTestWindow *ui;
 };
