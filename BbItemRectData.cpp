@@ -52,9 +52,9 @@ void BbItemRectData::readStream(QDataStream &stream)
 
     pen.setWidthF(penWidth);
     pen.setStyle(static_cast<Qt::PenStyle>(penStyle));
-    pen.setColor(penRgba);
+    pen.setColor(QColor::fromRgba(penRgba));
 
-    brush.setColor(brushRgba);
+    brush.setColor(QColor::fromRgba(brushRgba));
     size.setHeight(height);
     size.setWidth(width);
 }

@@ -11,6 +11,8 @@
 #include "BbItemRectData.h"
 #include "BbItemEllipse.h"
 #include "BbItemEllipseData.h"
+#include "BbItemTriangle.h"
+#include "BbItemTriangleData.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include <QDateTime>
@@ -79,6 +81,7 @@ void BlackboardScene::removeSelectedItems()
             REMOVE_ITEM_INDEX(BBTT_Text,BbItemText,textDelete);
             REMOVE_ITEM_INDEX(BBTT_Pen,BbItemPen,penDelete);
             REMOVE_ITEM_INDEX(BBTT_Ellipse,BbItemEllipse,ellipseDelete);
+            REMOVE_ITEM_INDEX(BBTT_Triangle,BbItemTriangle,triangleDelete);
             default:
             {
                 break;
@@ -101,6 +104,11 @@ void BlackboardScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
         switch(_toolType)
         {
+            case BBTT_Triangle:
+            {
+                localTriangleBegin(_mouseBeginPos);
+                return;
+            }
             case BBTT_Ellipse:
             {
                 localEllipseBegin(_mouseBeginPos);
@@ -145,6 +153,14 @@ void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     QPointF mousePos = event->scenePos();
     switch(_toolType)
     {
+        case BBTT_Triangle:
+        {
+            if(_mouseLeftButtonDown)
+            {
+                localTriangleDrag(mousePos);
+            }
+            break;
+        }
         case BBTT_Ellipse:
         {
             if(_mouseLeftButtonDown)
@@ -193,6 +209,11 @@ void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                         }
                         switch(idx->toolType())
                         {
+                            case BBTT_Triangle:
+                            {
+                                emit blackboard()->triangleMoved(dynamic_cast<BbItemTriangle *>(item));
+                                break;
+                            }
                             case BBTT_Ellipse:
                             {
                                 emit blackboard()->ellipseMoved(dynamic_cast<BbItemEllipse *>(item));
@@ -251,6 +272,11 @@ void BlackboardScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         _mouseLeftButtonDown = false;
         switch(_toolType)
         {
+            case BBTT_Triangle:
+            {
+                localTriangleDone(false);
+                break;
+            }
             case BBTT_Ellipse:
             {
                 localEllipseDone();
@@ -261,6 +287,11 @@ void BlackboardScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 localRectDone();
                 break;
             }
+            case BBTT_Straight:
+            {
+                localStraightDone();
+                break;
+            }
             case BBTT_Pen:
             {
                 localPenDone();
@@ -269,11 +300,6 @@ void BlackboardScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             case BBTT_Picker:
             {
                 _pickerRect->hide();
-                break;
-            }
-            case BBTT_Straight:
-            {
-                localStraightDone();
                 break;
             }
             default:
@@ -496,6 +522,57 @@ void BlackboardScene::localEllipseDone()
     _curElement = nullptr;
 }
 
+void BlackboardScene::localTriangleBegin(const QPointF &pos)
+{
+    BbItemTriangle *triangle = dynamic_cast<BbItemTriangle *>(_curElement);
+    if(triangle)
+    {
+        return;
+    }
+
+    triangle = new BbItemTriangle();
+    triangle->setPenColor(blackboard()->trianglePenColor());
+    triangle->setBrushColor(blackboard()->triangleBrushColor());
+    triangle->setWeight(blackboard()->triangleWeight());
+    add(triangle);
+
+    triangle->begin(pos);
+    triangle->setId(generatItemId());
+    _curElement = triangle;
+    emit blackboard()->triangleBegun(triangle);
+}
+
+void BlackboardScene::localTriangleDrag(const QPointF &pos)
+{
+    BbItemTriangle *triangle = dynamic_cast<BbItemTriangle *>(_curElement);
+    if(triangle)
+    {
+        triangle->drag(pos);
+        emit blackboard()->triangleDragged(triangle);
+    }
+}
+
+void BlackboardScene::localTriangleDone(bool force)
+{
+    BbItemTriangle *triangle = dynamic_cast<BbItemTriangle *>(_curElement);
+    if(triangle)
+    {
+        triangle->done();
+
+        emit blackboard()->triangleDone(triangle);
+
+        if(triangle->step() > 1 || force)
+        {
+            _curElement = nullptr;
+        }
+    }
+    else
+    {
+        _curElement = nullptr;
+    }
+
+}
+
 void BlackboardScene::localStraightBegin(const QPointF &pos)
 {
     BbItemStraight * straight = new BbItemStraight();
@@ -637,7 +714,8 @@ void BlackboardScene::pickingItems(const QPointF &mousePos)
 
 QString BlackboardScene::generatItemId() const
 {
-    if(_itemIdGenerator != nullptr){
+    if(_itemIdGenerator != nullptr)
+    {
         return _itemIdGenerator();
     }
     return QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch());
@@ -659,6 +737,11 @@ void BlackboardScene::onToolChanged(BbToolType previous, BbToolType current)
                 item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,false);
                 item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,false);
             }
+            break;
+        }
+        case BBTT_Triangle:
+        {
+            localTriangleDone(true);
             break;
         }
         case BBTT_Text:
@@ -779,6 +862,18 @@ void BlackboardScene::readEllipseData(BbItemEllipseData *ellipseData)
     ellipse->repaintWithItemData();
 }
 
+void BlackboardScene::readTriangleData(BbItemTriangleData *triangleData)
+{
+    if(!triangleData)
+    {
+        qDebug() << "[BlackboardScene::readTriangleData] data can't be nullptr";
+        return;
+    }
+    BbItemTriangle *triangle = new BbItemTriangle(triangleData);
+    add(triangle);
+    triangle->repaintWithItemData();
+}
+
 void BlackboardScene::remove(QGraphicsItem *item)
 {
     BbItemText * text = dynamic_cast<BbItemText *>(item);
@@ -816,14 +911,17 @@ void BlackboardScene::add(QGraphicsItem *item)
     QGraphicsScene::addItem(item);
 }
 
-void BlackboardScene::setControlEnable(bool enable){
+void BlackboardScene::setControlEnable(bool enable)
+{
     _controlEnable = enable;
 }
 
 void BlackboardScene::clearItems()
 {
-    for(auto item: items()){
-        if(item == _pickerRect){
+    for(auto item: items())
+    {
+        if(item == _pickerRect)
+        {
             continue;
         }
         remove(item);
@@ -859,6 +957,11 @@ void BlackboardScene::readItemData(BbItemData *itemData)
             readEllipseData(dynamic_cast<BbItemEllipseData *>(itemData));
             return;
         }
+        case BBTT_Triangle:
+        {
+            readTriangleData(dynamic_cast<BbItemTriangleData *>(itemData));
+            return;
+        }
         default:
         {
             break;
@@ -873,10 +976,12 @@ void BlackboardScene::setItemIdGenerator(ItemIDGenerator3 itemIdGenerator)
 
 void BlackboardScene::writeStream(QDataStream &stream)
 {
-    for(auto item: items()){
+    for(auto item: items())
+    {
         IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
         IStreamWR *wr = dynamic_cast<IStreamWR *>(item);
-        if(idx && wr){
+        if(idx && wr)
+        {
             stream << static_cast<int>(idx->toolType());
             wr->writeStream(stream);
         }
@@ -907,6 +1012,7 @@ void BlackboardScene::readStream(QDataStream &stream)
             CREATE_ITEM_AND_READ_DATA(BBTT_Straight,BbItemStraight);
             CREATE_ITEM_AND_READ_DATA(BBTT_Rectangle,BbItemRect);
             CREATE_ITEM_AND_READ_DATA(BBTT_Ellipse,BbItemEllipse);
+            CREATE_ITEM_AND_READ_DATA(BBTT_Triangle,BbItemTriangle);
             default:
             {
                 break;

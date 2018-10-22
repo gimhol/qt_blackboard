@@ -20,6 +20,8 @@ class BbItemRect;
 class BbItemRectData;
 class BbItemEllipse;
 class BbItemEllipseData;
+class BbItemTriangle;
+class BbItemTriangleData;
 class Blackboard;
 class BlackboardScene: public QGraphicsScene, public IStreamWR
 {
@@ -114,6 +116,8 @@ public:
 
     void readEllipseData(BbItemEllipseData *ellipseData);
 
+    void readTriangleData(BbItemTriangleData *triangleData);
+
     bool isMouseLeftButtonDown();
 protected:
 
@@ -140,6 +144,12 @@ protected:
     void localEllipseDrag(const QPointF &pos);
 
     void localEllipseDone();
+
+    void localTriangleBegin(const QPointF &pos);
+
+    void localTriangleDrag(const QPointF &pos);
+
+    void localTriangleDone(bool force);
 
     void localStraightBegin(const QPointF &pos);
 

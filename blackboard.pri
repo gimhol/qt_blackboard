@@ -17,7 +17,8 @@ HEADERS += \
     $$PWD/BbItemRect.h \
     $$PWD/BbItemEllipseData.h \
     $$PWD/BbItemEllipse.h \
-    $$PWD/BbItemTriangleData.h
+    $$PWD/BbItemTriangleData.h \
+    $$PWD/BbItemTriangle.h
 
 SOURCES += \
     $$PWD/Blackboard.cpp \
@@ -33,6 +34,7 @@ SOURCES += \
     $$PWD/BbItemRect.cpp \
     $$PWD/BbItemEllipseData.cpp \
     $$PWD/BbItemEllipse.cpp \
-    $$PWD/BbItemTriangleData.cpp
+    $$PWD/BbItemTriangleData.cpp \
+    $$PWD/BbItemTriangle.cpp
 
 FORMS +=

@@ -15,7 +15,7 @@ QBrush BbItemTriangleData::defaultBrush = defaultBrushColor;
 BbItemTriangleData::BbItemTriangleData(CoordMode mode):
     BbItemData(mode)
 {
-    tooltype = BBTT_Rectangle;
+    tooltype = BBTT_Triangle;
 }
 
 qreal BbItemTriangleData::weight()
@@ -35,26 +35,36 @@ void BbItemTriangleData::writeStream(QDataStream &stream)
     stream << pen.widthF()
            << pen.color().rgba()
            << static_cast<short>(pen.style())
-           << brush.color().rgba()
-           << size.width()
-           << size.height();
+           << brush.color().rgba();
+
+    for(int i = 0; i < 3; ++i)
+    {
+        stream << points[i].x() << points[i].y();
+    }
 }
 
 void BbItemTriangleData::readStream(QDataStream &stream)
 {
     BbItemData::readStream(stream);
+    isEmpty = false;
     qreal penWidth;
     QRgb penRgba,brushRgba;
     short penStyle;
-    qreal width,height;
 
-    stream >> penWidth >> penRgba >> penStyle >> brushRgba >> width >> height;
+    stream >> penWidth
+           >> penRgba
+           >> penStyle
+           >> brushRgba;
+
+    for(int i = 0; i < 3; ++i)
+    {
+        qreal x,y;
+        stream >> x >> y;
+        points[i] = QPointF(x,y);
+    }
 
     pen.setWidthF(penWidth);
     pen.setStyle(static_cast<Qt::PenStyle>(penStyle));
-    pen.setColor(penRgba);
-
-    brush.setColor(brushRgba);
-    size.setHeight(height);
-    size.setWidth(width);
+    pen.setColor(QColor::fromRgba(penRgba));
+    brush.setColor(QColor::fromRgba(brushRgba));
 }

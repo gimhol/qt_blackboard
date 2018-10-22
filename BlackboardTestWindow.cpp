@@ -2,12 +2,12 @@
 #include "BbItemRect.h"
 #include "BbItemStraight.h"
 #include "BbItemText.h"
+#include "BbItemEllipse.h"
+#include "BbItemTriangle.h"
 #include "BlackboardTestWindow.h"
 #include "ColorPanel.h"
 #include "ui_BlackboardTestWindow.h"
 #include <QDebug>
-#include <BbItemEllipse.h>
-
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::BlackboardTestWindow)
@@ -138,6 +138,36 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         cp->setColor(blackboard()->ellipseBrushColor());
         cp->show();
     });
+
+    ui->triangleWeight->setValue(blackboard()->triangleWeight() * 100);
+    ui->trianglePenColor->setColor(blackboard()->trianglePenColor());
+    ui->triangleBrushColor->setColor(blackboard()->triangleBrushColor());
+    connect(ui->trianglePenColor,&ColorDisplayer::clicked,[&](){
+        static ColorPanel * cp = nullptr;
+        if(!cp)
+        {
+            cp = new ColorPanel();
+            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
+            cp->setWindowTitle(u8"调色");
+            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setTrianglePenColor);
+            connect(cp,&ColorPanel::colorChanged,ui->trianglePenColor,&ColorDisplayer::setColor);
+        }
+        cp->setColor(blackboard()->trianglePenColor());
+        cp->show();
+    });
+    connect(ui->triangleBrushColor,&ColorDisplayer::clicked,[&](){
+        static ColorPanel * cp = nullptr;
+        if(!cp)
+        {
+            cp = new ColorPanel();
+            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
+            cp->setWindowTitle(u8"调色");
+            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setTriangleBrushColor);
+            connect(cp,&ColorPanel::colorChanged,ui->triangleBrushColor,&ColorDisplayer::setColor);
+        }
+        cp->setColor(blackboard()->triangleBrushColor());
+        cp->show();
+    });
 }
 
 BlackboardTestWindow::~BlackboardTestWindow()
@@ -170,6 +200,32 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     blackboard0->setCanvasSize(blackboard0->width(),blackboard0->width()*10);
     blackboard0->setPointerPixmap(*pm);
     connect(blackboard0,&Blackboard::resized,[](float scale){qDebug()<< "resized, scale : " << scale;});
+
+    connect(blackboard0,&Blackboard::triangleBegun,[blackboard1](BbItemTriangle *item){
+        auto copy = new BbItemTriangle();
+        blackboard1->scene()->add(copy);
+        copy->setPenColor(item->penColor());
+        copy->setWeight(item->weight());
+        copy->setBrushColor(item->brushColor());
+        copy->begin(item->point(0));
+        copy->setId(item->id());
+    });
+    connect(blackboard0,&Blackboard::triangleDragged,[blackboard1](BbItemTriangle *item){
+        auto copy = blackboard1->scene()->find<BbItemTriangle>(item->id());
+        copy->drag(item->point(1+item->step()));
+    });
+    connect(blackboard0,&Blackboard::triangleDone,[blackboard1](BbItemTriangle *item){
+        auto copy = blackboard1->scene()->find<BbItemTriangle>(item->id());
+        copy->done();
+    });
+    connect(blackboard0,&Blackboard::triangleMoved,[blackboard1](BbItemTriangle *item){
+        auto copy = blackboard1->scene()->find<BbItemTriangle>(item->id());
+        copy->setPos(item->pos());
+    });
+    connect(blackboard0,&Blackboard::triangleDelete,[blackboard1](BbItemTriangle *item){
+        auto copy = blackboard1->scene()->find<BbItemTriangle>(item->id());
+        blackboard1->scene()->remove(copy);
+    });
 
     connect(blackboard0,&Blackboard::ellipseBegun,[blackboard1](BbItemEllipse *item){
         auto copy = new BbItemEllipse();
@@ -415,4 +471,14 @@ void BlackboardTestWindow::on_ellipse_clicked()
 void BlackboardTestWindow::on_ellipseWeight_valueChanged(int arg1)
 {
     blackboard()->setEllipseWeight(arg1 * 0.01);
+}
+
+void BlackboardTestWindow::on_triangle_clicked()
+{
+    blackboard()->setToolType(BBTT_Triangle);
+}
+
+void BlackboardTestWindow::on_triangleWeight_valueChanged(int arg1)
+{
+    blackboard()->setTriangleWeight(arg1 * 0.01);
 }

@@ -25,7 +25,7 @@ public:
 
     QBrush brush = defaultBrush;
 
-    QSizeF size;
+    QPointF points[3];
 
     explicit BbItemTriangleData(CoordMode mode = CM_ABSOLUTE);
 

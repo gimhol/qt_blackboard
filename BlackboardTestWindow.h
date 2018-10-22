@@ -22,8 +22,6 @@ public:
 
     static void start();
 
-
-
 private slots:
     void on_pointer_clicked();
 
@@ -52,6 +50,10 @@ private slots:
     void on_ellipse_clicked();
 
     void on_ellipseWeight_valueChanged(int arg1);
+
+    void on_triangle_clicked();
+
+    void on_triangleWeight_valueChanged(int arg1);
 
 private:
     Ui::BlackboardTestWindow *ui;

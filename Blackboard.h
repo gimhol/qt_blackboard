@@ -51,6 +51,13 @@ protected:
     QBrush _ellipseBrush;
 
     qreal _ellipseWeight = 0;
+
+    QPen _trianglePen;
+
+    QBrush _triangleBrush;
+
+    qreal _triangleWeight = 0;
+
 public:
     Blackboard(QWidget *parent = Q_NULLPTR);
 
@@ -145,46 +152,31 @@ public:
 
     static const QColor & defaultTextColor();
 
-    void setStraightPen(const QPen & pen);
-
-    const QPen & straightPen();
-
-    void setPen(const QPen & pen);
-
-    const QPen & pen(){return _pen;}
-
-    void setFont(const QFont & font);
-
     const QFont & font();
-
-    void setTextColor(const QColor & color);
-
     const QColor & textColor();
-
-    void setPenWeight(const qreal & weight);
-
-    void setStraightPenWeight(const qreal & weight);
-
+    qreal textPointWeight();
+    void setFont(const QFont & font);
+    void setTextColor(const QColor & color);
     void setTextPointWeight(const qreal & weight);
 
-    qreal textPointWeight();
-
+    const QPen & pen();
     qreal penWeight();
-
-    qreal straightPenWeight();
-
     QColor penColor();
-
+    void setPen(const QPen & pen);
+    void setPenWeight(const qreal & weight);
     void setPenColor(const QColor & color);
 
-    QColor straightPenColor();
 
+    const QPen & straightPen();
+    qreal straightPenWeight();
+    QColor straightPenColor();
+    void setStraightPen(const QPen & pen);
+    void setStraightPenWeight(const qreal & weight);
     void setStraightPenColor(const QColor & color);
 
     QColor rectPenColor();
     QColor rectBrushColor();
     qreal rectWeight();
-
     void setRectPenColor(const QColor & color);
     void setRectBrushColor(const QColor & color);
     void setRectWeight(const qreal & weight);
@@ -192,10 +184,16 @@ public:
     QColor ellipsePenColor();
     QColor ellipseBrushColor();
     qreal ellipseWeight();
-
     void setEllipsePenColor(const QColor & color);
     void setEllipseBrushColor(const QColor & color);
     void setEllipseWeight(const qreal & weight);
+
+    QColor trianglePenColor();
+    QColor triangleBrushColor();
+    qreal triangleWeight();
+    void setTrianglePenColor(const QColor & color);
+    void setTriangleBrushColor(const QColor & color);
+    void setTriangleWeight(const qreal & weight);
 signals:
     void resized(float scale);
     void scrolled(float x, float y);
@@ -239,6 +237,12 @@ signals:
     void ellipseDone(BbItemEllipse *item);
     void ellipseMoved(BbItemEllipse *item);
     void ellipseDelete(BbItemEllipse *item);
+
+    void triangleBegun(BbItemTriangle *item);
+    void triangleDragged(BbItemTriangle *item);
+    void triangleDone(BbItemTriangle *item);
+    void triangleMoved(BbItemTriangle *item);
+    void triangleDelete(BbItemTriangle *item);
     // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;

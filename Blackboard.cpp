@@ -4,6 +4,8 @@
 #include "BbItemStraightData.h"
 #include "BbItemRectData.h"
 #include "BbItemEllipseData.h"
+#include "BbItemTriangle.h"
+#include "BbItemTriangleData.h"
 #include "Blackboard.h"
 #include "BlackboardScene.h"
 
@@ -29,9 +31,13 @@ Blackboard::Blackboard(QWidget *parent):
     _ellipseBrush = BbItemEllipseData::defaultBrush;
     _ellipsePen = BbItemEllipseData::defaultPen;
 
+    _triangleBrush = BbItemTriangleData::defaultBrush;
+    _trianglePen = BbItemTriangleData::defaultPen;
+
     setToolCursor(BBTT_Pen,Qt::CrossCursor);
     setToolCursor(BBTT_Rectangle,Qt::CrossCursor);
     setToolCursor(BBTT_Ellipse,Qt::CrossCursor);
+    setToolCursor(BBTT_Triangle,Qt::CrossCursor);
     setToolCursor(BBTT_Text,Qt::IBeamCursor);
     setToolCursor(BBTT_Picker,Qt::ArrowCursor);
     setToolCursor(BBTT_Pointer,Qt::BlankCursor);
@@ -116,21 +122,35 @@ void Blackboard::setScroll(int x,int y)
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged,this, &Blackboard::onScrollYChanged);
 }
 
-void Blackboard::setCanvasId(const QString &id){
+void Blackboard::setCanvasId(const QString &id)
+{
     scene()->setObjectName(id);
 }
 
-QString Blackboard::canvasId(){
+QString Blackboard::canvasId()
+{
     return scene()->objectName();
 }
 
-float Blackboard::scaleRatio(){ return _scaleRatio; }
+float Blackboard::scaleRatio()
+{
+    return _scaleRatio;
+}
 
-QSize Blackboard::orginalSize(){return _orginalSize;}
+QSize Blackboard::orginalSize()
+{
+    return _orginalSize;
+}
 
-int Blackboard::orginalWidth(){return _orginalSize.width();}
+int Blackboard::orginalWidth()
+{
+    return _orginalSize.width();
+}
 
-int Blackboard::orginalHeight(){return _orginalSize.height();}
+int Blackboard::orginalHeight()
+{
+    return _orginalSize.height();
+}
 
 void Blackboard::setOrginalSize(int width, int height)
 {
@@ -138,7 +158,8 @@ void Blackboard::setOrginalSize(int width, int height)
     _orginalSize.setHeight(height);
 }
 
-void Blackboard::setOrginalSize(const QSize &size){
+void Blackboard::setOrginalSize(const QSize &size)
+{
     setOrginalSize(size.width(),size.height());
 }
 
@@ -146,9 +167,7 @@ void Blackboard::resizeEvent(QResizeEvent *event)
 {
     if(_orginalSize.width() == -1)
     {
-
         _orginalSize = event->size();
-
         scene()->setSceneRect(0,0, _canvasSize.width(), _canvasSize.height());
     }
     else
@@ -299,7 +318,8 @@ void Blackboard::removeSelectedElement()
     scene()->removeSelectedItems();
 }
 
-void Blackboard::setToolType(BbToolType toolType){
+void Blackboard::setToolType(BbToolType toolType)
+{
     scene()->setToolType(toolType);
 }
 
@@ -430,6 +450,11 @@ void Blackboard::setPen(const QPen &pen)
     _pen = pen;
 }
 
+const QPen &Blackboard::pen()
+{
+    return _pen;
+}
+
 void Blackboard::setFont(const QFont &font)
 {
     _font = font;
@@ -558,6 +583,36 @@ void Blackboard::setEllipseBrushColor(const QColor &color)
 void Blackboard::setEllipseWeight(const qreal &weight)
 {
     _ellipseWeight = weight;
+}
+
+QColor Blackboard::trianglePenColor()
+{
+    return _trianglePen.color();
+}
+
+QColor Blackboard::triangleBrushColor()
+{
+    return _triangleBrush.color();
+}
+
+qreal Blackboard::triangleWeight()
+{
+    return _triangleWeight;
+}
+
+void Blackboard::setTrianglePenColor(const QColor &color)
+{
+    _trianglePen.setColor(color);
+}
+
+void Blackboard::setTriangleBrushColor(const QColor &color)
+{
+    _triangleBrush.setColor(color);
+}
+
+void Blackboard::setTriangleWeight(const qreal &weight)
+{
+    _triangleWeight = weight;
 }
 
 void Blackboard::writeStream(QDataStream &stream)
