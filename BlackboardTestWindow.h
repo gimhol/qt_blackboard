@@ -55,6 +55,10 @@ private slots:
 
     void on_triangleWeight_valueChanged(int arg1);
 
+    void on_localImage_clicked();
+
+    void on_onlineImage_clicked();
+
 private:
     Ui::BlackboardTestWindow *ui;
 };

@@ -7,7 +7,9 @@
 #include "BlackboardTestWindow.h"
 #include "ColorPanel.h"
 #include "ui_BlackboardTestWindow.h"
+#include "BbItemImage.h"
 #include <QDebug>
+#include <QFileDialog>
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::BlackboardTestWindow)
@@ -201,6 +203,24 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     blackboard0->setPointerPixmap(*pm);
     connect(blackboard0,&Blackboard::resized,[](float scale){qDebug()<< "resized, scale : " << scale;});
 
+
+    connect(blackboard0,&Blackboard::imageAdded,[blackboard1](BbItemImage *item){
+        auto copy = new BbItemImage();
+        copy->setZValue(copy->zValue());
+        blackboard1->scene()->add(copy);
+        copy->setPixmap(item->pixmap());
+        copy->setId(item->id());
+    });
+    connect(blackboard0,&Blackboard::imageMoved,[blackboard1](BbItemImage *item){
+        auto copy = blackboard1->scene()->find<BbItemImage>(item->id());
+        copy->setPos(item->pos());
+    });
+    connect(blackboard0,&Blackboard::imageDelete,[blackboard1](BbItemImage *item){
+        auto copy = blackboard1->scene()->find<BbItemImage>(item->id());
+        blackboard1->scene()->remove(copy);
+    });
+
+
     connect(blackboard0,&Blackboard::triangleBegun,[blackboard1](BbItemTriangle *item){
         auto copy = new BbItemTriangle();
         copy->setZValue(copy->zValue());
@@ -281,7 +301,6 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         auto copy = blackboard1->scene()->find<BbItemRect>(item->id());
         blackboard1->scene()->remove(copy);
     });
-
 
     connect(blackboard0,&Blackboard::textAdded,[blackboard1](BbItemText *item){
         auto copy = new BbItemText();
@@ -487,4 +506,24 @@ void BlackboardTestWindow::on_triangle_clicked()
 void BlackboardTestWindow::on_triangleWeight_valueChanged(int arg1)
 {
     blackboard()->setTriangleWeight(arg1 * 0.01);
+}
+
+void BlackboardTestWindow::on_localImage_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(NULL,u8"选择图片",".","*.png;*.jpg");
+
+    if(fileName.isEmpty())
+    {
+        return;
+    }
+
+    QPixmap pm(fileName);
+    blackboard()->addPixmapItem(pm);
+}
+
+void BlackboardTestWindow::on_onlineImage_clicked()
+{
+//    QPixmap pm(100,100);
+//    pm.fill(Qt::blue);
+//    blackboard()->addPixmapItem(pm);
 }

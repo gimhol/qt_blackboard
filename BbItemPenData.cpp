@@ -22,7 +22,8 @@ void BbItemPenData::writeStream(QDataStream &stream)
            << static_cast<short>(pen.style())
            << coords.size();
 
-    for(auto coord: coords){
+    for(auto coord: coords)
+    {
         stream << coord;
     }
 }

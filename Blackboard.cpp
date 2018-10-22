@@ -615,6 +615,11 @@ void Blackboard::setTriangleWeight(const qreal &weight)
     _triangleWeight = weight;
 }
 
+void Blackboard::addPixmapItem(const QPixmap &pixmap)
+{
+    scene()->addImageItem(pixmap);
+}
+
 void Blackboard::writeStream(QDataStream &stream)
 {
     scene()->writeStream(stream);

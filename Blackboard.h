@@ -166,7 +166,6 @@ public:
     void setPenWeight(const qreal & weight);
     void setPenColor(const QColor & color);
 
-
     const QPen & straightPen();
     qreal straightPenWeight();
     QColor straightPenColor();
@@ -194,6 +193,9 @@ public:
     void setTrianglePenColor(const QColor & color);
     void setTriangleBrushColor(const QColor & color);
     void setTriangleWeight(const qreal & weight);
+
+    void addPixmapItem(const QPixmap & pixmap);
+
 signals:
     void resized(float scale);
     void scrolled(float x, float y);
@@ -243,6 +245,11 @@ signals:
     void triangleDone(BbItemTriangle *item);
     void triangleMoved(BbItemTriangle *item);
     void triangleDelete(BbItemTriangle *item);
+
+    void imageAdded(BbItemImage *item);
+    void imageMoved(BbItemImage *item);
+    void imageDelete(BbItemImage *item);
+
     // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;

@@ -11,6 +11,7 @@ enum BbToolType{
     BBTT_Triangle = 2004,    // 三角
     BBTT_Picker = 3000,
     BBTT_Pointer = 3001,
+    BBTT_Image = 4000,
 };
 
 #endif // CANVASTOOLTYPE_H

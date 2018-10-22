@@ -22,6 +22,8 @@ class BbItemEllipse;
 class BbItemEllipseData;
 class BbItemTriangle;
 class BbItemTriangleData;
+class BbItemImage;
+class BbItemImageData;
 class Blackboard;
 class BlackboardScene: public QGraphicsScene, public IStreamWR
 {
@@ -118,7 +120,12 @@ public:
 
     void readTriangleData(BbItemTriangleData *triangleData);
 
+    void readImageData(BbItemImageData *data);
+
     bool isMouseLeftButtonDown();
+
+    void addImageItem(const QPixmap &pixmap);
+
 protected:
 
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -205,6 +212,8 @@ public:
 
     virtual void readStream(QDataStream &stream) override;
 };
+
+
 
 
 

@@ -66,10 +66,10 @@ protected:
 
     // IItemIndex interface
 public:
-    QString id() const;
-    void setId(const QString &id);
-    BbToolType toolType() const;
-    BlackboardScene *scene();
+    QString id() const override;
+    void setId(const QString &id) override;
+    BbToolType toolType() const override;
+    BlackboardScene *scene() override;
 };
 
 #endif // BBITEMRECT_H
