@@ -18,6 +18,8 @@ class BbItemStraightData;
 class BbItemData;
 class BbItemRect;
 class BbItemRectData;
+class BbItemEllipse;
+class BbItemEllipseData;
 class Blackboard;
 class BlackboardScene: public QGraphicsScene, public IStreamWR
 {
@@ -110,6 +112,8 @@ public:
 
     void readRectData(BbItemRectData *rectData);
 
+    void readEllipseData(BbItemEllipseData *ellipseData);
+
     bool isMouseLeftButtonDown();
 protected:
 
@@ -130,6 +134,12 @@ protected:
     void localRectDrag(const QPointF &pos);
 
     void localRectDone();
+
+    void localEllipseBegin(const QPointF &pos);
+
+    void localEllipseDrag(const QPointF &pos);
+
+    void localEllipseDone();
 
     void localStraightBegin(const QPointF &pos);
 

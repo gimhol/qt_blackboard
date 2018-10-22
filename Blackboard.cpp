@@ -2,10 +2,11 @@
 #include "BbItemPenData.h"
 #include "BbItemTextData.h"
 #include "BbItemStraightData.h"
+#include "BbItemRectData.h"
+#include "BbItemEllipseData.h"
 #include "Blackboard.h"
 #include "BlackboardScene.h"
-#include "BbItemRectData.h"
-#include <QGraphicsTextItem>
+
 #include <QResizeEvent>
 #include <QDebug>
 #include <QTimer>
@@ -25,7 +26,12 @@ Blackboard::Blackboard(QWidget *parent):
     _rectBrush = BbItemRectData::defaultBrush;
     _rectPen = BbItemRectData::defaultPen;
 
+    _ellipseBrush = BbItemEllipseData::defaultBrush;
+    _ellipsePen = BbItemEllipseData::defaultPen;
+
     setToolCursor(BBTT_Pen,Qt::CrossCursor);
+    setToolCursor(BBTT_Rectangle,Qt::CrossCursor);
+    setToolCursor(BBTT_Ellipse,Qt::CrossCursor);
     setToolCursor(BBTT_Text,Qt::IBeamCursor);
     setToolCursor(BBTT_Picker,Qt::ArrowCursor);
     setToolCursor(BBTT_Pointer,Qt::BlankCursor);
@@ -522,6 +528,36 @@ void Blackboard::setRectBrushColor(const QColor &color)
 void Blackboard::setRectWeight(const qreal &weight)
 {
     _rectWeight = weight;
+}
+
+QColor Blackboard::ellipsePenColor()
+{
+    return _ellipsePen.color();
+}
+
+QColor Blackboard::ellipseBrushColor()
+{
+    return _ellipseBrush.color();
+}
+
+qreal Blackboard::ellipseWeight()
+{
+    return _ellipseWeight;
+}
+
+void Blackboard::setEllipsePenColor(const QColor &color)
+{
+    _ellipsePen.setColor(color);
+}
+
+void Blackboard::setEllipseBrushColor(const QColor &color)
+{
+    _ellipseBrush.setColor(color);
+}
+
+void Blackboard::setEllipseWeight(const qreal &weight)
+{
+    _ellipseWeight = weight;
 }
 
 void Blackboard::writeStream(QDataStream &stream)

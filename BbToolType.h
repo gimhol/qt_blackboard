@@ -8,6 +8,7 @@ enum BbToolType{
     BBTT_Straight = 2001,   // 直线
     BBTT_Rectangle = 2002,  // 矩形
     BBTT_Ellipse = 2003,    // 椭圆
+    BBTT_Triangle = 2004,    // 三角
     BBTT_Picker = 3000,
     BBTT_Pointer = 3001,
 };

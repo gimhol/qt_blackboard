@@ -9,6 +9,8 @@
 #include "BbItemStraightData.h"
 #include "BbItemRect.h"
 #include "BbItemRectData.h"
+#include "BbItemEllipse.h"
+#include "BbItemEllipseData.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include <QDateTime>
@@ -76,6 +78,7 @@ void BlackboardScene::removeSelectedItems()
             REMOVE_ITEM_INDEX(BBTT_Straight,BbItemStraight,straightDelete);
             REMOVE_ITEM_INDEX(BBTT_Text,BbItemText,textDelete);
             REMOVE_ITEM_INDEX(BBTT_Pen,BbItemPen,penDelete);
+            REMOVE_ITEM_INDEX(BBTT_Ellipse,BbItemEllipse,ellipseDelete);
             default:
             {
                 break;
@@ -98,6 +101,11 @@ void BlackboardScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
         switch(_toolType)
         {
+            case BBTT_Ellipse:
+            {
+                localEllipseBegin(_mouseBeginPos);
+                return;
+            }
             case BBTT_Rectangle:
             {
                 localRectBegin(_mouseBeginPos);
@@ -137,6 +145,14 @@ void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     QPointF mousePos = event->scenePos();
     switch(_toolType)
     {
+        case BBTT_Ellipse:
+        {
+            if(_mouseLeftButtonDown)
+            {
+                localEllipseDrag(mousePos);
+            }
+            break;
+        }
         case BBTT_Rectangle:
         {
             if(_mouseLeftButtonDown)
@@ -177,6 +193,11 @@ void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                         }
                         switch(idx->toolType())
                         {
+                            case BBTT_Ellipse:
+                            {
+                                emit blackboard()->ellipseMoved(dynamic_cast<BbItemEllipse *>(item));
+                                break;
+                            }
                             case BBTT_Rectangle:
                             {
                                 emit blackboard()->rectMoved(dynamic_cast<BbItemRect *>(item));
@@ -230,6 +251,11 @@ void BlackboardScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         _mouseLeftButtonDown = false;
         switch(_toolType)
         {
+            case BBTT_Ellipse:
+            {
+                localEllipseDone();
+                break;
+            }
             case BBTT_Rectangle:
             {
                 localRectDone();
@@ -293,6 +319,10 @@ void BlackboardScene::keyPressEvent(QKeyEvent *e)
     {
         case Qt::Key_Shift:
         {
+            if(!(e->modifiers() & Qt::ControlModifier) && !(e->modifiers() & Qt::AltModifier))
+            {
+                _onlyShiftDown = true;
+            }
             BbItemPen * pen = dynamic_cast<BbItemPen *>(_curElement);
             if(pen)
             {
@@ -313,9 +343,12 @@ void BlackboardScene::keyPressEvent(QKeyEvent *e)
                 emit blackboard()->rectDragged(rect);
                 break;
             }
-            if(!(e->modifiers() & Qt::ControlModifier) && !(e->modifiers() & Qt::AltModifier))
+            BbItemEllipse * ellipse = dynamic_cast<BbItemEllipse *>(_curElement);
+            if(ellipse)
             {
-                _onlyShiftDown = true;
+                ellipse->setCircle(true);
+                emit blackboard()->ellipseDragged(ellipse);
+                break;
             }
             break;
         }
@@ -341,6 +374,10 @@ void BlackboardScene::keyReleaseEvent(QKeyEvent *e)
     {
         case Qt::Key_Shift:
         {
+            if(_onlyShiftDown)
+            {
+                _onlyShiftDown = false;
+            }
             BbItemPen * pen = dynamic_cast<BbItemPen *>(_curElement);
             if(pen)
             {
@@ -362,9 +399,12 @@ void BlackboardScene::keyReleaseEvent(QKeyEvent *e)
                 emit blackboard()->rectDragged(rect);
                 break;
             }
-            if(_onlyShiftDown)
+            BbItemEllipse * ellipse = dynamic_cast<BbItemEllipse *>(_curElement);
+            if(ellipse)
             {
-                _onlyShiftDown = false;
+                ellipse->setCircle(false);
+                emit blackboard()->ellipseDragged(ellipse);
+                break;
             }
             break;
         }
@@ -416,6 +456,42 @@ void BlackboardScene::localRectDone()
     {
         rect->done();
         emit blackboard()->rectDone(rect);
+    }
+    _curElement = nullptr;
+}
+
+void BlackboardScene::localEllipseBegin(const QPointF &pos)
+{
+    BbItemEllipse * ellipse = new BbItemEllipse();
+    ellipse->setPenColor(blackboard()->ellipsePenColor());
+    ellipse->setBrushColor(blackboard()->ellipseBrushColor());
+    ellipse->setWeight(blackboard()->ellipseWeight());
+    add(ellipse);
+
+    ellipse->begin(pos);
+    ellipse->setId(generatItemId());
+    ellipse->setCircle(_onlyShiftDown);
+    _curElement = ellipse;
+    emit blackboard()->ellipseBegun(ellipse);
+}
+
+void BlackboardScene::localEllipseDrag(const QPointF &pos)
+{
+    BbItemEllipse *ellipse = dynamic_cast<BbItemEllipse *>(_curElement);
+    if(ellipse)
+    {
+        ellipse->drag(pos);
+        emit blackboard()->ellipseDragged(ellipse);
+    }
+}
+
+void BlackboardScene::localEllipseDone()
+{
+    BbItemEllipse *ellipse = dynamic_cast<BbItemEllipse *>(_curElement);
+    if(ellipse)
+    {
+        ellipse->done();
+        emit blackboard()->ellipseDone(ellipse);
     }
     _curElement = nullptr;
 }
@@ -605,6 +681,12 @@ void BlackboardScene::onToolChanged(BbToolType previous, BbToolType current)
             localRectDone();
             break;
         }
+
+        case BBTT_Ellipse:
+        {
+            localEllipseDone();
+            break;
+        }
         default:
         {
             break;
@@ -685,6 +767,18 @@ void BlackboardScene::readRectData(BbItemRectData *rectData)
     rect->repaintWithItemData();
 }
 
+void BlackboardScene::readEllipseData(BbItemEllipseData *ellipseData)
+{
+    if(!ellipseData)
+    {
+        qDebug() << "[BlackboardScene::readEllipseData] data can't be nullptr";
+        return;
+    }
+    BbItemEllipse *ellipse = new BbItemEllipse(ellipseData);
+    add(ellipse);
+    ellipse->repaintWithItemData();
+}
+
 void BlackboardScene::remove(QGraphicsItem *item)
 {
     BbItemText * text = dynamic_cast<BbItemText *>(item);
@@ -760,6 +854,11 @@ void BlackboardScene::readItemData(BbItemData *itemData)
             readRectData(dynamic_cast<BbItemRectData *>(itemData));
             return;
         }
+        case BBTT_Ellipse:
+        {
+            readEllipseData(dynamic_cast<BbItemEllipseData *>(itemData));
+            return;
+        }
         default:
         {
             break;
@@ -807,6 +906,7 @@ void BlackboardScene::readStream(QDataStream &stream)
             CREATE_ITEM_AND_READ_DATA(BBTT_Text,BbItemText);
             CREATE_ITEM_AND_READ_DATA(BBTT_Straight,BbItemStraight);
             CREATE_ITEM_AND_READ_DATA(BBTT_Rectangle,BbItemRect);
+            CREATE_ITEM_AND_READ_DATA(BBTT_Ellipse,BbItemEllipse);
             default:
             {
                 break;

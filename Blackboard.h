@@ -46,6 +46,11 @@ protected:
 
     qreal _rectWeight = 0;
 
+    QPen _ellipsePen;
+
+    QBrush _ellipseBrush;
+
+    qreal _ellipseWeight = 0;
 public:
     Blackboard(QWidget *parent = Q_NULLPTR);
 
@@ -183,6 +188,14 @@ public:
     void setRectPenColor(const QColor & color);
     void setRectBrushColor(const QColor & color);
     void setRectWeight(const qreal & weight);
+
+    QColor ellipsePenColor();
+    QColor ellipseBrushColor();
+    qreal ellipseWeight();
+
+    void setEllipsePenColor(const QColor & color);
+    void setEllipseBrushColor(const QColor & color);
+    void setEllipseWeight(const qreal & weight);
 signals:
     void resized(float scale);
     void scrolled(float x, float y);
@@ -221,6 +234,11 @@ signals:
     void rectMoved(BbItemRect *item);
     void rectDelete(BbItemRect *item);
 
+    void ellipseBegun(BbItemEllipse *item);
+    void ellipseDragged(BbItemEllipse *item);
+    void ellipseDone(BbItemEllipse *item);
+    void ellipseMoved(BbItemEllipse *item);
+    void ellipseDelete(BbItemEllipse *item);
     // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;

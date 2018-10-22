@@ -1,24 +1,24 @@
-﻿#include "BbItemRect.h"
-#include "BbItemRectData.h"
+﻿#include "BbItemEllipse.h"
+#include "BbItemEllipseData.h"
 #include "BlackboardScene.h"
 
 #include <QPainter>
 
-BbItemRect::BbItemRect():QGraphicsRectItem()
+BbItemEllipse::BbItemEllipse():QGraphicsEllipseItem()
 {
-   _myData = new BbItemRectData();
+   _myData = new BbItemEllipseData();
    setPen(_myData->pen);
    setBrush(_myData->brush);
 }
 
-BbItemRect::BbItemRect(BbItemRectData *data):QGraphicsRectItem()
+BbItemEllipse::BbItemEllipse(BbItemEllipseData *data):QGraphicsEllipseItem()
 {
     _myData = data;
     setPen(_myData->pen);
     setBrush(_myData->brush);
 }
 
-BbItemRect::~BbItemRect()
+BbItemEllipse::~BbItemEllipse()
 {
     if(_myData){
         delete _myData;
@@ -26,7 +26,7 @@ BbItemRect::~BbItemRect()
     }
 }
 
-void BbItemRect::repaintWithItemData()
+void BbItemEllipse::repaintWithItemData()
 {
     setPen(_myData->pen);
     setBrush(_myData->brush);
@@ -48,7 +48,7 @@ void BbItemRect::repaintWithItemData()
     update();
 }
 
-void BbItemRect::writeStream(QDataStream &stream)
+void BbItemEllipse::writeStream(QDataStream &stream)
 {
     _myData->x = x();
     _myData->y = y();
@@ -63,23 +63,23 @@ void BbItemRect::writeStream(QDataStream &stream)
     _myData->writeStream(stream);
 }
 
-void BbItemRect::readStream(QDataStream &stream)
+void BbItemEllipse::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
     repaintWithItemData();
 }
 
-void BbItemRect::begin(const QPointF &point)
+void BbItemEllipse::begin(const QPointF &point)
 {
     _mousePos = point;
     _beginX = point.x();
     _beginY = point.y();
     setPos(point);
 }
-void BbItemRect::drag(const QPointF &point)
+void BbItemEllipse::drag(const QPointF &point)
 {
     _mousePos = point;
-    if(!_square)
+    if(!_circle)
     {
         _dragX = point.x();
         _dragY = point.y();
@@ -94,95 +94,95 @@ void BbItemRect::drag(const QPointF &point)
     setRect(0,0,std::abs(_dragX-_beginX),std::abs(_dragY-_beginY));
 }
 
-void BbItemRect::done()
+void BbItemEllipse::done()
 {
     // maybe we dont need "done".
 }
 
-void BbItemRect::setPenColor(const QColor &color)
+void BbItemEllipse::setPenColor(const QColor &color)
 {
     _myData->pen.setColor(color);
     setPen(_myData->pen);
 }
 
-void BbItemRect::setWeight(const qreal &weight)
+void BbItemEllipse::setWeight(const qreal &weight)
 {
     _myData->setWeight(weight);
     setPen(_myData->pen);
 }
 
-void BbItemRect::setBrushColor(const QColor &color)
+void BbItemEllipse::setBrushColor(const QColor &color)
 {
     _myData->brush.setColor(color);
     setBrush(_myData->brush);
 }
 
-QSizeF BbItemRect::size()
+QSizeF BbItemEllipse::size()
 {
     return rect().size();
 }
 
-QColor BbItemRect::penColor()
+QColor BbItemEllipse::penColor()
 {
     return _myData->pen.color();
 }
 
-QColor BbItemRect::brushColor()
+QColor BbItemEllipse::brushColor()
 {
     return _myData->brush.color();
 }
 
-qreal BbItemRect::weight()
+qreal BbItemEllipse::weight()
 {
     return _myData->weight();
 }
 
-QPointF BbItemRect::beginPos()
+QPointF BbItemEllipse::beginPos()
 {
     return QPointF(_beginX,_beginY);
 }
 
-QPointF BbItemRect::dragPos()
+QPointF BbItemEllipse::dragPos()
 {
     return QPointF(_dragX,_dragY);
 }
 
-QString BbItemRect::id() const
+QString BbItemEllipse::id() const
 {
     return _myData->lid;
 }
 
-void BbItemRect::setId(const QString &id)
+void BbItemEllipse::setId(const QString &id)
 {
     _myData->lid = id;
 }
 
-BbToolType BbItemRect::toolType() const
+BbToolType BbItemEllipse::toolType() const
 {
     return _myData->tooltype;
 }
 
-BlackboardScene *BbItemRect::scene()
+BlackboardScene *BbItemEllipse::scene()
 {
     return dynamic_cast<BlackboardScene *>(QGraphicsItem::scene());
 }
 
-bool BbItemRect::square()
+bool BbItemEllipse::square()
 {
-    return _square;
+    return _circle;
 }
 
-void BbItemRect::setSquare(const bool square)
+void BbItemEllipse::setCircle(const bool circle)
 {
-    if(_square == square)
+    if(_circle == circle)
     {
         return;
     }
-    _square = square;
+    _circle = circle;
     drag(_mousePos);
 }
 
-void BbItemRect::toNinety(const QPointF &point, qreal &outX, qreal &outY)
+void BbItemEllipse::toNinety(const QPointF &point, qreal &outX, qreal &outY)
 {
     QPointF vec2(_beginX-point.x(),_beginY-point.y());
     qreal degree = std::atan2(vec2.y(), vec2.x());
@@ -205,10 +205,8 @@ void BbItemRect::toNinety(const QPointF &point, qreal &outX, qreal &outY)
     }
 }
 
-void BbItemRect::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void BbItemEllipse::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     painter->setRenderHint(QPainter::Antialiasing, true);
-    QGraphicsRectItem::paint(painter,option,widget);
+    QGraphicsEllipseItem::paint(painter,option,widget);
 }
-
-

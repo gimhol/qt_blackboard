@@ -66,7 +66,7 @@ void BbItemStraight::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     {
         painter->setBrush(Qt::NoBrush);
         painter->setPen(_myData->pen);
-        painter->setRenderHint(QPainter::HighQualityAntialiasing);
+        painter->setRenderHint(QPainter::Antialiasing);
 
         if(_myData->a == _myData->b)
         {

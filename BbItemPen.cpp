@@ -31,7 +31,7 @@ BbItemPen::BbItemPen():QGraphicsRectItem()
     _myData = new BbItemPenData();
 }
 
-BbItemPen::BbItemPen(BbItemPenData *penData)
+BbItemPen::BbItemPen(BbItemPenData *penData):QGraphicsRectItem()
 {
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);

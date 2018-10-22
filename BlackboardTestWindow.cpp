@@ -6,7 +6,7 @@
 #include "ColorPanel.h"
 #include "ui_BlackboardTestWindow.h"
 #include <QDebug>
-#include <BbItemPenData.h>
+#include <BbItemEllipse.h>
 
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     QWidget(parent),
@@ -20,6 +20,8 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     buttonGroup->addButton(ui->pointer);
     buttonGroup->addButton(ui->picker);
     buttonGroup->addButton(ui->straight);
+    buttonGroup->addButton(ui->rect);
+    buttonGroup->addButton(ui->ellipse);
 
     for(auto blackboard : findChildren<Blackboard*>())
     {
@@ -90,7 +92,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setRectPenColor);
             connect(cp,&ColorPanel::colorChanged,ui->rectPenColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->straightPenColor());
+        cp->setColor(blackboard()->rectPenColor());
         cp->show();
     });
     connect(ui->rectBrushColor,&ColorDisplayer::clicked,[&](){
@@ -103,11 +105,39 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setRectBrushColor);
             connect(cp,&ColorPanel::colorChanged,ui->rectBrushColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->straightPenColor());
+        cp->setColor(blackboard()->rectBrushColor());
         cp->show();
     });
 
-
+    ui->ellipseWeight->setValue(blackboard()->ellipseWeight() * 100);
+    ui->ellipsePenColor->setColor(blackboard()->ellipsePenColor());
+    ui->ellipseBrushColor->setColor(blackboard()->ellipseBrushColor());
+    connect(ui->ellipsePenColor,&ColorDisplayer::clicked,[&](){
+        static ColorPanel * cp = nullptr;
+        if(!cp)
+        {
+            cp = new ColorPanel();
+            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
+            cp->setWindowTitle(u8"调色");
+            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setEllipsePenColor);
+            connect(cp,&ColorPanel::colorChanged,ui->ellipsePenColor,&ColorDisplayer::setColor);
+        }
+        cp->setColor(blackboard()->ellipsePenColor());
+        cp->show();
+    });
+    connect(ui->ellipseBrushColor,&ColorDisplayer::clicked,[&](){
+        static ColorPanel * cp = nullptr;
+        if(!cp)
+        {
+            cp = new ColorPanel();
+            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
+            cp->setWindowTitle(u8"调色");
+            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setEllipseBrushColor);
+            connect(cp,&ColorPanel::colorChanged,ui->ellipseBrushColor,&ColorDisplayer::setColor);
+        }
+        cp->setColor(blackboard()->ellipseBrushColor());
+        cp->show();
+    });
 }
 
 BlackboardTestWindow::~BlackboardTestWindow()
@@ -140,6 +170,32 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     blackboard0->setCanvasSize(blackboard0->width(),blackboard0->width()*10);
     blackboard0->setPointerPixmap(*pm);
     connect(blackboard0,&Blackboard::resized,[](float scale){qDebug()<< "resized, scale : " << scale;});
+
+    connect(blackboard0,&Blackboard::ellipseBegun,[blackboard1](BbItemEllipse *item){
+        auto copy = new BbItemEllipse();
+        blackboard1->scene()->add(copy);
+        copy->setPenColor(item->penColor());
+        copy->setWeight(item->weight());
+        copy->setBrushColor(item->brushColor());
+        copy->begin(item->beginPos());
+        copy->setId(item->id());
+    });
+    connect(blackboard0,&Blackboard::ellipseDragged,[blackboard1](BbItemEllipse *item){
+        auto copy = blackboard1->scene()->find<BbItemEllipse>(item->id());
+        copy->drag(item->dragPos());
+    });
+    connect(blackboard0,&Blackboard::ellipseDone,[blackboard1](BbItemEllipse *item){
+        auto copy = blackboard1->scene()->find<BbItemEllipse>(item->id());
+        copy->done();
+    });
+    connect(blackboard0,&Blackboard::ellipseMoved,[blackboard1](BbItemEllipse *item){
+        auto copy = blackboard1->scene()->find<BbItemEllipse>(item->id());
+        copy->setPos(item->pos());
+    });
+    connect(blackboard0,&Blackboard::ellipseDelete,[blackboard1](BbItemEllipse *item){
+        auto copy = blackboard1->scene()->find<BbItemEllipse>(item->id());
+        blackboard1->scene()->remove(copy);
+    });
 
     connect(blackboard0,&Blackboard::rectBegun,[blackboard1](BbItemRect *item){
         auto copy = new BbItemRect();
@@ -349,4 +405,14 @@ void BlackboardTestWindow::on_textWeight_valueChanged(int arg1)
 void BlackboardTestWindow::on_rect_clicked()
 {
     blackboard()->setToolType(BBTT_Rectangle);
+}
+
+void BlackboardTestWindow::on_ellipse_clicked()
+{
+    blackboard()->setToolType(BBTT_Ellipse);
+}
+
+void BlackboardTestWindow::on_ellipseWeight_valueChanged(int arg1)
+{
+    blackboard()->setEllipseWeight(arg1 * 0.01);
 }

@@ -49,6 +49,10 @@ private slots:
 
     void on_rect_clicked();
 
+    void on_ellipse_clicked();
+
+    void on_ellipseWeight_valueChanged(int arg1);
+
 private:
     Ui::BlackboardTestWindow *ui;
 };

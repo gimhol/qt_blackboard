@@ -1,15 +1,15 @@
-﻿#ifndef BBITEMRECT_H
-#define BBITEMRECT_H
+﻿#ifndef BBITEMELLIPSE_H
+#define BBITEMELLIPSE_H
 
 #include <QGraphicsItem>
 #include "IStreamWR.h"
 #include "IItemIndex.h"
 
-class BbItemRectData;
-class BbItemRect: public QGraphicsRectItem, public IStreamWR, public IItemIndex
+class BbItemEllipseData;
+class BbItemEllipse: public QGraphicsEllipseItem, public IStreamWR, public IItemIndex
 {
 protected:
-    BbItemRectData *_myData;
+    BbItemEllipseData *_myData;
 
     qreal _beginX, _beginY;
 
@@ -17,13 +17,13 @@ protected:
 
     QPointF _mousePos;
 
-    bool _square = false;
+    bool _circle = false;
 public:
-    BbItemRect();
+    BbItemEllipse();
 
-    BbItemRect(BbItemRectData * data);
+    BbItemEllipse(BbItemEllipseData * data);
 
-    ~BbItemRect() override;
+    ~BbItemEllipse() override;
 
     void repaintWithItemData();
 
@@ -57,19 +57,19 @@ public:
 
     bool square();
 
-    void setSquare(const bool square);
+    void setCircle(const bool circle);
 
     void toNinety(const QPointF &mousePos, qreal & outX,qreal & outY);
 
 protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     // IItemIndex interface
 public:
-    QString id() const;
-    void setId(const QString &id);
-    BbToolType toolType() const;
-    BlackboardScene *scene();
+    QString id() const override;
+    void setId(const QString &id) override;
+    BbToolType toolType() const override;
+    BlackboardScene *scene() override;
 };
 
-#endif // BBITEMRECT_H
+#endif // BBITEMELLIPSE_H
