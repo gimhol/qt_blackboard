@@ -203,6 +203,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
 
     connect(blackboard0,&Blackboard::triangleBegun,[blackboard1](BbItemTriangle *item){
         auto copy = new BbItemTriangle();
+        copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setPenColor(item->penColor());
         copy->setWeight(item->weight());
@@ -229,6 +230,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
 
     connect(blackboard0,&Blackboard::ellipseBegun,[blackboard1](BbItemEllipse *item){
         auto copy = new BbItemEllipse();
+        copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setPenColor(item->penColor());
         copy->setWeight(item->weight());
@@ -255,6 +257,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
 
     connect(blackboard0,&Blackboard::rectBegun,[blackboard1](BbItemRect *item){
         auto copy = new BbItemRect();
+        copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setPenColor(item->penColor());
         copy->setWeight(item->weight());
@@ -282,6 +285,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
 
     connect(blackboard0,&Blackboard::textAdded,[blackboard1](BbItemText *item){
         auto copy = new BbItemText();
+        copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setFont(item->font());
         copy->setColor(item->color());
@@ -309,6 +313,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
 
     connect(blackboard0,&Blackboard::straightBegun,[blackboard1](BbItemStraight *item){
         auto copy = new BbItemStraight();
+        copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setColor(item->color());
         copy->setWeight(item->weight());
@@ -384,6 +389,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     });
     connect(blackboard0, &Blackboard::penDown, [blackboard1](BbItemPen *item){
         auto copy = new BbItemPen();
+        copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setColor(item->color());
         copy->setWeight(item->weight());

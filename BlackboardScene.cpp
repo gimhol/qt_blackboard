@@ -453,6 +453,7 @@ void BlackboardScene::keyReleaseEvent(QKeyEvent *e)
 void BlackboardScene::localRectBegin(const QPointF &pos)
 {
     BbItemRect * rect = new BbItemRect();
+    rect->setZValue(QDateTime::currentMSecsSinceEpoch());
     rect->setPenColor(blackboard()->rectPenColor());
     rect->setWeight(blackboard()->rectWeight());
     rect->setBrushColor(blackboard()->rectBrushColor());
@@ -489,6 +490,7 @@ void BlackboardScene::localRectDone()
 void BlackboardScene::localEllipseBegin(const QPointF &pos)
 {
     BbItemEllipse * ellipse = new BbItemEllipse();
+    ellipse->setZValue(QDateTime::currentMSecsSinceEpoch());
     ellipse->setPenColor(blackboard()->ellipsePenColor());
     ellipse->setBrushColor(blackboard()->ellipseBrushColor());
     ellipse->setWeight(blackboard()->ellipseWeight());
@@ -531,6 +533,7 @@ void BlackboardScene::localTriangleBegin(const QPointF &pos)
     }
 
     triangle = new BbItemTriangle();
+    triangle->setZValue(QDateTime::currentMSecsSinceEpoch());
     triangle->setPenColor(blackboard()->trianglePenColor());
     triangle->setBrushColor(blackboard()->triangleBrushColor());
     triangle->setWeight(blackboard()->triangleWeight());
@@ -576,6 +579,7 @@ void BlackboardScene::localTriangleDone(bool force)
 void BlackboardScene::localStraightBegin(const QPointF &pos)
 {
     BbItemStraight * straight = new BbItemStraight();
+    straight->setZValue(QDateTime::currentMSecsSinceEpoch());
     straight->setColor(blackboard()->straightPenColor());
     straight->setWeight(blackboard()->straightPenWeight());
     add(straight);
@@ -611,7 +615,7 @@ void BlackboardScene::localStraightDone()
 void BlackboardScene::localPenDown(const QPointF & mousePos)
 {
     BbItemPen *pen = new BbItemPen();
-
+    pen->setZValue(QDateTime::currentMSecsSinceEpoch());
     pen->setWeight(blackboard()->penWeight());
     pen->setColor(blackboard()->penColor());
     add(pen);
@@ -661,6 +665,7 @@ void BlackboardScene::localPenDone()
 void BlackboardScene::localTextAdded(const QPointF &pos)
 {
     BbItemText *text = new BbItemText();
+    text->setZValue(QDateTime::currentMSecsSinceEpoch());
     text->setFont(blackboard()->font());
     text->setWeight(blackboard()->textPointWeight());
     text->setColor(blackboard()->textColor());

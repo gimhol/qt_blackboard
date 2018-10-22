@@ -465,6 +465,7 @@ void BbItemPen::repaintWithItemData()
         }
         setPos(x,y);
     }
+    setZValue(_myData->z);
     update();
 }
 
@@ -507,6 +508,7 @@ void BbItemPen::writeStream(QDataStream &stream)
 {
     _myData->x = x();
     _myData->y = y();
+    _myData->z = zValue();
     if(_myData->mode == BbItemPenData::CM_PERCENTAGE)
     {
         qreal ratio = scene()->width() / 100;

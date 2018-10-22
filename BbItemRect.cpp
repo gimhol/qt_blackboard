@@ -45,6 +45,7 @@ void BbItemRect::repaintWithItemData()
     setRect(0,0,size.width(),size.height());
     setSelected(false);
     setEnabled(true);
+    setZValue(_myData->z);
     update();
 }
 
@@ -52,6 +53,7 @@ void BbItemRect::writeStream(QDataStream &stream)
 {
     _myData->x = x();
     _myData->y = y();
+    _myData->z = zValue();
     _myData->size = rect().size();
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {

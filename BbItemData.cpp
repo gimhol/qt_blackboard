@@ -12,11 +12,11 @@ BbItemData::~BbItemData()
 }
 
 void BbItemData::writeStream(QDataStream &stream){
-    stream << static_cast<int>(mode) << lid << x << y;
+    stream << static_cast<int>(mode) << lid << x << y << z;
 }
 
 void BbItemData::readStream(QDataStream &stream){
     int imode;
-    stream >> imode >> lid >> x >> y;
+    stream >> imode >> lid >> x >> y >> z;
     mode = static_cast<CoordMode>(imode);
 }

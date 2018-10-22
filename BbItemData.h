@@ -39,6 +39,8 @@ public:
      */
     qreal y = -9999;
 
+    qreal z = -9999;
+
     /**
      * @brief isEmpty 是否为空
      */

@@ -155,6 +155,7 @@ void BbItemStraight::repaintWithItemData()
         }
         setPos(x,y);
     }
+    setZValue(_myData->z);
     update();
 }
 
@@ -210,6 +211,7 @@ void BbItemStraight::writeStream(QDataStream &stream)
 {
     _myData->x = x();
     _myData->y = y();
+    _myData->z = zValue();
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {
         qreal ratio = scene()->width() / 100;
