@@ -100,7 +100,13 @@ const QFont &BbItemText::font()
 void BbItemText::setColor(const QColor &color)
 {
     _myData->color = color;
-    setDefaultTextColor(color);
+    QGraphicsTextItem::setDefaultTextColor(color);
+}
+
+void BbItemText::setDefaultTextColor(const QColor &color)
+{
+    _myData->color = color;
+    QGraphicsTextItem::setDefaultTextColor(color);
 }
 
 const QColor &BbItemText::color()

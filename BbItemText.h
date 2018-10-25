@@ -50,6 +50,8 @@ public:
 
     void setColor(const QColor & color);
 
+    void setDefaultTextColor(const QColor &color);
+
     const QColor & color();
 
     void setWeight(qreal weight);
