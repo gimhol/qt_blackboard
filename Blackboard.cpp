@@ -59,7 +59,6 @@ QLabel * Blackboard::addPointer(const QString &pointerId, int x, int y)
     if(!pointer)
     {
         pointer = new QLabel(this);
-        pointer->setText("Fuck");
         pointer->setObjectName(pointerId);
         pointer->setAttribute(Qt::WA_TransparentForMouseEvents);
         pointer->setPixmap(_pointerPixmap);
