@@ -351,6 +351,11 @@ void BlackboardScene::keyPressEvent(QKeyEvent *e)
 {
     switch(e->key())
     {
+        case Qt::Key_Escape:
+        {
+            localTextDone();
+            break;
+        }
         case Qt::Key_Shift:
         {
             if(!(e->modifiers() & Qt::ControlModifier) && !(e->modifiers() & Qt::AltModifier))
