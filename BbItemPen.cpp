@@ -279,8 +279,8 @@ void BbItemPen::straightLineDragging(const QPointF &point)
 
     _rect.setX(x - halfPenW);
     _rect.setY(y - halfPenW);
-    _rect.setWidth(w + halfPenW);
-    _rect.setHeight(h + halfPenW);
+    _rect.setWidth(w + 2 * halfPenW);
+    _rect.setHeight(h + 2 * halfPenW);
 
     update();
 
