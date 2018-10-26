@@ -392,6 +392,40 @@
        </spacer>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <item>
+         <widget class="QPushButton" name="selectedAll">
+          <property name="text">
+           <string>全选</string>
+          </property>
+          <property name="shortcut">
+           <string>Ctrl+A</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="copy">
+          <property name="text">
+           <string>复制</string>
+          </property>
+          <property name="shortcut">
+           <string>Ctrl+C</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="paste">
+          <property name="text">
+           <string>粘贴</string>
+          </property>
+          <property name="shortcut">
+           <string>Ctrl+V</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
        <widget class="QPushButton" name="remove">
         <property name="text">
          <string>移除</string>
@@ -405,6 +439,9 @@
        <widget class="QPushButton" name="clear">
         <property name="text">
          <string>清除</string>
+        </property>
+        <property name="shortcut">
+         <string>Ctrl+Del</string>
         </property>
        </widget>
       </item>

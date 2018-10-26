@@ -619,6 +619,21 @@ void Blackboard::addPixmapItem(const QPixmap &pixmap)
     scene()->addImageItem(pixmap);
 }
 
+void Blackboard::selectedAll()
+{
+    scene()->selectedAll();
+}
+
+void Blackboard::copyItems()
+{
+    scene()->copyItems();
+}
+
+void Blackboard::pasteItems()
+{
+    scene()->pasteItems();
+}
+
 void Blackboard::writeStream(QDataStream &stream)
 {
     scene()->writeStream(stream);

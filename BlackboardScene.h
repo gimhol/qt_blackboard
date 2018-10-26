@@ -126,6 +126,14 @@ public:
 
     void addImageItem(const QPixmap &pixmap);
 
+    QGraphicsItem * readItemFromStream(QDataStream &stream);
+
+    void selectedAll();
+
+    void copyItems();
+
+    void pasteItems();
+
 protected:
 
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -205,6 +213,7 @@ protected:
     QString generatItemId() const;
 
     void onToolChanged(BbToolType previous, BbToolType current);
+
 
     // ItemDataWR interface
 public:

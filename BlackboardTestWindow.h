@@ -59,6 +59,12 @@ private slots:
 
     void on_onlineImage_clicked();
 
+    void on_copy_clicked();
+
+    void on_paste_clicked();
+
+    void on_selectedAll_clicked();
+
 private:
     Ui::BlackboardTestWindow *ui;
 };

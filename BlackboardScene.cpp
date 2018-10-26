@@ -19,6 +19,9 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QKeyEvent>
+#include <QApplication>
+#include <QClipboard>
+#include <QMimeData>
 
 BlackboardScene::BlackboardScene(Blackboard *parent):
     QGraphicsScene(parent)
@@ -344,7 +347,6 @@ void BlackboardScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             break;
         }
     }
-
 }
 
 void BlackboardScene::keyPressEvent(QKeyEvent *e)
@@ -461,6 +463,80 @@ void BlackboardScene::keyReleaseEvent(QKeyEvent *e)
         }
     }
     QGraphicsScene::keyReleaseEvent(e);
+}
+
+void BlackboardScene::copyItems()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    QByteArray data;
+    QDataStream dataStream(&data, QIODevice::WriteOnly);
+    for(auto item: selectedItems())
+    {
+        IItemIndex *index = dynamic_cast<IItemIndex *>(item);
+        IStreamW *streamWriter = dynamic_cast<IStreamW *>(item);
+        if(!index || !streamWriter)
+        {
+            continue;
+        }
+        dataStream << static_cast<int>(index->toolType());
+        streamWriter->writeStream(dataStream);
+    }
+
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setData(u8"nsb/blackboard-items",data);
+    clipboard->setMimeData(mimeData);
+}
+
+void BlackboardScene::pasteItems()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    const QMimeData *mimeData = clipboard->mimeData();
+
+    for(auto item: selectedItems())
+    {
+        item->setSelected(false);
+    }
+    if(mimeData && mimeData->hasFormat(u8"nsb/blackboard-items"))
+    {
+        QByteArray data = mimeData->data(u8"nsb/blackboard-items");
+        QDataStream dataStream(&data, QIODevice::ReadOnly);
+
+        while(!dataStream.atEnd())
+        {
+            QGraphicsItem * baseItem = readItemFromStream(dataStream);
+            if(!baseItem)
+            {
+                continue;
+            }
+            baseItem->setSelected(true);
+            baseItem->setPos(baseItem->pos() + QPointF(10,10));
+            IItemIndex * index = dynamic_cast<IItemIndex*>(baseItem);
+            if(index)
+            {
+                index->setId(generatItemId());
+            }
+
+#define EMIT_PASTE_SIGAL(_ITEM_CLASS_,_ITEM_PASTE_SIGNAL_) \
+    do{ \
+        _ITEM_CLASS_ * item = dynamic_cast<_ITEM_CLASS_ *>(baseItem); \
+        if(item){\
+            emit blackboard()->_ITEM_PASTE_SIGNAL_(item); \
+            baseItem = nullptr; \
+        }\
+    } while(false); \
+    if(!baseItem) continue;
+
+            EMIT_PASTE_SIGAL(BbItemEllipse,ellipsePaste);
+            EMIT_PASTE_SIGAL(BbItemRect,rectPaste);
+            EMIT_PASTE_SIGAL(BbItemTriangle,trianglePaste);
+            EMIT_PASTE_SIGAL(BbItemPen,penPaste);
+            EMIT_PASTE_SIGAL(BbItemText,textPaste);
+            EMIT_PASTE_SIGAL(BbItemStraight,straightPaste);
+            EMIT_PASTE_SIGAL(BbItemImage,imagePaste);
+        }
+    }
 }
 
 void BlackboardScene::localRectBegin(const QPointF &pos)
@@ -816,6 +892,98 @@ void BlackboardScene::onToolChanged(BbToolType previous, BbToolType current)
     }
 }
 
+QGraphicsItem * BlackboardScene::readItemFromStream(QDataStream &stream)
+{
+    auto readIt = [&](QGraphicsItem *item)
+    {
+        auto streamReader = dynamic_cast<IStreamR*>(item);
+        if(streamReader)
+        {
+            streamReader->readStream(stream);
+        }
+        item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,_toolType == BBTT_Picker);
+        item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,_toolType == BBTT_Picker);
+        item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,_toolType == BBTT_Picker);
+    };
+
+    QGraphicsItem *item = nullptr;
+    int type;
+    stream >> type;
+    switch(static_cast<BbToolType>(type))
+    {
+        case BBTT_Pen:
+        {
+            item = new BbItemPen();
+            addItem(item);
+            readIt(item);
+            break;
+        }
+        case BBTT_Text:
+        {
+            item = new BbItemText();
+            addItem(item);
+            readIt(item);
+            break;
+        }
+        case BBTT_Straight:
+        {
+            item = new BbItemStraight();
+            addItem(item);
+            readIt(item);
+            break;
+        }
+        case BBTT_Rectangle:
+        {
+            item = new BbItemRect();
+            addItem(item);
+            readIt(item);
+            break;
+        }
+        case BBTT_Ellipse:
+        {
+            item = new BbItemEllipse();
+            addItem(item);
+            readIt(item);
+            break;
+        }
+        case BBTT_Triangle:
+        {
+            item = new BbItemTriangle();
+            addItem(item);
+            readIt(item);
+            break;
+        }
+        case BBTT_Image:
+        {
+            item = new BbItemImage();
+            addItem(item);
+            readIt(item);
+            break;
+        }
+        default:
+        {
+            qWarning() << "unhandle tooltype!" << static_cast<BbToolType>(type);
+            break;
+        }
+    }
+    return item;
+}
+
+void BlackboardScene::selectedAll()
+{
+    if(_toolType == BBTT_Picker)
+    {
+        for(auto item: items())
+        {
+            IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
+            if(!itemIndex){
+                continue;
+            }
+            item->setSelected(true);
+        }
+    }
+}
+
 void BlackboardScene::readPenData(BbItemPenData *penData)
 {
     if(!penData)
@@ -1024,35 +1192,9 @@ void BlackboardScene::writeStream(QDataStream &stream)
 
 void BlackboardScene::readStream(QDataStream &stream)
 {
-#define CREATE_ITEM_AND_READ_DATA(_TOOL_TYPE_,_ITEM_CLASS_) \
-    case _TOOL_TYPE_:{ \
-    _ITEM_CLASS_ *item = new _ITEM_CLASS_();\
-        addItem(item);\
-        item->readStream(stream);\
-        item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,_toolType == BBTT_Picker);\
-        item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,_toolType == BBTT_Picker);\
-        item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,_toolType == BBTT_Picker);\
-        break;\
-    }
-
     while(!stream.atEnd())
     {
-        int type;
-        stream >> type;
-        switch(static_cast<BbToolType>(type))
-        {
-            CREATE_ITEM_AND_READ_DATA(BBTT_Pen,BbItemPen);
-            CREATE_ITEM_AND_READ_DATA(BBTT_Text,BbItemText);
-            CREATE_ITEM_AND_READ_DATA(BBTT_Straight,BbItemStraight);
-            CREATE_ITEM_AND_READ_DATA(BBTT_Rectangle,BbItemRect);
-            CREATE_ITEM_AND_READ_DATA(BBTT_Ellipse,BbItemEllipse);
-            CREATE_ITEM_AND_READ_DATA(BBTT_Triangle,BbItemTriangle);
-            CREATE_ITEM_AND_READ_DATA(BBTT_Image,BbItemImage);
-            default:
-            {
-                break;
-            }
-        }
+        readItemFromStream(stream);
     }
 }
 

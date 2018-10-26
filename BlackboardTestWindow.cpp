@@ -206,6 +206,10 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
 
     connect(blackboard0,&Blackboard::imageAdded,[blackboard1](BbItemImage *item){
         auto copy = new BbItemImage();
+        if(!copy)
+        {
+            return;
+        }
         copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setPixmap(item->pixmap());
@@ -213,16 +217,28 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     });
     connect(blackboard0,&Blackboard::imageMoved,[blackboard1](BbItemImage *item){
         auto copy = blackboard1->scene()->find<BbItemImage>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->setPos(item->pos());
     });
     connect(blackboard0,&Blackboard::imageDelete,[blackboard1](BbItemImage *item){
         auto copy = blackboard1->scene()->find<BbItemImage>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         blackboard1->scene()->remove(copy);
     });
 
 
     connect(blackboard0,&Blackboard::triangleBegun,[blackboard1](BbItemTriangle *item){
         auto copy = new BbItemTriangle();
+        if(!copy)
+        {
+            return;
+        }
         copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setPenColor(item->penColor());
@@ -233,23 +249,43 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     });
     connect(blackboard0,&Blackboard::triangleDragged,[blackboard1](BbItemTriangle *item){
         auto copy = blackboard1->scene()->find<BbItemTriangle>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->drag(item->point(1+item->step()));
     });
     connect(blackboard0,&Blackboard::triangleDone,[blackboard1](BbItemTriangle *item){
         auto copy = blackboard1->scene()->find<BbItemTriangle>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->done();
     });
     connect(blackboard0,&Blackboard::triangleMoved,[blackboard1](BbItemTriangle *item){
         auto copy = blackboard1->scene()->find<BbItemTriangle>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->setPos(item->pos());
     });
     connect(blackboard0,&Blackboard::triangleDelete,[blackboard1](BbItemTriangle *item){
         auto copy = blackboard1->scene()->find<BbItemTriangle>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         blackboard1->scene()->remove(copy);
     });
 
     connect(blackboard0,&Blackboard::ellipseBegun,[blackboard1](BbItemEllipse *item){
         auto copy = new BbItemEllipse();
+        if(!copy)
+        {
+            return;
+        }
         copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setPenColor(item->penColor());
@@ -260,23 +296,43 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     });
     connect(blackboard0,&Blackboard::ellipseDragged,[blackboard1](BbItemEllipse *item){
         auto copy = blackboard1->scene()->find<BbItemEllipse>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->drag(item->dragPos());
     });
     connect(blackboard0,&Blackboard::ellipseDone,[blackboard1](BbItemEllipse *item){
         auto copy = blackboard1->scene()->find<BbItemEllipse>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->done();
     });
     connect(blackboard0,&Blackboard::ellipseMoved,[blackboard1](BbItemEllipse *item){
         auto copy = blackboard1->scene()->find<BbItemEllipse>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->setPos(item->pos());
     });
     connect(blackboard0,&Blackboard::ellipseDelete,[blackboard1](BbItemEllipse *item){
         auto copy = blackboard1->scene()->find<BbItemEllipse>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         blackboard1->scene()->remove(copy);
     });
 
     connect(blackboard0,&Blackboard::rectBegun,[blackboard1](BbItemRect *item){
         auto copy = new BbItemRect();
+        if(!copy)
+        {
+            return;
+        }
         copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setPenColor(item->penColor());
@@ -287,23 +343,43 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     });
     connect(blackboard0,&Blackboard::rectDragged,[blackboard1](BbItemRect *item){
         auto copy = blackboard1->scene()->find<BbItemRect>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->drag(item->dragPos());
     });
     connect(blackboard0,&Blackboard::rectDone,[blackboard1](BbItemRect *item){
         auto copy = blackboard1->scene()->find<BbItemRect>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->done();
     });
     connect(blackboard0,&Blackboard::rectMoved,[blackboard1](BbItemRect *item){
         auto copy = blackboard1->scene()->find<BbItemRect>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->setPos(item->pos());
     });
     connect(blackboard0,&Blackboard::rectDelete,[blackboard1](BbItemRect *item){
         auto copy = blackboard1->scene()->find<BbItemRect>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         blackboard1->scene()->remove(copy);
     });
 
     connect(blackboard0,&Blackboard::textAdded,[blackboard1](BbItemText *item){
         auto copy = new BbItemText();
+        if(!copy)
+        {
+            return;
+        }
         copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setFont(item->font());
@@ -313,25 +389,45 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     });
     connect(blackboard0,&Blackboard::textChanged,[blackboard1](BbItemText *item){
         auto copy = blackboard1->scene()->find<BbItemText>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->setPlainText(item->toPlainText());
     });
     connect(blackboard0,&Blackboard::textDone,[blackboard1](BbItemText *item){
         auto copy = blackboard1->scene()->find<BbItemText>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->setPlainText(item->toPlainText());
         copy->setPlainText(item->toPlainText());
     });
     connect(blackboard0,&Blackboard::textMoved,[blackboard1](BbItemText *item){
         auto copy = blackboard1->scene()->find<BbItemText>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->setPos(item->pos());
     });
     connect(blackboard0,&Blackboard::textDelete,[blackboard1](BbItemText *item){
         auto copy = blackboard1->scene()->find<BbItemText>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         blackboard1->scene()->remove(copy);
     });
 
 
     connect(blackboard0,&Blackboard::straightBegun,[blackboard1](BbItemStraight *item){
         auto copy = new BbItemStraight();
+        if(!copy)
+        {
+            return;
+        }
         copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setColor(item->color());
@@ -341,18 +437,34 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     });
     connect(blackboard0,&Blackboard::straightDragged,[blackboard1](BbItemStraight *item){
         auto copy = blackboard1->scene()->find<BbItemStraight>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->drag(item->b());
     });
     connect(blackboard0,&Blackboard::straightDone,[blackboard1](BbItemStraight *item){
         auto copy = blackboard1->scene()->find<BbItemStraight>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->done();
     });
     connect(blackboard0,&Blackboard::straightMoved,[blackboard1](BbItemStraight *item){
         auto copy = blackboard1->scene()->find<BbItemStraight>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->setPos(item->pos());
     });
     connect(blackboard0,&Blackboard::straightDelete,[blackboard1](BbItemStraight *item){
         auto copy = blackboard1->scene()->find<BbItemStraight>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         blackboard1->scene()->remove(copy);
     });
 
@@ -385,18 +497,33 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
 
     connect(blackboard0,&Blackboard::penDelete,[blackboard1](BbItemPen *item){
         auto copy = blackboard1->scene()->find<BbItemPen>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         blackboard1->scene()->remove(copy);
     });
     connect(blackboard0,&Blackboard::penMoved,[blackboard1](BbItemPen *item){
         auto copy = blackboard1->scene()->find<BbItemPen>(item->id());
-        copy->setPos(item->pos());
+        if(copy)
+        {
+            copy->setPos(item->pos());
+        }
     });
     connect(blackboard0,&Blackboard::penDone,[blackboard1](BbItemPen *item){
         auto copy = blackboard1->scene()->find<BbItemPen>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->done();
     });
     connect(blackboard0,&Blackboard::penDraw,[blackboard1](BbItemPen *item){
         auto copy = blackboard1->scene()->find<BbItemPen>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         for(auto point : *item->changed())
         {
             copy->penDraw(point);
@@ -404,10 +531,18 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     });
     connect(blackboard0,&Blackboard::penStraighting,[blackboard1](BbItemPen *item){
         auto copy = blackboard1->scene()->find<BbItemPen>(item->id());
+        if(!copy)
+        {
+            return;
+        }
         copy->penStraighting(item->straightTo());
     });
     connect(blackboard0, &Blackboard::penDown, [blackboard1](BbItemPen *item){
         auto copy = new BbItemPen();
+        if(!copy)
+        {
+            return;
+        }
         copy->setZValue(copy->zValue());
         blackboard1->scene()->add(copy);
         copy->setColor(item->color());
@@ -415,6 +550,25 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         copy->setId(item->id());
         copy->penDown(item->changed()->first());
     });
+
+    auto copyFullItem = [&](Blackboard *blackboard1, IStreamWR *itemWR,IItemIndex *itemIndex)
+    {
+        QByteArray byteArray;
+        QDataStream dataStream(&byteArray,QIODevice::WriteOnly);
+        dataStream << itemIndex->toolType();
+        itemWR->writeStream(dataStream);
+
+        QByteArray byteArray2(byteArray);
+        QDataStream dataStream2(&byteArray2,QIODevice::ReadOnly);
+        blackboard1->scene()->readItemFromStream(dataStream2);
+    };
+    connect(blackboard0,&Blackboard::imagePaste,[copyFullItem,blackboard1](BbItemImage *item){copyFullItem(blackboard1,item,item);});
+    connect(blackboard0,&Blackboard::trianglePaste,[copyFullItem,blackboard1](BbItemTriangle *item){copyFullItem(blackboard1,item,item);});
+    connect(blackboard0,&Blackboard::ellipsePaste,[copyFullItem,blackboard1](BbItemEllipse *item){copyFullItem(blackboard1,item,item);});
+    connect(blackboard0,&Blackboard::rectPaste,[copyFullItem,blackboard1](BbItemRect *item){copyFullItem(blackboard1,item,item);});
+    connect(blackboard0,&Blackboard::textPaste,[copyFullItem,blackboard1](BbItemText *item){copyFullItem(blackboard1,item,item);});
+    connect(blackboard0,&Blackboard::penPaste,[copyFullItem,blackboard1](BbItemPen *item){copyFullItem(blackboard1,item,item);});
+    connect(blackboard0,&Blackboard::straightPaste,[copyFullItem,blackboard1](BbItemStraight *item){copyFullItem(blackboard1,item,item);});
 }
 
 Blackboard *BlackboardTestWindow::blackboard()
@@ -526,4 +680,20 @@ void BlackboardTestWindow::on_onlineImage_clicked()
 //    QPixmap pm(100,100);
 //    pm.fill(Qt::blue);
 //    blackboard()->addPixmapItem(pm);
+}
+
+void BlackboardTestWindow::on_copy_clicked()
+{
+    blackboard()->copyItems();
+}
+
+void BlackboardTestWindow::on_paste_clicked()
+{
+    blackboard()->pasteItems();
+}
+
+void BlackboardTestWindow::on_selectedAll_clicked()
+{
+    blackboard()->setToolType(BBTT_Picker);
+    blackboard()->selectedAll();
 }

@@ -195,6 +195,9 @@ public:
     void setTriangleWeight(const qreal & weight);
 
     void addPixmapItem(const QPixmap & pixmap);
+    void selectedAll();
+    void copyItems();
+    void pasteItems();
 
 signals:
     void resized(float scale);
@@ -205,6 +208,7 @@ signals:
     void straightDone(BbItemStraight *item);
     void straightMoved(BbItemStraight *item);
     void straightDelete(BbItemStraight *item);
+    void straightPaste(BbItemStraight *item);
 
     void penDown(BbItemPen *item);
     void penDraw(BbItemPen *item);
@@ -212,12 +216,14 @@ signals:
     void penMoved(BbItemPen *item);
     void penStraighting(BbItemPen *item);
     void penDelete(BbItemPen *item);
+    void penPaste(BbItemPen *item);
 
     void textAdded(BbItemText *item);
     void textChanged(BbItemText *item);
     void textDone(BbItemText *item);
     void textMoved(BbItemText *item);
     void textDelete(BbItemText *item);
+    void textPaste(BbItemText *item);
 
     void pointerShown(QPoint localPoint);
     void pointerMoved(QPoint localPoint);
@@ -233,22 +239,26 @@ signals:
     void rectDone(BbItemRect *item);
     void rectMoved(BbItemRect *item);
     void rectDelete(BbItemRect *item);
+    void rectPaste(BbItemRect *item);
 
     void ellipseBegun(BbItemEllipse *item);
     void ellipseDragged(BbItemEllipse *item);
     void ellipseDone(BbItemEllipse *item);
     void ellipseMoved(BbItemEllipse *item);
     void ellipseDelete(BbItemEllipse *item);
+    void ellipsePaste(BbItemEllipse *item);
 
     void triangleBegun(BbItemTriangle *item);
     void triangleDragged(BbItemTriangle *item);
     void triangleDone(BbItemTriangle *item);
     void triangleMoved(BbItemTriangle *item);
     void triangleDelete(BbItemTriangle *item);
+    void trianglePaste(BbItemTriangle *item);
 
     void imageAdded(BbItemImage *item);
     void imageMoved(BbItemImage *item);
     void imageDelete(BbItemImage *item);
+    void imagePaste(BbItemImage *item);
 
     // ItemDataWR interface
 public:
