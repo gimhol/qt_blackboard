@@ -99,6 +99,8 @@ public:
 
     int canvasHeight();
 
+    void moveEvent(QMoveEvent *event) override;
+
     void resizeEvent(QResizeEvent * event) override;
 
     void enterEvent(QEvent *event) override;
@@ -200,6 +202,7 @@ public:
     void pasteItems();
 
 signals:
+    void moved();
     void resized(float scale);
     void scrolled(float x, float y);
 

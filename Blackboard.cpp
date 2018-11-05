@@ -651,3 +651,9 @@ QSize Blackboard::canvasSize(){return _canvasSize;}
 int Blackboard::canvasWidth(){return _canvasSize.width();}
 
 int Blackboard::canvasHeight(){return _canvasSize.height();}
+
+void Blackboard::moveEvent(QMoveEvent *event)
+{
+    QGraphicsView::moveEvent(event);
+    emit moved();
+}
