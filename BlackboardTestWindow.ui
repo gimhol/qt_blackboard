@@ -379,6 +379,20 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>设置背景</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_2">
+        <property name="text">
+         <string>清除背景</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -392,17 +406,17 @@
        </spacer>
       </item>
       <item>
+       <widget class="QPushButton" name="selectedAll">
+        <property name="text">
+         <string>全选</string>
+        </property>
+        <property name="shortcut">
+         <string>Ctrl+A</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
-        <item>
-         <widget class="QPushButton" name="selectedAll">
-          <property name="text">
-           <string>全选</string>
-          </property>
-          <property name="shortcut">
-           <string>Ctrl+A</string>
-          </property>
-         </widget>
-        </item>
         <item>
          <widget class="QPushButton" name="copy">
           <property name="text">

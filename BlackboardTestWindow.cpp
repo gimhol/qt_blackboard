@@ -697,3 +697,19 @@ void BlackboardTestWindow::on_selectedAll_clicked()
     blackboard()->setToolType(BBTT_Picker);
     blackboard()->selectedAll();
 }
+
+void BlackboardTestWindow::on_pushButton_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(NULL,u8"选择图片",".","*.png;*.jpg");
+    if(fileName.isEmpty())
+    {
+        return;
+    }
+    QPixmap pm(fileName);
+    blackboard()->setBackground(pm);
+}
+
+void BlackboardTestWindow::on_pushButton_2_clicked()
+{
+    blackboard()->clearBackground();
+}

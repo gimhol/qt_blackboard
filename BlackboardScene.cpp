@@ -41,6 +41,8 @@ BlackboardScene::~BlackboardScene()
 {
     QGraphicsScene::removeItem(_pickerRect);
     delete _pickerRect;
+
+    clearBackground();
 }
 
 Blackboard *BlackboardScene::blackboard(){
@@ -539,6 +541,29 @@ void BlackboardScene::pasteItems()
     }
 }
 
+void BlackboardScene::setBackground(const QPixmap &pixmap)
+{
+    clearBackground();
+
+    QGraphicsPixmapItem * pixmapItem = new QGraphicsPixmapItem();
+    pixmapItem->setZValue(INT_MIN);
+    qreal ratio = 1.0 * pixmap.height() / pixmap.width();
+    pixmapItem->setPixmap(pixmap.scaled(blackboard()->width(),blackboard()->width() * ratio));
+    addItem(pixmapItem);
+
+    _backgroundItem = pixmapItem;
+}
+
+void BlackboardScene::clearBackground()
+{
+    if(_backgroundItem)
+    {
+        removeItem(_backgroundItem);
+        delete _backgroundItem;
+        _backgroundItem = nullptr;
+    }
+}
+
 void BlackboardScene::localRectBegin(const QPointF &pos)
 {
     BbItemRect * rect = new BbItemRect();
@@ -823,7 +848,7 @@ void BlackboardScene::onToolChanged(BbToolType previous, BbToolType current)
         {
             for(auto item: items())
             {
-                if(item == _pickerRect)
+                if(item == _pickerRect || item == _backgroundItem)
                 {
                     continue;
                 }
@@ -875,7 +900,7 @@ void BlackboardScene::onToolChanged(BbToolType previous, BbToolType current)
         {
             for(auto item: items())
             {
-                if(item == _pickerRect)
+                if(item == _pickerRect || item == _backgroundItem)
                 {
                     continue;
                 }

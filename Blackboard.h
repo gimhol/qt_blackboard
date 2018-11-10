@@ -201,6 +201,8 @@ public:
     void copyItems();
     void pasteItems();
 
+    void setBackground(const QPixmap &pixmap);
+    void clearBackground();
 signals:
     void moved();
     void resized(float scale);

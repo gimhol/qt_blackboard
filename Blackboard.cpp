@@ -634,6 +634,16 @@ void Blackboard::pasteItems()
     scene()->pasteItems();
 }
 
+void Blackboard::setBackground(const QPixmap &pixmap)
+{
+    scene()->setBackground(pixmap);
+}
+
+void Blackboard::clearBackground()
+{
+    scene()->clearBackground();
+}
+
 void Blackboard::writeStream(QDataStream &stream)
 {
     scene()->writeStream(stream);

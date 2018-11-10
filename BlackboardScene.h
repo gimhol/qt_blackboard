@@ -29,6 +29,8 @@ class BlackboardScene: public QGraphicsScene, public IStreamWR
 {
     Q_OBJECT
 protected:
+    friend class Blackboard;
+
     BbToolType _toolType = BBTT_Pen;     // 当前工具类型
 
     QPointF _mouseBeginPos;
@@ -47,6 +49,7 @@ protected:
 
     bool _onlyAltDown = false;
 
+    QGraphicsItem * _backgroundItem = nullptr;
 public:
     BlackboardScene(Blackboard *parent = Q_NULLPTR);
 
@@ -134,8 +137,10 @@ public:
 
     void pasteItems();
 
-protected:
+    void setBackground(const QPixmap &pixmap);
 
+    void clearBackground();
+protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
@@ -214,20 +219,11 @@ protected:
 
     void onToolChanged(BbToolType previous, BbToolType current);
 
-
     // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;
 
     virtual void readStream(QDataStream &stream) override;
 };
-
-
-
-
-
-
-
-
 
 #endif // CANVASSCENE3_H
