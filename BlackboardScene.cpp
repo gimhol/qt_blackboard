@@ -41,7 +41,7 @@ BlackboardScene::~BlackboardScene()
 {
     QGraphicsScene::removeItem(_pickerRect);
     delete _pickerRect;
-
+    _pickerRect = nullptr;
     clearBackground();
 }
 
@@ -558,7 +558,7 @@ void BlackboardScene::clearBackground()
 {
     if(_backgroundItem)
     {
-        removeItem(_backgroundItem);
+        QGraphicsScene::removeItem(_backgroundItem);
         delete _backgroundItem;
         _backgroundItem = nullptr;
     }
@@ -1142,7 +1142,7 @@ void BlackboardScene::clearItems()
 {
     for(auto item: items())
     {
-        if(item == _pickerRect)
+        if(item == _pickerRect || item == _backgroundItem)
         {
             continue;
         }
