@@ -608,8 +608,10 @@ void BlackboardScene::setBackground(const QPixmap &pixmap)
 
     QGraphicsPixmapItem * pixmapItem = new QGraphicsPixmapItem();
     pixmapItem->setZValue(INT_MIN);
-    qreal ratio = 1.0 * pixmap.height() / pixmap.width();
-    pixmapItem->setPixmap(pixmap.scaled(blackboard()->width(),blackboard()->width() * ratio));
+    qreal ratio = width() / pixmap.width();
+    pixmapItem->setPixmap(pixmap);
+    pixmapItem->setScale(ratio);
+    pixmapItem->setTransformationMode(Qt::SmoothTransformation);
     addItem(pixmapItem);
 
     _backgroundItem = pixmapItem;
