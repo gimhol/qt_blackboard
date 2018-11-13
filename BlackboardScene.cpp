@@ -151,6 +151,116 @@ void BlackboardScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsScene::mousePressEvent(event);
 }
 
+void BlackboardScene::emitItemMovingSignals()
+{
+    for(auto item: selectedItems())
+    {
+        IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
+        if(!idx)
+        {
+            continue;
+        }
+        switch(idx->toolType())
+        {
+            case BBTT_Triangle:
+            {
+                emit blackboard()->triangleMoving(dynamic_cast<BbItemTriangle *>(item));
+                break;
+            }
+            case BBTT_Ellipse:
+            {
+                emit blackboard()->ellipseMoving(dynamic_cast<BbItemEllipse *>(item));
+                break;
+            }
+            case BBTT_Rectangle:
+            {
+                emit blackboard()->rectMoving(dynamic_cast<BbItemRect *>(item));
+                break;
+            }
+            case BBTT_Text:
+            {
+                emit blackboard()->textMoving(dynamic_cast<BbItemText *>(item));
+                break;
+            }
+            case BBTT_Pen:
+            {
+                emit blackboard()->penMoving(dynamic_cast<BbItemPen *>(item));
+                break;
+            }
+            case BBTT_Straight:
+            {
+                emit blackboard()->straightMoving(dynamic_cast<BbItemStraight *>(item));
+                break;
+            }
+            case BBTT_Image:
+            {
+                emit blackboard()->imageMoving(dynamic_cast<BbItemImage *>(item));
+                break;
+            }
+            default:
+            {
+                qDebug() << "Try to move unkowning element!" << endl;
+                break;
+            }
+        }
+    }
+}
+
+void BlackboardScene::emitItemMovedSignals()
+{
+    for(auto item: selectedItems())
+    {
+        IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
+        if(!idx)
+        {
+            continue;
+        }
+        switch(idx->toolType())
+        {
+            case BBTT_Triangle:
+            {
+                emit blackboard()->triangleMoved(dynamic_cast<BbItemTriangle *>(item));
+                break;
+            }
+            case BBTT_Ellipse:
+            {
+                emit blackboard()->ellipseMoved(dynamic_cast<BbItemEllipse *>(item));
+                break;
+            }
+            case BBTT_Rectangle:
+            {
+                emit blackboard()->rectMoved(dynamic_cast<BbItemRect *>(item));
+                break;
+            }
+            case BBTT_Text:
+            {
+                emit blackboard()->textMoved(dynamic_cast<BbItemText *>(item));
+                break;
+            }
+            case BBTT_Pen:
+            {
+                emit blackboard()->penMoved(dynamic_cast<BbItemPen *>(item));
+                break;
+            }
+            case BBTT_Straight:
+            {
+                emit blackboard()->straightMoved(dynamic_cast<BbItemStraight *>(item));
+                break;
+            }
+            case BBTT_Image:
+            {
+                emit blackboard()->imageMoved(dynamic_cast<BbItemImage *>(item));
+                break;
+            }
+            default:
+            {
+                qDebug() << "Try to move unkowning element!" << endl;
+                break;
+            }
+        }
+    }
+}
+
 void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if(!_controlEnable)
@@ -208,57 +318,7 @@ void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 QGraphicsScene::mouseMoveEvent(event);
                 if(event->isAccepted())
                 {
-                    for(auto item: selectedItems())
-                    {
-                        IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
-                        if(!idx)
-                        {
-                            continue;
-                        }
-                        switch(idx->toolType())
-                        {
-                            case BBTT_Triangle:
-                            {
-                                emit blackboard()->triangleMoved(dynamic_cast<BbItemTriangle *>(item));
-                                break;
-                            }
-                            case BBTT_Ellipse:
-                            {
-                                emit blackboard()->ellipseMoved(dynamic_cast<BbItemEllipse *>(item));
-                                break;
-                            }
-                            case BBTT_Rectangle:
-                            {
-                                emit blackboard()->rectMoved(dynamic_cast<BbItemRect *>(item));
-                                break;
-                            }
-                            case BBTT_Text:
-                            {
-                                emit blackboard()->textMoved(dynamic_cast<BbItemText *>(item));
-                                break;
-                            }
-                            case BBTT_Pen:
-                            {
-                                emit blackboard()->penMoved(dynamic_cast<BbItemPen *>(item));
-                                break;
-                            }
-                            case BBTT_Straight:
-                            {
-                                emit blackboard()->straightMoved(dynamic_cast<BbItemStraight *>(item));
-                                break;
-                            }
-                            case BBTT_Image:
-                            {
-                                emit blackboard()->imageMoved(dynamic_cast<BbItemImage *>(item));
-                                break;
-                            }
-                            default:
-                            {
-                                qDebug() << "Try to move unkowning element!" << endl;
-                                break;
-                            }
-                        }
-                    }
+                    emitItemMovingSignals();
                 }
                 else
                 {
@@ -313,6 +373,7 @@ void BlackboardScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             case BBTT_Picker:
             {
                 _pickerRect->hide();
+                emitItemMovedSignals();
                 break;
             }
             default:
@@ -562,6 +623,16 @@ void BlackboardScene::clearBackground()
         delete _backgroundItem;
         _backgroundItem = nullptr;
     }
+}
+
+void BlackboardScene::setCanvasId(const QString &id)
+{
+    _canvasId = id;
+}
+
+QString BlackboardScene::canvasId() const
+{
+    return _canvasId;
 }
 
 void BlackboardScene::localRectBegin(const QPointF &pos)

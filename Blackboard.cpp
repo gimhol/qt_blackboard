@@ -123,12 +123,12 @@ void Blackboard::setScroll(int x,int y)
 
 void Blackboard::setCanvasId(const QString &id)
 {
-    scene()->setObjectName(id);
+    scene()->setCanvasId(id);
 }
 
-QString Blackboard::canvasId()
+QString Blackboard::canvasId() const
 {
-    return scene()->objectName();
+    return scene()->canvasId();
 }
 
 float Blackboard::scaleRatio()
@@ -267,19 +267,19 @@ void Blackboard::mouseMoveEvent(QMouseEvent *event)
     {
         case BBTT_Pointer:
         {
-            emit pointerMoved(_mousePos);
+            emit pointerMoving(_mousePos);
             return;
         }
         case BBTT_Picker:
         {
-            emit cursorMoved(_mousePos);
+            emit cursorMoving(_mousePos);
             break;
         }
         default:
         {
             if(!scene()->isMouseLeftButtonDown())
             {
-                emit cursorMoved(_mousePos);
+                emit cursorMoving(_mousePos);
             }
             break;
         }

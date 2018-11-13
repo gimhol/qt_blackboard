@@ -77,7 +77,7 @@ public:
 
     void setCanvasId(const QString &id);
 
-    QString canvasId();
+    QString canvasId() const;
 
     float scaleRatio();
 
@@ -211,6 +211,7 @@ signals:
     void straightBegun(BbItemStraight *item);
     void straightDragged(BbItemStraight *item);
     void straightDone(BbItemStraight *item);
+    void straightMoving(BbItemStraight *item);
     void straightMoved(BbItemStraight *item);
     void straightDelete(BbItemStraight *item);
     void straightPaste(BbItemStraight *item);
@@ -218,6 +219,7 @@ signals:
     void penDown(BbItemPen *item);
     void penDraw(BbItemPen *item);
     void penDone(BbItemPen *item);
+    void penMoving(BbItemPen *item);
     void penMoved(BbItemPen *item);
     void penStraighting(BbItemPen *item);
     void penDelete(BbItemPen *item);
@@ -226,15 +228,18 @@ signals:
     void textAdded(BbItemText *item);
     void textChanged(BbItemText *item);
     void textDone(BbItemText *item);
+    void textMoving(BbItemText *item);
     void textMoved(BbItemText *item);
     void textDelete(BbItemText *item);
     void textPaste(BbItemText *item);
 
     void pointerShown(QPoint localPoint);
+    void pointerMoving(QPoint localPoint);
     void pointerMoved(QPoint localPoint);
     void pointerHidden(QPoint localPoint);
 
     void cursorShown(QPoint localPoint);
+    void cursorMoving(QPoint localPoint);
     void cursorMoved(QPoint localPoint);
     void cursorHidden(QPoint localPoint);
     void toolChanged(BbToolType previous, BbToolType current);
@@ -242,6 +247,7 @@ signals:
     void rectBegun(BbItemRect *item);
     void rectDragged(BbItemRect *item);
     void rectDone(BbItemRect *item);
+    void rectMoving(BbItemRect *item);
     void rectMoved(BbItemRect *item);
     void rectDelete(BbItemRect *item);
     void rectPaste(BbItemRect *item);
@@ -249,6 +255,7 @@ signals:
     void ellipseBegun(BbItemEllipse *item);
     void ellipseDragged(BbItemEllipse *item);
     void ellipseDone(BbItemEllipse *item);
+    void ellipseMoving(BbItemEllipse *item);
     void ellipseMoved(BbItemEllipse *item);
     void ellipseDelete(BbItemEllipse *item);
     void ellipsePaste(BbItemEllipse *item);
@@ -256,11 +263,13 @@ signals:
     void triangleBegun(BbItemTriangle *item);
     void triangleDragged(BbItemTriangle *item);
     void triangleDone(BbItemTriangle *item);
+    void triangleMoving(BbItemTriangle *item);
     void triangleMoved(BbItemTriangle *item);
     void triangleDelete(BbItemTriangle *item);
     void trianglePaste(BbItemTriangle *item);
 
     void imageAdded(BbItemImage *item);
+    void imageMoving(BbItemImage *item);
     void imageMoved(BbItemImage *item);
     void imageDelete(BbItemImage *item);
     void imagePaste(BbItemImage *item);

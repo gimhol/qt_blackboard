@@ -50,6 +50,8 @@ protected:
     bool _onlyAltDown = false;
 
     QGraphicsItem * _backgroundItem = nullptr;
+
+    QString _canvasId = "";
 public:
     BlackboardScene(Blackboard *parent = Q_NULLPTR);
 
@@ -140,6 +142,10 @@ public:
     void setBackground(const QPixmap &pixmap);
 
     void clearBackground();
+
+    void setCanvasId(const QString &id);
+
+    QString canvasId() const;
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
@@ -224,6 +230,10 @@ public:
     virtual void writeStream(QDataStream &stream) override;
 
     virtual void readStream(QDataStream &stream) override;
+
+    void emitItemMovingSignals();
+
+    void emitItemMovedSignals();
 };
 
 #endif // CANVASSCENE3_H
