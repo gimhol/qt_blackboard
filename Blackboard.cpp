@@ -205,12 +205,18 @@ void Blackboard::enterEvent(QEvent *event)
     {
         case BBTT_Pointer:
         {
-            emit pointerShown(_mousePos);
+            if(isEnabled())
+            {
+                emit pointerShown(_mousePos);
+            }
             return;
         }
         default:
         {
-            emit cursorShown(_mousePos);
+            if(isEnabled())
+            {
+                emit cursorShown(_mousePos);
+            }
             break;
         }
     }
@@ -223,12 +229,18 @@ void Blackboard::leaveEvent(QEvent *event)
     {
         case BBTT_Pointer:
         {
-            emit pointerHidden(_mousePos);
+            if(isEnabled())
+            {
+                emit pointerHidden(_mousePos);
+            }
             return;
         }
         default:
         {
-            emit cursorHidden(_mousePos);
+            if(isEnabled())
+            {
+                emit cursorHidden(_mousePos);
+            }
             break;
         }
     }
@@ -622,6 +634,11 @@ void Blackboard::addPixmapItem(const QPixmap &pixmap)
 void Blackboard::selectedAll()
 {
     scene()->selectedAll();
+}
+
+void Blackboard::deselectAll()
+{
+    scene()->deselectAll();
 }
 
 void Blackboard::copyItems()

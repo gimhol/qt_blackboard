@@ -135,6 +135,8 @@ public:
 
     void selectedAll();
 
+    void deselectAll();
+
     void copyItems();
 
     void pasteItems();

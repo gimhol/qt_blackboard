@@ -198,6 +198,7 @@ public:
 
     void addPixmapItem(const QPixmap & pixmap);
     void selectedAll();
+    void deselectAll();
     void copyItems();
     void pasteItems();
 

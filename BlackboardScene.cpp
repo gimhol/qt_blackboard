@@ -1072,11 +1072,25 @@ void BlackboardScene::selectedAll()
         for(auto item: items())
         {
             IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
-            if(!itemIndex){
+            if(!itemIndex)
+            {
                 continue;
             }
             item->setSelected(true);
         }
+    }
+}
+
+void BlackboardScene::deselectAll()
+{
+    for(auto item: selectedItems())
+    {
+        IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
+        if(!itemIndex)
+        {
+            continue;
+        }
+        item->setSelected(false);
     }
 }
 
