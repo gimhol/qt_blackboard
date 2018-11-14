@@ -10,6 +10,7 @@
 #include "BbItemImage.h"
 #include <QDebug>
 #include <QFileDialog>
+#include <QDateTime>
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::BlackboardTestWindow)
@@ -28,6 +29,11 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     for(auto blackboard : findChildren<Blackboard*>())
     {
         blackboard->setToolType(BBTT_Pointer);
+        blackboard->scene()->setItemIdGenerator([this](){
+            return QString("%1_%2")
+                    .arg(windowTitle())
+                    .arg(QDateTime::currentDateTime().toMSecsSinceEpoch());
+        });
     }
 
     ui->penWeight->setValue(blackboard()->penWeight() * 100);
