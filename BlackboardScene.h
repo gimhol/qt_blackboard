@@ -131,6 +131,8 @@ public:
 
     void addImageItem(const QPixmap &pixmap);
 
+    QGraphicsItem * copyItemFromStream(QDataStream &stream);
+
     QGraphicsItem * readItemFromStream(QDataStream &stream);
 
     void selectedAll();

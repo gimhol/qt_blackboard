@@ -568,13 +568,12 @@ void BlackboardScene::pasteItems()
 
         while(!dataStream.atEnd())
         {
-            QGraphicsItem * baseItem = readItemFromStream(dataStream);
+            QGraphicsItem * baseItem = copyItemFromStream(dataStream);
             if(!baseItem)
             {
                 continue;
             }
             baseItem->setSelected(true);
-            baseItem->setPos(baseItem->pos() + QPointF(10,10));
             IItemIndex * index = dynamic_cast<IItemIndex*>(baseItem);
             if(index)
             {
@@ -1323,4 +1322,21 @@ void BlackboardScene::addImageItem(const QPixmap &pixmap)
     item->setZValue(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());
     emit blackboard()->imageAdded(item);
+}
+
+QGraphicsItem *BlackboardScene::copyItemFromStream(QDataStream &stream)
+{
+    QGraphicsItem *item = readItemFromStream(stream);
+    if(item)
+    {
+        item->setZValue(QDateTime::currentMSecsSinceEpoch());
+        item->setPos(item->pos() + QPointF(10,10));
+
+        IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
+        if(idx)
+        {
+            idx->setId(idx->id()+"_copy");
+        }
+    }
+    return item;
 }
