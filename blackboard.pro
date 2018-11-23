@@ -25,3 +25,6 @@ SOURCES += Main.cpp \
 FORMS += \
     ColorPanel.ui \
     BlackboardTestWindow.ui
+
+OTHER_FILES += app.rc
+RC_FILE += app.rc
