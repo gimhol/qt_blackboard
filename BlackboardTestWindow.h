@@ -1,6 +1,5 @@
 ﻿#ifndef BLACKBOARDTESTWINDOW_H
 #define BLACKBOARDTESTWINDOW_H
-
 #include <QWidget>
 
 namespace Ui {

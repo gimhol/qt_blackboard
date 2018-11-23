@@ -1,4 +1,5 @@
-﻿#include <BlackboardTestWindow.h>
+﻿#define BLACKBOARD_ITEM_INDEX_SIGNAL
+#include <BlackboardTestWindow.h>
 #include <QApplication>
 
 #include "BbItemEllipseData.h"

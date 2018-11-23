@@ -367,14 +367,7 @@
       <item>
        <widget class="QPushButton" name="localImage">
         <property name="text">
-         <string>插入本地图片</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="onlineImage">
-        <property name="text">
-         <string>插入网络图片</string>
+         <string>插入图片</string>
         </property>
        </widget>
       </item>
@@ -393,17 +386,7 @@
        </widget>
       </item>
       <item>
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
+       <widget class="QTextBrowser" name="textBrowser"/>
       </item>
       <item>
        <widget class="QPushButton" name="selectedAll">
