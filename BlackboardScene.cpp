@@ -81,6 +81,10 @@ void BlackboardScene::removeSelectedItems()
         remove(item); \
         break
 
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+        emit blackboard()->itemDelete(idx);
+        remove(item);
+#else
         switch(idx->toolType())
         {
             REMOVE_ITEM_INDEX(BBTT_Rectangle,BbItemRect,rectDelete);
@@ -95,9 +99,10 @@ void BlackboardScene::removeSelectedItems()
                 break;
             }
         }
+#endif
+
     }
 }
-
 
 void BlackboardScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -160,6 +165,9 @@ void BlackboardScene::emitItemMovingSignals()
         {
             continue;
         }
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+        emit blackboard()->itemMoving(idx);
+#else
         switch(idx->toolType())
         {
             case BBTT_Triangle:
@@ -203,6 +211,7 @@ void BlackboardScene::emitItemMovingSignals()
                 break;
             }
         }
+#endif
     }
 }
 
@@ -215,6 +224,9 @@ void BlackboardScene::emitItemMovedSignals()
         {
             continue;
         }
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+        emit blackboard()->itemMoved(idx);
+#else
         switch(idx->toolType())
         {
             case BBTT_Triangle:
@@ -258,6 +270,7 @@ void BlackboardScene::emitItemMovedSignals()
                 break;
             }
         }
+#endif
     }
 }
 
@@ -575,11 +588,13 @@ void BlackboardScene::pasteItems()
             }
             baseItem->setSelected(true);
             IItemIndex * index = dynamic_cast<IItemIndex*>(baseItem);
-            if(index)
-            {
-                index->setId(generatItemId());
-            }
-
+//            if(index)
+//            {
+//                index->setId(generatItemId());
+//            }
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+            emit blackboard()->itemPaste(index);
+#else
 #define EMIT_PASTE_SIGAL(_ITEM_CLASS_,_ITEM_PASTE_SIGNAL_) \
     do{ \
         _ITEM_CLASS_ * item = dynamic_cast<_ITEM_CLASS_ *>(baseItem); \
@@ -588,8 +603,8 @@ void BlackboardScene::pasteItems()
             baseItem = nullptr; \
         }\
     } while(false); \
-    if(!baseItem) continue;
-
+    if(!baseItem) \
+            continue;
             EMIT_PASTE_SIGAL(BbItemEllipse,ellipsePaste);
             EMIT_PASTE_SIGAL(BbItemRect,rectPaste);
             EMIT_PASTE_SIGAL(BbItemTriangle,trianglePaste);
@@ -597,6 +612,7 @@ void BlackboardScene::pasteItems()
             EMIT_PASTE_SIGAL(BbItemText,textPaste);
             EMIT_PASTE_SIGAL(BbItemStraight,straightPaste);
             EMIT_PASTE_SIGAL(BbItemImage,imagePaste);
+#endif
         }
     }
 }
@@ -884,20 +900,16 @@ void BlackboardScene::pickingItems(const QPointF &mousePos)
                 std::abs(mousePos.y()-_mouseBeginPos.y())
                 );
     _pickerRect->show();
-    for(auto item: items()){
+    for(auto item: items())
+    {
         IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
-        if(!itemIndex){
-            continue;
-        }
-        if(item->collidesWithItem(_pickerRect)){
-            if(!item->isSelected()){
-                item->setSelected(true);
-            }
-        }
-        else{
-            if(item->isSelected()){
-                item->setSelected(false);
-                item->update();
+        if(itemIndex)
+        {
+            bool collided = item->collidesWithItem(_pickerRect);
+            if(collided != item->isSelected())
+            {
+                item->setSelected(collided);
+                emit blackboard()->itemSelected(itemIndex,collided);
             }
         }
     }
@@ -1326,6 +1338,7 @@ void BlackboardScene::addImageItem(const QPixmap &pixmap)
 
 QGraphicsItem *BlackboardScene::copyItemFromStream(QDataStream &stream)
 {
+    static int time = 0;
     QGraphicsItem *item = readItemFromStream(stream);
     if(item)
     {
@@ -1335,8 +1348,9 @@ QGraphicsItem *BlackboardScene::copyItemFromStream(QDataStream &stream)
         IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
         if(idx)
         {
-            idx->setId(idx->id()+"_copy");
+            idx->setId(QString(u8"%1_%2").arg(idx->id()).arg(time));
         }
     }
+    ++time;
     return item;
 }

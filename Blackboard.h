@@ -209,30 +209,64 @@ signals:
     void resized(float scale);
     void scrolled(float x, float y);
 
+    void penDown(BbItemPen *item);
+    void penDraw(BbItemPen *item);
+    void penStraighting(BbItemPen *item);
+    void penDone(BbItemPen *item);
     void straightBegun(BbItemStraight *item);
     void straightDragged(BbItemStraight *item);
     void straightDone(BbItemStraight *item);
+    void textAdded(BbItemText *item);
+    void textChanged(BbItemText *item);
+    void textDone(BbItemText *item);
+    void rectBegun(BbItemRect *item);
+    void rectDragged(BbItemRect *item);
+    void rectDone(BbItemRect *item);
+    void ellipseBegun(BbItemEllipse *item);
+    void ellipseDragged(BbItemEllipse *item);
+    void ellipseDone(BbItemEllipse *item);
+    void triangleBegun(BbItemTriangle *item);
+    void triangleDragged(BbItemTriangle *item);
+    void triangleDone(BbItemTriangle *item);
+    void imageAdded(BbItemImage *item);
+
+    void itemSelected(IItemIndex *index, bool selected);
+
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+    void itemMoving(IItemIndex *index);
+    void itemMoved(IItemIndex *index);
+    void itemDelete(IItemIndex *index);
+    void itemPaste(IItemIndex *index);
+#else
+    void penMoving(BbItemPen *item);
+    void penMoved(BbItemPen *item);
+    void penDelete(BbItemPen *item);
+    void penPaste(BbItemPen *item);
     void straightMoving(BbItemStraight *item);
     void straightMoved(BbItemStraight *item);
     void straightDelete(BbItemStraight *item);
     void straightPaste(BbItemStraight *item);
-
-    void penDown(BbItemPen *item);
-    void penDraw(BbItemPen *item);
-    void penDone(BbItemPen *item);
-    void penMoving(BbItemPen *item);
-    void penMoved(BbItemPen *item);
-    void penStraighting(BbItemPen *item);
-    void penDelete(BbItemPen *item);
-    void penPaste(BbItemPen *item);
-
-    void textAdded(BbItemText *item);
-    void textChanged(BbItemText *item);
-    void textDone(BbItemText *item);
     void textMoving(BbItemText *item);
     void textMoved(BbItemText *item);
     void textDelete(BbItemText *item);
     void textPaste(BbItemText *item);
+    void rectMoving(BbItemRect *item);
+    void rectMoved(BbItemRect *item);
+    void rectDelete(BbItemRect *item);
+    void rectPaste(BbItemRect *item);
+    void ellipseMoving(BbItemEllipse *item);
+    void ellipseMoved(BbItemEllipse *item);
+    void ellipseDelete(BbItemEllipse *item);
+    void ellipsePaste(BbItemEllipse *item);
+    void triangleMoving(BbItemTriangle *item);
+    void triangleMoved(BbItemTriangle *item);
+    void triangleDelete(BbItemTriangle *item);
+    void trianglePaste(BbItemTriangle *item);
+    void imageMoving(BbItemImage *item);
+    void imageMoved(BbItemImage *item);
+    void imageDelete(BbItemImage *item);
+    void imagePaste(BbItemImage *item);
+#endif
 
     void pointerShown(QPoint localPoint);
     void pointerMoving(QPoint localPoint);
@@ -245,35 +279,6 @@ signals:
     void cursorHidden(QPoint localPoint);
     void toolChanged(BbToolType previous, BbToolType current);
 
-    void rectBegun(BbItemRect *item);
-    void rectDragged(BbItemRect *item);
-    void rectDone(BbItemRect *item);
-    void rectMoving(BbItemRect *item);
-    void rectMoved(BbItemRect *item);
-    void rectDelete(BbItemRect *item);
-    void rectPaste(BbItemRect *item);
-
-    void ellipseBegun(BbItemEllipse *item);
-    void ellipseDragged(BbItemEllipse *item);
-    void ellipseDone(BbItemEllipse *item);
-    void ellipseMoving(BbItemEllipse *item);
-    void ellipseMoved(BbItemEllipse *item);
-    void ellipseDelete(BbItemEllipse *item);
-    void ellipsePaste(BbItemEllipse *item);
-
-    void triangleBegun(BbItemTriangle *item);
-    void triangleDragged(BbItemTriangle *item);
-    void triangleDone(BbItemTriangle *item);
-    void triangleMoving(BbItemTriangle *item);
-    void triangleMoved(BbItemTriangle *item);
-    void triangleDelete(BbItemTriangle *item);
-    void trianglePaste(BbItemTriangle *item);
-
-    void imageAdded(BbItemImage *item);
-    void imageMoving(BbItemImage *item);
-    void imageMoved(BbItemImage *item);
-    void imageDelete(BbItemImage *item);
-    void imagePaste(BbItemImage *item);
 
     // ItemDataWR interface
 public:
