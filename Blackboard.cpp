@@ -131,7 +131,7 @@ QString Blackboard::canvasId() const
     return scene()->canvasId();
 }
 
-float Blackboard::scaleRatio()
+qreal Blackboard::scaleRatio()
 {
     return _scaleRatio;
 }
@@ -671,7 +671,7 @@ void Blackboard::readStream(QDataStream &stream)
     scene()->readStream(stream);
 }
 
-float Blackboard::orginalRatio(){return static_cast<float>(_orginalSize.width())/_orginalSize.height();  }
+qreal Blackboard::orginalRatio(){return static_cast<qreal>(_orginalSize.width())/_orginalSize.height();  }
 
 QSize Blackboard::canvasSize(){return _canvasSize;}
 
