@@ -20,7 +20,6 @@ include([某目录]/blackboard.pri)
 - 使用Qt Creator, 打开[某目录]/blackboard.pro，运行即可。
 
 #### 参与贡献
-
 1. Fork 本项目
 2. 新建 Feat_xxx 分支
 3. 提交代码
