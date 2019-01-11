@@ -10,7 +10,7 @@ class Blackboard: public QGraphicsView, public IStreamWR
 {
     Q_OBJECT
 protected:
-    float _scaleRatio;
+    qreal _scaleRatio;
 
     QSize _orginalSize;
 
@@ -81,7 +81,7 @@ public:
 
     QString canvasId() const;
 
-    float scaleRatio();
+    qreal scaleRatio();
 
     QSize orginalSize();
 
@@ -93,7 +93,7 @@ public:
 
     void setOrginalSize(const QSize &size);
 
-    float orginalRatio();
+    qreal orginalRatio();
 
     QSize canvasSize();
 
