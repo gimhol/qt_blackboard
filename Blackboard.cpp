@@ -8,11 +8,11 @@
 #include "BbItemTriangleData.h"
 #include "Blackboard.h"
 #include "BlackboardScene.h"
+#include "BbPointer.h"
 
 #include <QResizeEvent>
 #include <QDebug>
 #include <QTimer>
-#include <QLabel>
 #include <QScrollBar>
 
 Blackboard::Blackboard(QWidget *parent):
@@ -53,14 +53,13 @@ BlackboardScene *Blackboard::scene() const
     return dynamic_cast<BlackboardScene *>(QGraphicsView::scene());
 }
 
-QLabel * Blackboard::addPointer(const QString &pointerId, int x, int y)
+BbPointer *Blackboard::addPointer(const QString &pointerId, int x, int y)
 {
-    QLabel *pointer = findChild<QLabel *>(pointerId);
+    BbPointer *pointer = window()->findChild<BbPointer *>(pointerId);
     if(!pointer)
     {
-        pointer = new QLabel(this);
+        pointer = new BbPointer(this);
         pointer->setObjectName(pointerId);
-        pointer->setAttribute(Qt::WA_TransparentForMouseEvents);
         pointer->setPixmap(_pointerPixmap);
     }
     if(pointer->isHidden())
@@ -69,30 +68,17 @@ QLabel * Blackboard::addPointer(const QString &pointerId, int x, int y)
         pointer->show();
     }
     pointer->move(x-pointer->width()/2,y-pointer->height()/2);
-    return pointer;
+    return nullptr;
 }
 
 void Blackboard::movePointer(const QString &pointerId, int x, int y)
 {
-    QLabel *pointer = findChild<QLabel *>(pointerId);
-    if(!pointer)
-    {
-        pointer = new QLabel(this);
-        pointer->setObjectName(pointerId);
-        pointer->setAttribute(Qt::WA_TransparentForMouseEvents);
-        pointer->setPixmap(_pointerPixmap);
-    }
-    if(pointer->isHidden())
-    {
-        pointer->raise();
-        pointer->show();
-    }
-    pointer->move(x-pointer->width()/2,y-pointer->height()/2);
+    addPointer(pointerId,x,y);
 }
 
 void Blackboard::hidePointer(const QString &pointerId)
 {
-    QLabel *pointer = findChild<QLabel *>(pointerId);
+    BbPointer *pointer = findChild<BbPointer *>(pointerId);
     if(pointer)
     {
         pointer->hide();

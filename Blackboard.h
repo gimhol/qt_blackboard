@@ -5,7 +5,7 @@
 #include "BbToolType.h"
 #include "BlackboardScene.h"
 class BbItemData;
-class QLabel;
+class BbPointer;
 class Blackboard: public QGraphicsView, public IStreamWR
 {
     Q_OBJECT
@@ -17,6 +17,8 @@ protected:
     QSize _canvasSize;
 
     bool _leftButtonDown = false;
+
+    QMap<QString, QPoint> _lazerPenPositions;
 
     QMap<BbToolType,QCursor> _cursors;
 
@@ -63,7 +65,7 @@ public:
 
     BlackboardScene *scene() const;
 
-    QLabel * addPointer(const QString & pointerId, int x, int y);
+    BbPointer *addPointer(const QString & pointerId, int x, int y);
 
     void movePointer(const QString & pointerId, int x, int y);
 
@@ -279,8 +281,6 @@ signals:
     void cursorHidden(QPoint localPoint);
     void toolChanged(BbToolType previous, BbToolType current);
 
-
-    // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;
     virtual void readStream(QDataStream &stream) override;

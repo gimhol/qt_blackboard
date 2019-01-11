@@ -20,7 +20,8 @@ HEADERS += \
     $$PWD/BbItemTriangleData.h \
     $$PWD/BbItemTriangle.h \
     $$PWD/BbItemImageData.h \
-    $$PWD/BbItemImage.h
+    $$PWD/BbItemImage.h \
+    $$PWD/BbPointer.h
 
 SOURCES += \
     $$PWD/Blackboard.cpp \
@@ -39,6 +40,7 @@ SOURCES += \
     $$PWD/BbItemTriangleData.cpp \
     $$PWD/BbItemTriangle.cpp \
     $$PWD/BbItemImageData.cpp \
-    $$PWD/BbItemImage.cpp
+    $$PWD/BbItemImage.cpp \
+    $$PWD/BbPointer.cpp
 
 FORMS +=
