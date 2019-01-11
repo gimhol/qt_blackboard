@@ -77,13 +77,13 @@ public:
     void add(QGraphicsItem *item);
 
     template<typename T>
-    inline T * find(const std::string &lid)
+    inline T *find(const std::string &lid)
     {
         return find<T>(QString::fromStdString(lid));
     }
 
     template<typename T>
-    inline T * find(const QString &lid)
+    inline T *find(const QString &lid)
     {
         for(auto item: items())
         {
@@ -95,7 +95,6 @@ public:
         }
         return nullptr;
     }
-
 
     /**
      * @brief setItemIdGenerator 设置id生成器
@@ -110,6 +109,8 @@ public:
     void setControlEnable(bool enable);
 
     void clearItems();
+
+    bool isPrivateItem(QGraphicsItem *item);
 
     void readItemData(BbItemData *itemData);
 
@@ -150,6 +151,7 @@ public:
     void setCanvasId(const QString &id);
 
     QString canvasId() const;
+
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 

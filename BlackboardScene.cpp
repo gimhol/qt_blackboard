@@ -932,13 +932,12 @@ void BlackboardScene::onToolChanged(BbToolType previous, BbToolType current)
         {
             for(auto item: items())
             {
-                if(item == _pickerRect || item == _backgroundItem)
+                if(!isPrivateItem(item))
                 {
-                    continue;
+                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,false);
+                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,false);
+                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,false);
                 }
-                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,false);
-                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,false);
-                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,false);
             }
             break;
         }
@@ -984,13 +983,12 @@ void BlackboardScene::onToolChanged(BbToolType previous, BbToolType current)
         {
             for(auto item: items())
             {
-                if(item == _pickerRect || item == _backgroundItem)
+                if(!isPrivateItem(item))
                 {
-                    continue;
+                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable);
+                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable);
+                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable);
                 }
-                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable);
-                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable);
-                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable);
             }
             break;
         }
@@ -1240,12 +1238,16 @@ void BlackboardScene::clearItems()
 {
     for(auto item: items())
     {
-        if(item == _pickerRect || item == _backgroundItem)
+        if(!isPrivateItem(item))
         {
-            continue;
+            remove(item);
         }
-        remove(item);
     }
+}
+
+bool BlackboardScene::isPrivateItem(QGraphicsItem *item)
+{
+    return item == _pickerRect || item == _backgroundItem;
 }
 
 void BlackboardScene::readItemData(BbItemData *itemData)
