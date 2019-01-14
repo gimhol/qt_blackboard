@@ -55,7 +55,7 @@ BlackboardScene *Blackboard::scene() const
 
 BbPointer *Blackboard::addPointer(const QString &pointerId, int x, int y)
 {
-    BbPointer *pointer = window()->findChild<BbPointer *>(pointerId);
+    BbPointer *pointer = findChild<BbPointer *>(pointerId);
     if(!pointer)
     {
         pointer = new BbPointer(this);
