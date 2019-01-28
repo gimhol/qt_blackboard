@@ -36,7 +36,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         });
     }
 
-    ui->penWeight->setValue(blackboard()->penWeight() * 100);
+    ui->penWeight->setValue(int(blackboard()->penWeight() * 100));
     ui->penColor->setColor(blackboard()->penColor());
     connect(ui->penColor,&ColorDisplayer::clicked,[&](){
         static ColorPanel * cp = nullptr;
@@ -44,7 +44,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         {
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(u8"调色");
+            cp->setWindowTitle(QStringLiteral("调色"));
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setPenColor);
             connect(cp,&ColorPanel::colorChanged,ui->penColor,&ColorDisplayer::setColor);
         }
@@ -52,7 +52,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         cp->show();
     });
 
-    ui->straightWeight->setValue(blackboard()->straightPenWeight() * 100);
+    ui->straightWeight->setValue(int(blackboard()->straightPenWeight() * 100));
     ui->straightColor->setColor(blackboard()->straightPenColor());
     connect(ui->straightColor,&ColorDisplayer::clicked,[&](){
         static ColorPanel * cp = nullptr;
@@ -60,7 +60,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         {
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(u8"调色");
+            cp->setWindowTitle(QStringLiteral("调色"));
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setStraightPenColor);
             connect(cp,&ColorPanel::colorChanged,ui->straightColor,&ColorDisplayer::setColor);
         }
@@ -70,7 +70,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 
 
 
-    ui->textWeight->setValue(blackboard()->textPointWeight() * 100);
+    ui->textWeight->setValue(int(blackboard()->textPointWeight() * 100));
     ui->textColor->setColor(blackboard()->textColor());
     connect(ui->textColor,&ColorDisplayer::clicked,[&](){
         static ColorPanel * cp = nullptr;
@@ -78,7 +78,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         {
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(u8"调色");
+            cp->setWindowTitle(QStringLiteral("调色"));
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setTextColor);
             connect(cp,&ColorPanel::colorChanged,ui->textColor,&ColorDisplayer::setColor);
         }
@@ -87,7 +87,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     });
 
 
-    ui->rectWeight->setValue(blackboard()->rectWeight() * 100);
+    ui->rectWeight->setValue(int(blackboard()->rectWeight() * 100));
     ui->rectPenColor->setColor(blackboard()->rectPenColor());
     ui->rectBrushColor->setColor(blackboard()->rectBrushColor());
     connect(ui->rectPenColor,&ColorDisplayer::clicked,[&](){
@@ -96,7 +96,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         {
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(u8"调色");
+            cp->setWindowTitle(QStringLiteral("调色"));
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setRectPenColor);
             connect(cp,&ColorPanel::colorChanged,ui->rectPenColor,&ColorDisplayer::setColor);
         }
@@ -109,7 +109,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         {
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(u8"调色");
+            cp->setWindowTitle(QStringLiteral("调色"));
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setRectBrushColor);
             connect(cp,&ColorPanel::colorChanged,ui->rectBrushColor,&ColorDisplayer::setColor);
         }
@@ -117,7 +117,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         cp->show();
     });
 
-    ui->ellipseWeight->setValue(blackboard()->ellipseWeight() * 100);
+    ui->ellipseWeight->setValue(int(blackboard()->ellipseWeight() * 100));
     ui->ellipsePenColor->setColor(blackboard()->ellipsePenColor());
     ui->ellipseBrushColor->setColor(blackboard()->ellipseBrushColor());
     connect(ui->ellipsePenColor,&ColorDisplayer::clicked,[&](){
@@ -126,7 +126,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         {
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(u8"调色");
+            cp->setWindowTitle(QStringLiteral("调色"));
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setEllipsePenColor);
             connect(cp,&ColorPanel::colorChanged,ui->ellipsePenColor,&ColorDisplayer::setColor);
         }
@@ -139,7 +139,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         {
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(u8"调色");
+            cp->setWindowTitle(QStringLiteral("调色"));
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setEllipseBrushColor);
             connect(cp,&ColorPanel::colorChanged,ui->ellipseBrushColor,&ColorDisplayer::setColor);
         }
@@ -147,7 +147,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         cp->show();
     });
 
-    ui->triangleWeight->setValue(blackboard()->triangleWeight() * 100);
+    ui->triangleWeight->setValue(int(blackboard()->triangleWeight() * 100));
     ui->trianglePenColor->setColor(blackboard()->trianglePenColor());
     ui->triangleBrushColor->setColor(blackboard()->triangleBrushColor());
     connect(ui->trianglePenColor,&ColorDisplayer::clicked,[&](){
@@ -156,7 +156,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         {
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(u8"调色");
+            cp->setWindowTitle(QStringLiteral("调色"));
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setTrianglePenColor);
             connect(cp,&ColorPanel::colorChanged,ui->trianglePenColor,&ColorDisplayer::setColor);
         }
@@ -169,7 +169,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         {
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(u8"调色");
+            cp->setWindowTitle(QStringLiteral("调色"));
             connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setTriangleBrushColor);
             connect(cp,&ColorPanel::colorChanged,ui->triangleBrushColor,&ColorDisplayer::setColor);
         }
@@ -180,7 +180,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     connect(ui->graphicsView,&Blackboard::itemSelected,[&](IItemIndex *index, bool selected){
         if(selected)
         {
-            ui->textBrowser->append(QString(u8"选择: %1").arg(index->id()));
+            ui->textBrowser->append(QString(QStringLiteral("选择: %1")).arg(index->id()));
         }
     });
 }
@@ -193,8 +193,8 @@ BlackboardTestWindow::~BlackboardTestWindow()
 void BlackboardTestWindow::start()
 {
     static BlackboardTestWindow win0, win1;
-    win0.setWindowTitle(u8"测试窗口0");
-    win1.setWindowTitle(u8"测试窗口1");
+    win0.setWindowTitle(QStringLiteral("测试窗口0"));
+    win1.setWindowTitle(QStringLiteral("测试窗口1"));
     win0.show();
     win1.show();
     win0.move(0,0);
@@ -765,7 +765,7 @@ void BlackboardTestWindow::on_triangleWeight_valueChanged(int arg1)
 
 void BlackboardTestWindow::on_localImage_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(NULL,u8"选择图片",".","*.png;*.jpg");
+    QString fileName = QFileDialog::getOpenFileName(nullptr,QStringLiteral("选择图片"),".","*.png;*.jpg");
 
     if(fileName.isEmpty())
     {
@@ -801,7 +801,7 @@ void BlackboardTestWindow::on_selectedAll_clicked()
 
 void BlackboardTestWindow::on_pushButton_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(NULL,u8"选择图片",".","*.png;*.jpg");
+    QString fileName = QFileDialog::getOpenFileName(nullptr,QStringLiteral("选择图片"),".","*.png;*.jpg");
     if(fileName.isEmpty())
     {
         return;

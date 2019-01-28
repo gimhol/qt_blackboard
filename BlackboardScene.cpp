@@ -560,7 +560,7 @@ void BlackboardScene::copyItems()
     }
 
     QMimeData *mimeData = new QMimeData();
-    mimeData->setData(u8"nsb/blackboard-items",data);
+    mimeData->setData("nsb/blackboard-items",data);
     clipboard->setMimeData(mimeData);
 }
 
@@ -574,9 +574,9 @@ void BlackboardScene::pasteItems()
     {
         item->setSelected(false);
     }
-    if(mimeData && mimeData->hasFormat(u8"nsb/blackboard-items"))
+    if(mimeData && mimeData->hasFormat("nsb/blackboard-items"))
     {
-        QByteArray data = mimeData->data(u8"nsb/blackboard-items");
+        QByteArray data = mimeData->data("nsb/blackboard-items");
         QDataStream dataStream(&data, QIODevice::ReadOnly);
 
         while(!dataStream.atEnd())
@@ -1350,7 +1350,7 @@ QGraphicsItem *BlackboardScene::copyItemFromStream(QDataStream &stream)
         IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
         if(idx)
         {
-            idx->setId(QString(u8"%1_%2").arg(idx->id()).arg(time));
+            idx->setId(QString("%1_%2").arg(idx->id()).arg(time));
         }
     }
     ++time;
