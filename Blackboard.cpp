@@ -107,6 +107,11 @@ void Blackboard::setScroll(int x,int y)
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged,this, &Blackboard::onScrollYChanged);
 }
 
+QPoint Blackboard::getScrollValue()
+{
+    return _scrollValue;
+}
+
 void Blackboard::setCanvasId(const QString &id)
 {
     scene()->setCanvasId(id);
