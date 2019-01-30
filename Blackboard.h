@@ -77,6 +77,8 @@ public:
 
     void setScroll(int x,int y);
 
+    QPoint getScrollValue();
+
     void setCanvasId(const QString &id);
 
     QString canvasId() const;
