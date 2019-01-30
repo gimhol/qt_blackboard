@@ -6,7 +6,7 @@ qreal BbItemTextData::minPointSize = 9;
 
 qreal BbItemTextData::maxPointSize = 72;
 
-QFont BbItemTextData::defalutFont = QFont(u8"宋体", BbItemTextData::minPointSize);
+QFont BbItemTextData::defalutFont = QFont(QStringLiteral("宋体"), BbItemTextData::minPointSize);
 
 QColor BbItemTextData::defalutColor = QColor(100,100,180);
 

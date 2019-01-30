@@ -11,7 +11,7 @@
 #include <QDebug>
 #include <QGraphicsScene>
 #include <QDebug>
-
+#include <functional>
 class BbItemText;
 typedef std::function<void(BbItemText *)> onTextChangedCallback;
 class BbItemTextData;
