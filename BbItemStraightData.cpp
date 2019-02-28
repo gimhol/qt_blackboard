@@ -1,13 +1,38 @@
 ﻿#include "BbItemStraightData.h"
 
-qreal BbItemStraightData::minWidth = 1;
+static qreal minWidth = 1.1;
+static qreal maxWidth = 30;
+static QPen defaultPen = QPen(QColor(100,100,180), minWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
-qreal BbItemStraightData::maxWidth = 30;
+const qreal &BbItemStraightData::getMinWidth()
+{
+    return minWidth;
+}
+const qreal &BbItemStraightData::getMaxWidth()
+{
+    return maxWidth;
+}
+const QPen &BbItemStraightData::getDefaultPen()
+{
+    return defaultPen;
+}
+void BbItemStraightData::setMinWidth(const qreal &value)
+{
+    minWidth = value;
+}
+void BbItemStraightData::setMaxWidth(const qreal &value)
+{
+    maxWidth = value;
+}
 
-QPen BbItemStraightData::defaultPen = QPen(QColor(100,100,180), BbItemStraightData::minWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);;
+void BbItemStraightData::setDefaultPen(const QPen &value)
+{
+    defaultPen = value;
+}
 
 BbItemStraightData::BbItemStraightData(CoordMode mode):
-    BbItemData(mode)
+    BbItemData(mode),
+    pen(defaultPen)
 {
     tooltype = BBTT_Straight;
 }

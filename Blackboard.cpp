@@ -19,20 +19,20 @@ Blackboard::Blackboard(QWidget *parent):
     QGraphicsView(parent),
     _scaleRatio(1)
 {
-    _pen = BbItemPenData::defaultPen;
-    _straightPen = BbItemStraightData::defaultPen;
+    _pen = BbItemPenData::getDefaultPen();
+    _straightPen = BbItemStraightData::getDefaultPen();
 
-    _font = BbItemTextData::defalutFont;
-    _textColor = BbItemTextData::defalutColor;
+    _font = BbItemTextData::getDefalutFont();
+    _textColor = BbItemTextData::getDefalutColor();
 
-    _rectBrush = BbItemRectData::defaultBrush;
-    _rectPen = BbItemRectData::defaultPen;
+    _rectBrush = BbItemRectData::getDefaultBrush();
+    _rectPen = BbItemRectData::getDefaultPen();
 
-    _ellipseBrush = BbItemEllipseData::defaultBrush;
-    _ellipsePen = BbItemEllipseData::defaultPen;
+    _ellipseBrush = BbItemEllipseData::getDefaultBrush();
+    _ellipsePen = BbItemEllipseData::getDefaultPen();
 
-    _triangleBrush = BbItemTriangleData::defaultBrush;
-    _trianglePen = BbItemTriangleData::defaultPen;
+    _triangleBrush = BbItemTriangleData::getDefaultBrush();
+    _trianglePen = BbItemTriangleData::getDefaultPen();
 
     setToolCursor(BBTT_Pen,Qt::CrossCursor);
     setToolCursor(BBTT_Rectangle,Qt::CrossCursor);
@@ -409,32 +409,32 @@ void Blackboard::onToolChanged(BbToolType previous, BbToolType current)
 
 void Blackboard::setDefaultPen(const QPen &pen)
 {
-    BbItemPenData::defaultPen = pen;
+    BbItemPenData::setDefaultPen(pen);
 }
 
 const QPen &Blackboard::defaultPen()
 {
-    return BbItemPenData::defaultPen;
+    return BbItemPenData::getDefaultPen();
 }
 
 void Blackboard::setDefaultFont(const QFont &font)
 {
-    BbItemTextData::defalutFont = font;
+    BbItemTextData::setDefalutFont(font);
 }
 
 const QFont &Blackboard::defaultFont()
 {
-    return BbItemTextData::defalutFont;
+    return BbItemTextData::getDefalutFont();
 }
 
 void Blackboard::setDefaultTextColor(const QColor &color)
 {
-    BbItemTextData::defalutColor = color;
+    BbItemTextData::setDefalutColor(color);
 }
 
 const QColor &Blackboard::defaultTextColor()
 {
-    return BbItemTextData::defalutColor;
+    return BbItemTextData::getDefalutColor();
 }
 
 void Blackboard::setStraightPen(const QPen &pen)

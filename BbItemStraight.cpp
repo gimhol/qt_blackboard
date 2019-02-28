@@ -194,7 +194,7 @@ qreal BbItemStraight::penWidth()
 
 qreal BbItemStraight::weight()
 {
-    return (_myData->pen.widthF() - BbItemStraightData::minWidth)  / (BbItemStraightData::maxWidth - BbItemStraightData::minWidth);
+    return (_myData->pen.widthF() - BbItemStraightData::getMinWidth())  / (BbItemStraightData::getMaxWidth() - BbItemStraightData::getMinWidth());
 }
 
 void BbItemStraight::setPenWidth(qreal width)
@@ -204,7 +204,7 @@ void BbItemStraight::setPenWidth(qreal width)
 
 void BbItemStraight::setWeight(qreal weight)
 {
-    setPenWidth(BbItemStraightData::minWidth + weight * (BbItemStraightData::maxWidth - BbItemStraightData::minWidth));
+    setPenWidth(BbItemStraightData::getMinWidth() + weight * (BbItemStraightData::getMaxWidth() - BbItemStraightData::getMinWidth()));
 }
 
 void BbItemStraight::writeStream(QDataStream &stream)

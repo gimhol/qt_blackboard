@@ -2,16 +2,55 @@
 
 #include <QDebug>
 
-qreal BbItemTextData::minPointSize = 9;
+static qreal minPointSize = 9;
+static qreal maxPointSize = 72;
+static QFont defalutFont = QFont(QStringLiteral("宋体"), minPointSize);
+static QColor defalutColor = QColor(100,100,180);
 
-qreal BbItemTextData::maxPointSize = 72;
+const qreal &BbItemTextData::getMinPointSize()
+{
+    return minPointSize;
+}
 
-QFont BbItemTextData::defalutFont = QFont(QStringLiteral("宋体"), BbItemTextData::minPointSize);
+const qreal &BbItemTextData::getMaxPointSize()
+{
+    return maxPointSize;
+}
 
-QColor BbItemTextData::defalutColor = QColor(100,100,180);
+const QFont &BbItemTextData::getDefalutFont()
+{
+    return defalutFont;
+}
+
+const QColor &BbItemTextData::getDefalutColor()
+{
+    return defalutColor;
+}
+
+void BbItemTextData::setMinPointSize(const qreal &value)
+{
+    minPointSize = value;
+}
+
+void BbItemTextData::setMaxPointSize(const qreal &value)
+{
+    maxPointSize = value;
+}
+
+void BbItemTextData::setDefalutFont(const QFont &value)
+{
+    defalutFont = value;
+}
+
+void BbItemTextData::setDefalutColor(const QColor &value)
+{
+    defalutColor = value;
+}
 
 BbItemTextData::BbItemTextData(BbItemData::CoordMode mode):
-    BbItemData(mode)
+    BbItemData(mode),
+    font(defalutFont),
+    color(defalutColor)
 {
     tooltype = BBTT_Text;
 }

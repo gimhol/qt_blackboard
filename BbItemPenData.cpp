@@ -1,14 +1,39 @@
 ﻿#include "BbItemPenData.h"
 
 
-qreal BbItemPenData::minWidth = 1.1;
+static qreal minWidth = 1.1;
+static qreal maxWidth = 30;
+static QPen defaultPen = QPen(QColor(100,100,180), minWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
-qreal BbItemPenData::maxWidth = 30;
+const qreal & BbItemPenData::getMinWidth()
+{
+    return minWidth;
+}
+const qreal & BbItemPenData::getMaxWidth()
+{
+    return maxWidth;
+}
+const QPen & BbItemPenData::getDefaultPen()
+{
+    return defaultPen;
+}
+void BbItemPenData::setMinWidth(const qreal &value)
+{
+    minWidth = value;
+}
+void BbItemPenData::setMaxWidth(const qreal &value)
+{
+    maxWidth = value;
+}
 
-QPen BbItemPenData::defaultPen = QPen(QColor(100,100,180), BbItemPenData::minWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+void BbItemPenData::setDefaultPen(const QPen &value)
+{
+    defaultPen = value;
+}
 
 BbItemPenData::BbItemPenData(CoordMode mode):
-    BbItemData(mode)
+    BbItemData(mode),
+    pen(defaultPen)
 {
     tooltype = BBTT_Pen;
 }

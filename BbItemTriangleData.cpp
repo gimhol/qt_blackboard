@@ -1,19 +1,82 @@
 ﻿#include "BbItemTriangleData.h"
 
-QColor BbItemTriangleData::defaultPenColor = QColor(100,100,180);
 
-qreal BbItemTriangleData::minPenWidth = 1.1;
+static QColor defaultPenColor = QColor(100,100,180);
 
-qreal BbItemTriangleData::maxPenWidth = 30;
+static qreal minPenWidth = 1.1;
 
-QPen BbItemTriangleData::defaultPen = QPen(defaultPenColor,minPenWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+static qreal maxPenWidth = 30;
 
-QColor BbItemTriangleData::defaultBrushColor = Qt::transparent;
+static QPen defaultPen = QPen(defaultPenColor,minPenWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
-QBrush BbItemTriangleData::defaultBrush = defaultBrushColor;
+static QColor defaultBrushColor = Qt::transparent;
+
+static QBrush defaultBrush = defaultBrushColor;
+
+const QColor &BbItemTriangleData::getDefaultPenColor()
+{
+    return defaultPenColor;
+}
+
+const qreal &BbItemTriangleData::getMinPenWidth()
+{
+    return minPenWidth;
+}
+
+const qreal &BbItemTriangleData::getMaxPenWidth()
+{
+    return maxPenWidth;
+}
+
+const QPen &BbItemTriangleData::getDefaultPen()
+{
+    return defaultPen;
+}
+
+const QColor &BbItemTriangleData::getDefaultBrushColor()
+{
+    return defaultBrushColor;
+}
+
+const QBrush &BbItemTriangleData::getDefaultBrush()
+{
+    return defaultBrush;
+}
+
+void BbItemTriangleData::setDefaultPenColor(const QColor &value)
+{
+    defaultPenColor = value;
+}
+
+void BbItemTriangleData::setMinPenWidth(const qreal &value)
+{
+    minPenWidth = value;
+}
+
+void BbItemTriangleData::setMaxPenWidth(const qreal &value)
+{
+    maxPenWidth = value;
+}
+
+void BbItemTriangleData::setDefaultPen(const QPen &value)
+{
+    defaultPen = value;
+}
+
+void BbItemTriangleData::setDefaultBrushColor(const QColor &value)
+{
+    defaultBrushColor = value;
+}
+
+void BbItemTriangleData::setDefaultBrush(const QBrush &value)
+{
+    defaultBrush = value;
+}
 
 BbItemTriangleData::BbItemTriangleData(CoordMode mode):
-    BbItemData(mode)
+    BbItemData(mode),
+    pen(defaultPen),
+    brush(defaultBrush)
 {
     tooltype = BBTT_Triangle;
 }

@@ -113,11 +113,10 @@ void BbItemPen::penDown(const QPointF &point){
 
     _myData->isEmpty = false;
 
-    if(_path == nullptr){
+    if(_path == nullptr)
+    {
         _path = new QPainterPath();
     }
-    auto halfPenW = 0.5 * _myData->pen.widthF();
-
     _path->moveTo(0,0);
     _mousePos = point;
     addPointToPath(point);
@@ -227,7 +226,7 @@ qreal BbItemPen::penWidth()
 
 qreal BbItemPen::weight()
 {
-    return (_myData->pen.widthF() - BbItemPenData::minWidth)  / (BbItemPenData::maxWidth - BbItemPenData::minWidth);
+    return (_myData->pen.widthF() - BbItemPenData::getMinWidth())  / (BbItemPenData::getMaxWidth() - BbItemPenData::getMinWidth());
 }
 
 void BbItemPen::setPenWidth(qreal width)

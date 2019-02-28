@@ -1,19 +1,80 @@
 ﻿#include "BbItemEllipseData.h"
 
-QColor BbItemEllipseData::defaultPenColor = QColor(100,100,180);
+static QColor defaultPenColor = QColor(100,100,180);
 
-qreal BbItemEllipseData::minPenWidth = 1.1;
+static qreal minPenWidth = 1.1;
 
-qreal BbItemEllipseData::maxPenWidth = 30;
+static qreal maxPenWidth = 30;
 
-QPen BbItemEllipseData::defaultPen = QPen(defaultPenColor,minPenWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+static QPen defaultPen = QPen(defaultPenColor,minPenWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
-QColor BbItemEllipseData::defaultBrushColor = Qt::transparent;
+static QColor defaultBrushColor = Qt::transparent;
 
-QBrush BbItemEllipseData::defaultBrush = defaultBrushColor;
+static QBrush defaultBrush = defaultBrushColor;
 
+const QColor &BbItemEllipseData::getDefaultPenColor()
+{
+    return defaultPenColor;
+}
+
+const qreal &BbItemEllipseData::getMinPenWidth()
+{
+    return minPenWidth;
+}
+
+const qreal &BbItemEllipseData::getMaxPenWidth()
+{
+    return maxPenWidth;
+}
+
+const QPen &BbItemEllipseData::getDefaultPen()
+{
+    return defaultPen;
+}
+
+const QColor &BbItemEllipseData::getDefaultBrushColor()
+{
+    return defaultBrushColor;
+}
+
+const QBrush &BbItemEllipseData::getDefaultBrush()
+{
+    return defaultBrush;
+}
+
+void BbItemEllipseData::setDefaultPenColor(const QColor &value)
+{
+    defaultPenColor = value;
+}
+
+void BbItemEllipseData::setMinPenWidth(const qreal &value)
+{
+    minPenWidth = value;
+}
+
+void BbItemEllipseData::setMaxPenWidth(const qreal &value)
+{
+    maxPenWidth = value;
+}
+
+void BbItemEllipseData::setDefaultPen(const QPen &value)
+{
+    defaultPen = value;
+}
+
+void BbItemEllipseData::setDefaultBrushColor(const QColor &value)
+{
+    defaultBrushColor = value;
+}
+
+void BbItemEllipseData::setDefaultBrush(const QBrush &value)
+{
+    defaultBrush = value;
+}
 BbItemEllipseData::BbItemEllipseData(CoordMode mode):
-    BbItemData(mode)
+    BbItemData(mode),
+    pen(defaultPen),
+    brush(defaultBrush)
 {
     tooltype = BBTT_Ellipse;
 }

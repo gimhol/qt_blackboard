@@ -587,12 +587,8 @@ void BlackboardScene::pasteItems()
                 continue;
             }
             baseItem->setSelected(true);
-            IItemIndex * index = dynamic_cast<IItemIndex*>(baseItem);
-//            if(index)
-//            {
-//                index->setId(generatItemId());
-//            }
 #ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+            IItemIndex * index = dynamic_cast<IItemIndex*>(baseItem);
             emit blackboard()->itemPaste(index);
 #else
 #define EMIT_PASTE_SIGAL(_ITEM_CLASS_,_ITEM_PASTE_SIGNAL_) \

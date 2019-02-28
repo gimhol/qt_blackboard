@@ -1,19 +1,81 @@
 ﻿#include "BbItemRectData.h"
 
-QColor BbItemRectData::defaultPenColor = QColor(100,100,180);
+static QColor defaultPenColor = QColor(100,100,180);
 
-qreal BbItemRectData::minPenWidth = 1.1;
+static qreal minPenWidth = 1.1;
 
-qreal BbItemRectData::maxPenWidth = 30;
+static qreal maxPenWidth = 30;
 
-QPen BbItemRectData::defaultPen = QPen(defaultPenColor,minPenWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+static QPen defaultPen = QPen(defaultPenColor,minPenWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
-QColor BbItemRectData::defaultBrushColor = Qt::transparent;
+static QColor defaultBrushColor = Qt::transparent;
 
-QBrush BbItemRectData::defaultBrush = defaultBrushColor;
+static QBrush defaultBrush = defaultBrushColor;
+
+const QColor &BbItemRectData::getDefaultPenColor()
+{
+    return defaultPenColor;
+}
+
+const qreal &BbItemRectData::getMinPenWidth()
+{
+    return minPenWidth;
+}
+
+const qreal &BbItemRectData::getMaxPenWidth()
+{
+    return maxPenWidth;
+}
+
+const QPen &BbItemRectData::getDefaultPen()
+{
+    return defaultPen;
+}
+
+const QColor &BbItemRectData::getDefaultBrushColor()
+{
+    return defaultBrushColor;
+}
+
+const QBrush &BbItemRectData::getDefaultBrush()
+{
+    return defaultBrush;
+}
+
+void BbItemRectData::setDefaultPenColor(const QColor &value)
+{
+    defaultPenColor = value;
+}
+
+void BbItemRectData::setMinPenWidth(const qreal &value)
+{
+    minPenWidth = value;
+}
+
+void BbItemRectData::setMaxPenWidth(const qreal &value)
+{
+    maxPenWidth = value;
+}
+
+void BbItemRectData::setDefaultPen(const QPen &value)
+{
+    defaultPen = value;
+}
+
+void BbItemRectData::setDefaultBrushColor(const QColor &value)
+{
+    defaultBrushColor = value;
+}
+
+void BbItemRectData::setDefaultBrush(const QBrush &value)
+{
+    defaultBrush = value;
+}
 
 BbItemRectData::BbItemRectData(CoordMode mode):
-    BbItemData(mode)
+    BbItemData(mode),
+    pen(defaultPen),
+    brush(defaultBrush)
 {
     tooltype = BBTT_Rectangle;
 }
