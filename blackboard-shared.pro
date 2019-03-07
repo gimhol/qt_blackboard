@@ -26,7 +26,22 @@ SOURCES +=
 
 HEADERS +=
 include(blackboard.pri)
-unix {
+unix
+{
     target.path = /usr/lib
     INSTALLS += target
+}
+win32
+{
+    QMAKE_LFLAGS_RELEASE += /MAP
+    QMAKE_CFLAGS_RELEASE += /Zi
+    QMAKE_LFLAGS_RELEASE += /debug /opt:ref
+    QMAKE_LFLAGS_WINDOWS = /SUBSYSTEM:WINDOWS,5.01
+    QMAKE_LFLAGS_CONSOLE = /SUBSYSTEM:CONSOLE,5.01
+
+    DEFINES += _ATL_XP_TARGETING
+    QMAKE_CFLAGS += /D _USING_V120_SDK71_
+    QMAKE_CXXFLAGS += /D _USING_V120_SDK71_
+
+
 }
