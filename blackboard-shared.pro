@@ -5,8 +5,12 @@
 #-------------------------------------------------
 
 QT       += widgets
-
-TARGET = NsbBlackboard
+CONFIG+=debug_and_release
+CONFIG(debug, debug|release) {
+    TARGET = NsbBlackboardd
+} else {
+    TARGET = NsbBlackboard
+}
 TEMPLATE = lib
 
 DEFINES += NSB_BLACKBOARD_SHARED
