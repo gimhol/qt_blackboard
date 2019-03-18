@@ -613,6 +613,16 @@ void BlackboardScene::pasteItems()
     }
 }
 
+QSizeF BlackboardScene::backgroundSize() const
+{
+    return _backgroundSize;
+}
+
+bool BlackboardScene::hasBackground() const
+{
+    return _backgroundItem != nullptr;
+}
+
 void BlackboardScene::setBackground(const QPixmap &pixmap)
 {
     clearBackground();
@@ -625,6 +635,8 @@ void BlackboardScene::setBackground(const QPixmap &pixmap)
     pixmapItem->setTransformationMode(Qt::SmoothTransformation);
     addItem(pixmapItem);
 
+
+    _backgroundSize = pixmap.size();
     _backgroundItem = pixmapItem;
 }
 
@@ -635,6 +647,8 @@ void BlackboardScene::clearBackground()
         QGraphicsScene::removeItem(_backgroundItem);
         delete _backgroundItem;
         _backgroundItem = nullptr;
+        _backgroundSize.setWidth(-1);
+        _backgroundSize.setHeight(-1);
     }
 }
 

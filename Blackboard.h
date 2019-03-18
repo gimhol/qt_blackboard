@@ -205,7 +205,8 @@ public:
     void deselectAll();
     void copyItems();
     void pasteItems();
-
+    QSizeF backgroundSize() const;
+    bool hasBackground() const;
     void setBackground(const QPixmap &pixmap);
     void clearBackground();
 signals:

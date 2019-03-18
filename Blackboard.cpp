@@ -642,6 +642,16 @@ void Blackboard::pasteItems()
     scene()->pasteItems();
 }
 
+QSizeF Blackboard::backgroundSize() const
+{
+    return scene()->backgroundSize();
+}
+
+bool Blackboard::hasBackground() const
+{
+    return scene()->hasBackground();
+}
+
 void Blackboard::setBackground(const QPixmap &pixmap)
 {
     scene()->setBackground(pixmap);

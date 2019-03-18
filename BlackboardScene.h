@@ -49,6 +49,8 @@ protected:
 
     bool _onlyAltDown = false;
 
+    QSize _backgroundSize = QSize(-1,-1);
+
     QGraphicsItem * _backgroundItem = nullptr;
 
     QString _canvasId = "";
@@ -143,6 +145,10 @@ public:
     void copyItems();
 
     void pasteItems();
+
+    QSizeF backgroundSize() const;
+
+    bool hasBackground() const;
 
     void setBackground(const QPixmap &pixmap);
 
