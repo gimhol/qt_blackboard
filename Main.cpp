@@ -1,5 +1,4 @@
-﻿#define BLACKBOARD_ITEM_INDEX_SIGNAL
-#include <BlackboardTestWindow.h>
+﻿#include <BlackboardTestWindow.h>
 #include <QApplication>
 
 #include "BbItemEllipseData.h"
@@ -9,6 +8,7 @@
 
 int main(int argc, char *argv[])
 {
+    QApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
     QApplication appCentre(argc,argv);
     BlackboardTestWindow::start();
     return appCentre.exec();

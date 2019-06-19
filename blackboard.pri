@@ -22,7 +22,8 @@ HEADERS += \
     $$PWD/BbItemImageData.h \
     $$PWD/BbItemImage.h \
     $$PWD/BbPointer.h \
-    $$PWD/BlackboardHeader.h
+    $$PWD/BlackboardHeader.h \
+    $$PWD/BBItemEventType.h
 
 SOURCES += \
     $$PWD/Blackboard.cpp \

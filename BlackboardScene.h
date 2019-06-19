@@ -98,6 +98,9 @@ public:
         return nullptr;
     }
 
+
+
+
     /**
      * @brief setItemIdGenerator 设置id生成器
      * @param itemIDGenerator id生成器, 一个返回字符串类型的匿名函数
@@ -157,7 +160,6 @@ public:
     void setCanvasId(const QString &id);
 
     QString canvasId() const;
-
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 

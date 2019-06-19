@@ -345,6 +345,33 @@ void Blackboard::setControlEnable(bool enable)
     setAttribute(Qt::WA_TransparentForMouseEvents, !enable);
 }
 
+void Blackboard::removeSelectedItems()
+{
+    auto inner = scene();
+    if(inner)
+    {
+        inner->removeSelectedItems();
+    }
+}
+
+void Blackboard::remove(QGraphicsItem *item)
+{
+    auto inner = scene();
+    if(inner)
+    {
+        inner->remove(item);
+    }
+}
+
+void Blackboard::add(QGraphicsItem *item)
+{
+    auto inner = scene();
+    if(inner)
+    {
+        inner->add(item);
+    }
+}
+
 void Blackboard::onScrollXChanged(int x)
 {
     onScrollChanged( x, verticalScrollBar()->value() );

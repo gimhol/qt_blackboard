@@ -84,11 +84,7 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
         painter->setPen(_myData->pen);
         painter->setBrush(Qt::NoBrush);
-        if(_path->length() < 5000)
-        {
-            painter->setRenderHint(QPainter::HighQualityAntialiasing, true);
-        }
-        else if(_path->length() < 10000)
+        if(_path->length() < 2000)
         {
             painter->setRenderHint(QPainter::Antialiasing, true);
         }

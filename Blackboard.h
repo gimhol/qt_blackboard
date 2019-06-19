@@ -2,6 +2,7 @@
 #define CANVASVIEW3_H
 
 #include <QGraphicsView>
+#include "BBItemEventType.h"
 #include "BbToolType.h"
 #include "BlackboardScene.h"
 class BbItemData;
@@ -127,6 +128,35 @@ public:
 
     void setControlEnable(bool enable);
 
+    void removeSelectedItems();
+
+    void remove(QGraphicsItem *item);
+
+    void add(QGraphicsItem *item);
+
+
+    template<typename T>
+    inline T *find(const std::string &lid)
+    {
+        auto scene = this->scene();
+        if(scene)
+        {
+            return scene->find<T>(QString::fromStdString(lid));
+        }
+        return nullptr;
+    }
+
+    template<typename T>
+    inline T *find(const QString &lid)
+    {
+        auto scene = this->scene();
+        if(scene)
+        {
+            return scene->find<T>(lid);
+        }
+        return nullptr;
+    }
+
     void onScrollXChanged(int x);
 
     void onScrollYChanged(int y);
@@ -213,7 +243,11 @@ signals:
     void moved();
     void resized(float scale);
     void scrolled(float x, float y);
+    void itemSelected(IItemIndex *index, bool selected);
 
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+    void itemChanged(BBItemEventType eventType,IItemIndex *index);
+#else
     void penDown(BbItemPen *item);
     void penDraw(BbItemPen *item);
     void penStraighting(BbItemPen *item);
@@ -234,15 +268,6 @@ signals:
     void triangleDragged(BbItemTriangle *item);
     void triangleDone(BbItemTriangle *item);
     void imageAdded(BbItemImage *item);
-
-    void itemSelected(IItemIndex *index, bool selected);
-
-#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
-    void itemMoving(IItemIndex *index);
-    void itemMoved(IItemIndex *index);
-    void itemDelete(IItemIndex *index);
-    void itemPaste(IItemIndex *index);
-#else
     void penMoving(BbItemPen *item);
     void penMoved(BbItemPen *item);
     void penDelete(BbItemPen *item);

@@ -15,6 +15,7 @@
 #include "BbItemTriangleData.h"
 #include "BbItemImage.h"
 #include "BbItemImageData.h"
+#include "BBItemEventType.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include <QDateTime>
@@ -22,6 +23,12 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QMimeData>
+
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+#define EMIT_ITEM_CHANGE(_TYPE_,_ITEM_) blackboard()->itemChanged(BBIET_##_TYPE_,_ITEM_)
+#else
+#define EMIT_ITEM_CHANGE(_TYPE_,_ITEM_) blackboard()->_TYPE_(_ITEM_)
+#endif
 
 BlackboardScene::BlackboardScene(Blackboard *parent):
     QGraphicsScene(parent)
@@ -82,7 +89,7 @@ void BlackboardScene::removeSelectedItems()
         break
 
 #ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
-        emit blackboard()->itemDelete(idx);
+        emit EMIT_ITEM_CHANGE(itemDelete,idx);
         remove(item);
 #else
         switch(idx->toolType())
@@ -166,7 +173,7 @@ void BlackboardScene::emitItemMovingSignals()
             continue;
         }
 #ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
-        emit blackboard()->itemMoving(idx);
+        emit EMIT_ITEM_CHANGE(itemMoving,idx);
 #else
         switch(idx->toolType())
         {
@@ -225,7 +232,7 @@ void BlackboardScene::emitItemMovedSignals()
             continue;
         }
 #ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
-        emit blackboard()->itemMoved(idx);
+        emit EMIT_ITEM_CHANGE(itemMoved,idx);
 #else
         switch(idx->toolType())
         {
@@ -450,21 +457,21 @@ void BlackboardScene::keyPressEvent(QKeyEvent *e)
             if(straight)
             {
                 straight->setFortyFive(true);
-                emit blackboard()->straightDragged(straight);
+                emit EMIT_ITEM_CHANGE(straightDragged,straight);
                 break;
             }
             BbItemRect * rect = dynamic_cast<BbItemRect *>(_curElement);
             if(rect)
             {
                 rect->setSquare(true);
-                emit blackboard()->rectDragged(rect);
+                emit EMIT_ITEM_CHANGE(rectDragged,rect);
                 break;
             }
             BbItemEllipse * ellipse = dynamic_cast<BbItemEllipse *>(_curElement);
             if(ellipse)
             {
                 ellipse->setCircle(true);
-                emit blackboard()->ellipseDragged(ellipse);
+                emit EMIT_ITEM_CHANGE(ellipseDragged,ellipse);
                 break;
             }
             break;
@@ -499,28 +506,28 @@ void BlackboardScene::keyReleaseEvent(QKeyEvent *e)
             if(pen)
             {
                 pen->setStraight(false);
-                emit blackboard()->penDraw(pen);
+                emit EMIT_ITEM_CHANGE(penDraw,pen);
                 break;
             }
             BbItemStraight * straight = dynamic_cast<BbItemStraight *>(_curElement);
             if(straight)
             {
                 straight->setFortyFive(false);
-                emit blackboard()->straightDragged(straight);
+                emit EMIT_ITEM_CHANGE(straightDragged,straight);
                 break;
             }
             BbItemRect * rect = dynamic_cast<BbItemRect *>(_curElement);
             if(rect)
             {
                 rect->setSquare(false);
-                emit blackboard()->rectDragged(rect);
+                emit EMIT_ITEM_CHANGE(rectDragged,rect);
                 break;
             }
             BbItemEllipse * ellipse = dynamic_cast<BbItemEllipse *>(_curElement);
             if(ellipse)
             {
                 ellipse->setCircle(false);
-                emit blackboard()->ellipseDragged(ellipse);
+                emit EMIT_ITEM_CHANGE(ellipseDragged,ellipse);
                 break;
             }
             break;
@@ -589,7 +596,7 @@ void BlackboardScene::pasteItems()
             baseItem->setSelected(true);
 #ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
             IItemIndex * index = dynamic_cast<IItemIndex*>(baseItem);
-            emit blackboard()->itemPaste(index);
+            emit EMIT_ITEM_CHANGE(itemPaste,index);
 #else
 #define EMIT_PASTE_SIGAL(_ITEM_CLASS_,_ITEM_PASTE_SIGNAL_) \
     do{ \
@@ -675,7 +682,7 @@ void BlackboardScene::localRectBegin(const QPointF &pos)
     rect->setId(generatItemId());
     rect->setSquare(_onlyShiftDown);
     _curElement = rect;
-    emit blackboard()->rectBegun(rect);
+    emit EMIT_ITEM_CHANGE(rectBegun,rect);
 }
 
 void BlackboardScene::localRectDrag(const QPointF &pos)
@@ -684,7 +691,7 @@ void BlackboardScene::localRectDrag(const QPointF &pos)
     if(rect)
     {
         rect->drag(pos);
-        emit blackboard()->rectDragged(rect);
+        emit EMIT_ITEM_CHANGE(rectDragged,rect);
     }
 }
 
@@ -694,7 +701,7 @@ void BlackboardScene::localRectDone()
     if(rect)
     {
         rect->done();
-        emit blackboard()->rectDone(rect);
+        emit EMIT_ITEM_CHANGE(rectDone,rect);
     }
     _curElement = nullptr;
 }
@@ -712,7 +719,7 @@ void BlackboardScene::localEllipseBegin(const QPointF &pos)
     ellipse->setId(generatItemId());
     ellipse->setCircle(_onlyShiftDown);
     _curElement = ellipse;
-    emit blackboard()->ellipseBegun(ellipse);
+    emit EMIT_ITEM_CHANGE(ellipseBegun,ellipse);
 }
 
 void BlackboardScene::localEllipseDrag(const QPointF &pos)
@@ -721,7 +728,7 @@ void BlackboardScene::localEllipseDrag(const QPointF &pos)
     if(ellipse)
     {
         ellipse->drag(pos);
-        emit blackboard()->ellipseDragged(ellipse);
+        emit EMIT_ITEM_CHANGE(ellipseDragged,ellipse);
     }
 }
 
@@ -731,7 +738,7 @@ void BlackboardScene::localEllipseDone()
     if(ellipse)
     {
         ellipse->done();
-        emit blackboard()->ellipseDone(ellipse);
+        emit EMIT_ITEM_CHANGE(ellipseDone,ellipse);
     }
     _curElement = nullptr;
 }
@@ -754,7 +761,7 @@ void BlackboardScene::localTriangleBegin(const QPointF &pos)
     triangle->begin(pos);
     triangle->setId(generatItemId());
     _curElement = triangle;
-    emit blackboard()->triangleBegun(triangle);
+    emit EMIT_ITEM_CHANGE(triangleBegun,triangle);
 }
 
 void BlackboardScene::localTriangleDrag(const QPointF &pos)
@@ -763,7 +770,7 @@ void BlackboardScene::localTriangleDrag(const QPointF &pos)
     if(triangle)
     {
         triangle->drag(pos);
-        emit blackboard()->triangleDragged(triangle);
+        emit EMIT_ITEM_CHANGE(triangleDragged,triangle);
     }
 }
 
@@ -774,7 +781,7 @@ void BlackboardScene::localTriangleDone(bool force)
     {
         triangle->done();
 
-        emit blackboard()->triangleDone(triangle);
+        emit EMIT_ITEM_CHANGE(triangleDone,triangle);
 
         if(triangle->step() > 1 || force)
         {
@@ -800,7 +807,7 @@ void BlackboardScene::localStraightBegin(const QPointF &pos)
     straight->setId(generatItemId());
     straight->setFortyFive(_onlyShiftDown);
     _curElement = straight;
-    emit blackboard()->straightBegun(straight);
+    emit EMIT_ITEM_CHANGE(straightBegun,straight);
 }
 
 void BlackboardScene::localStraightDrag(const QPointF &pos)
@@ -809,7 +816,7 @@ void BlackboardScene::localStraightDrag(const QPointF &pos)
     if(straight)
     {
         straight->drag(pos);
-        emit blackboard()->straightDragged(straight);
+        emit EMIT_ITEM_CHANGE(straightDragged,straight);
     }
 }
 
@@ -819,7 +826,7 @@ void BlackboardScene::localStraightDone()
     if(straight)
     {
         straight->done();
-        emit blackboard()->straightDone(straight);
+        emit EMIT_ITEM_CHANGE(straightDone,straight);
     }
     _curElement = nullptr;
 }
@@ -837,7 +844,7 @@ void BlackboardScene::localPenDown(const QPointF & mousePos)
     pen->setStraight(_onlyShiftDown);
     _curElement = pen;
 
-    emit blackboard()->penDown(pen);
+    emit EMIT_ITEM_CHANGE(penDown,pen);
 }
 
 void BlackboardScene::loaclPenDraw(const QPointF &mousePos)
@@ -848,12 +855,12 @@ void BlackboardScene::loaclPenDraw(const QPointF &mousePos)
         if(!pen->straight())
         {
             pen->penDraw(mousePos);
-            emit blackboard()->penDraw(pen);
+            emit EMIT_ITEM_CHANGE(penDraw,pen);
         }
         else
         {
             pen->penStraighting(mousePos);
-            emit blackboard()->penStraighting(pen);
+            emit EMIT_ITEM_CHANGE(penStraighting,pen);
         }
     }
 }
@@ -866,10 +873,10 @@ void BlackboardScene::localPenDone()
         if(pen->straight())
         {
             pen->setStraight(false);
-            emit blackboard()->penDraw(pen);
+            emit EMIT_ITEM_CHANGE(penDraw,pen);
         }
         pen->done();
-        emit blackboard()->penDone(pen);
+        emit EMIT_ITEM_CHANGE(penDone,pen);
     }
     _curElement = nullptr;
 }
@@ -887,7 +894,7 @@ void BlackboardScene::localTextAdded(const QPointF &pos)
     text->setPos(pos.x(), pos.y() - 0.5 * text->boundingRect().height());
     text->setId(generatItemId());
     _curElement = text;
-    emit blackboard()->textAdded(text);
+    emit EMIT_ITEM_CHANGE(textAdded,text);
 }
 
 void BlackboardScene::localTextDone()
@@ -896,7 +903,7 @@ void BlackboardScene::localTextDone()
     if(text)
     {
         text->clearFocus();
-        emit blackboard()->textDone(text);
+        emit EMIT_ITEM_CHANGE(textDone,text);
     }
     _curElement = nullptr;
 }
@@ -1227,10 +1234,10 @@ void BlackboardScene::add(QGraphicsItem *item)
         text->setOnFoucsOutCallback([this](BbItemText *text){
             text->setActive(false);
             text->setSelected(false);
-            emit blackboard()->textDone(text);
+            emit EMIT_ITEM_CHANGE(textDone,text);
         });
         text->setContentChangedCallback([this](BbItemText *text){
-            emit blackboard()->textChanged(text);
+            emit EMIT_ITEM_CHANGE(textChanged,text);
         });
     }
     item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,_toolType == BBTT_Picker);
@@ -1345,7 +1352,7 @@ void BlackboardScene::addImageItem(const QPixmap &pixmap)
     add(item);
     item->setZValue(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());
-    emit blackboard()->imageAdded(item);
+    emit EMIT_ITEM_CHANGE(imageAdded,item);
 }
 
 QGraphicsItem *BlackboardScene::copyItemFromStream(QDataStream &stream)
