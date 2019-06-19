@@ -7,7 +7,8 @@ HEADERS += \
     $$PWD/HueBar.h \
     $$PWD/AlphaBar.h \
     $$PWD/ColorDisplayer.h
-SOURCES += Main.cpp \
+SOURCES += \
+    $$PWD/Main.cpp \
     $$PWD/ColorPanel.cpp \
     $$PWD/BlackboardTestWindow.cpp \
     $$PWD/SaturationValueZone.cpp \
@@ -18,5 +19,6 @@ SOURCES += Main.cpp \
 FORMS += \
     $$PWD/ColorPanel.ui \
     $$PWD/BlackboardTestWindow.ui
+
 OTHER_FILES += $$PWD/app.rc
 RC_FILE += $$PWD/app.rc
