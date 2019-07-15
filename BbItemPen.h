@@ -8,9 +8,6 @@
 #include "IStreamWR.h"
 #include "IItemIndex.h"
 
-#define LINE_SMOOTHING 0 // 1 开启线条圆滑模式，在一笔的轨迹过长的时候，会卡顿。
-#define LINE_SMOOTHING_UNIT 20 // 开启线条圆滑后，圆滑曲线中每一小段直线的长度
-#define SAVE_TO_PIXMAP_WHEN_DONE 0  // 1 以位图的形式保存一个书写轨迹，在放大缩小窗口时，会出现轨迹失真（锯齿）的情况。
 class BbItemPenData;
 class NSB_BLACKBOARD_EXPORT BbItemPen : public QGraphicsRectItem, public IStreamWR, public IItemIndex{
 
@@ -19,7 +16,7 @@ protected:
     QPixmap *_pixmap = nullptr;
 #endif
 
-#if LINE_SMOOTHING
+#if NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
     QList<QPointF> _temp;
 
     float _distances[3];
@@ -85,7 +82,7 @@ protected:
 
     void addPointToPath(const QPointF &point);
 
-#if LINE_SMOOTHING
+#if NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
     void appendPointSmoothing(const QPointF &point);
 #endif
 

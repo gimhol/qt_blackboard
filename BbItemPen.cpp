@@ -3,7 +3,7 @@
 #include "Blackboard.h"
 #include "BbItemPenData.h"
 
-#if LINE_SMOOTHING
+#if NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
 float penSqrt(float number)
 {
     long i;
@@ -132,7 +132,7 @@ void BbItemPen::penDraw(const QPointF &point)
 
     _mousePos = point;
 
-#if LINE_SMOOTHING
+#if NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
     appendPointSmoothing(point);
 #else
     addPointToPath(point);
@@ -331,7 +331,7 @@ void BbItemPen::addPointToPath(const QPointF &point)
     _rect.setHeight(_rect.height()+halfPenW);
 }
 
-#if LINE_SMOOTHING
+#if NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
 void BbItemPen::appendPointSmoothing(const QPointF &point)
 {
     qreal halfPenW = 0.5 * _myData->pen.widthF();
@@ -370,7 +370,7 @@ void BbItemPen::appendPointSmoothing(const QPointF &point)
                     std::powf(d->y()-c->y(),2)
                     );
 
-        cutting = _distances[1] / LINE_SMOOTHING_UNIT;
+        cutting = _distances[1] / NSB_BLACKBOARD_PEN_SMOOTHING_UNIT;
 
         if (cutting > 0 && _distances[0] * 2 > 0.1f * (_distances[1] + _distances[2])) {
 
