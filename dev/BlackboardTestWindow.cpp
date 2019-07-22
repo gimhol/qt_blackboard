@@ -555,27 +555,26 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         _EVENT_TYPE_(dynamic_cast<_ITEM_TYPE_*>(index)); \
         break
 
-    connect(blackboard0,&Blackboard::multipleItemChanged,[=](BBItemEventType eventType,IItemIndex *current){
-        while(current)
+    connect(blackboard0,&Blackboard::multipleItemChanged,[=](BBItemEventType eventType,IItemIndex *index){
+        while(index)
         {
-            auto next = current->next;
+            auto next = index->next;
             switch(eventType)
             {
-                case BBIET_multipleItemMoving: itemMoving(dynamic_cast<QGraphicsItem*>(current));break;
-                case BBIET_multipleItemMoved: itemMoved(dynamic_cast<QGraphicsItem*>(current)); break;
-                case BBIET_multipleItemDelete: itemDelete(dynamic_cast<QGraphicsItem*>(current)); break;
-                case BBIET_multipleItemPaste: itemPaste(dynamic_cast<QGraphicsItem*>(current)); break;
+                HANDLE_ITEM_EVENT(itemMoving,QGraphicsItem);
+                HANDLE_ITEM_EVENT(itemMoved,QGraphicsItem);
+                HANDLE_ITEM_EVENT(itemDelete,QGraphicsItem);
+                HANDLE_ITEM_EVENT(itemPaste,QGraphicsItem);
+                case BBIET_none:
+                default:
+                    break;
             }
-            current = next;
+            index = next;
         }
     });
     connect(blackboard0,&Blackboard::itemChanged,[=](BBItemEventType eventType,IItemIndex *index){
         switch(eventType)
         {
-//            HANDLE_ITEM_EVENT(itemMoving,QGraphicsItem);
-//            HANDLE_ITEM_EVENT(itemMoved,QGraphicsItem);
-//            HANDLE_ITEM_EVENT(itemDelete,QGraphicsItem);
-//            HANDLE_ITEM_EVENT(itemPaste,QGraphicsItem);
             HANDLE_ITEM_EVENT(penStraighting,BbItemPen);
             HANDLE_ITEM_EVENT(penDown,BbItemPen);
             HANDLE_ITEM_EVENT(penDraw,BbItemPen);

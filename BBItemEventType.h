@@ -27,12 +27,6 @@ enum BBItemEventType
     BBIET_triangleBegun,
     BBIET_triangleDragged,
     BBIET_triangleDone,
-    BBIET_imageAdded,
-
-    BBIET_multipleItemMoving,
-    BBIET_multipleItemMoved,
-    BBIET_multipleItemDelete,
-    BBIET_multipleItemPaste,
-
+    BBIET_imageAdded
 };
 #endif // BBITEMEVENTTYPE_H

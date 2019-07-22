@@ -96,7 +96,7 @@ void BlackboardScene::removeSelectedItems()
             emit EMIT_ITEM_CHANGE(itemDelete,idx);
         }
     }
-    emit blackboard()->multipleItemChanged(BBIET_multipleItemDelete,first);
+    emit blackboard()->multipleItemChanged(BBIET_itemDelete,first);
     current = first;
     while(current)
     {
@@ -228,7 +228,7 @@ void BlackboardScene::emitItemMovingSignals()
     }
     if(first)
     {
-        emit blackboard()->multipleItemChanged(BBIET_multipleItemMoving,first);
+        emit blackboard()->multipleItemChanged(BBIET_itemMoving,first);
     }
 #else
     for(auto item: selectedItems())
@@ -295,7 +295,7 @@ void BlackboardScene::emitItemMovedSignals()
     }
     if(first && hasMoved)
     {
-        emit blackboard()->multipleItemChanged(BBIET_multipleItemMoved,first);
+        emit blackboard()->multipleItemChanged(BBIET_itemMoved,first);
         current = first;
         while(current)
         {
@@ -697,7 +697,7 @@ void BlackboardScene::pasteItems()
 #ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
     if(first)
     {
-        emit blackboard()->multipleItemChanged(BBIET_multipleItemPaste,first);
+        emit blackboard()->multipleItemChanged(BBIET_itemPaste,first);
     }
 #endif
 }
