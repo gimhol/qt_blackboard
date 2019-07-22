@@ -18,6 +18,8 @@ protected:
 
     unsigned char _step = 0;
 
+    QPointF _points[3];
+
 public:
     BbItemTriangle();
 
@@ -28,7 +30,7 @@ public:
     void begin(const QPointF & point);
     void drag(const QPointF & point);
     void done();
-    void repaintWithItemData();
+    void repaintWithItemData() override;
 
     unsigned char step();
 
@@ -68,6 +70,7 @@ public:
     void setId(const QString &id) override;
     BbToolType toolType() const override;
     BlackboardScene *scene() override;
+    BbItemData *data() override;
 };
 
 

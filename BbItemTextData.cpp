@@ -62,6 +62,7 @@ void BbItemTextData::writeStream(QDataStream &stream)
 
     //再写入文本数据
     stream << font.family()
+           << font.pointSizeF()
            << font.weight()
            << font.italic()
            << font.bold()
@@ -76,12 +77,13 @@ void BbItemTextData::readStream(QDataStream &stream)
 
     //再读取文本数据
     QString fontFamily;
-
+    qreal pointSizeF;
     int weight;
     bool italic, bold;
     QRgb rgba;
 
     stream >> fontFamily
+            >> pointSizeF
             >> weight
             >> italic
             >> bold
@@ -91,6 +93,7 @@ void BbItemTextData::readStream(QDataStream &stream)
     isEmpty = text.length() == 0;
 
     font.setFamily(fontFamily);
+    font.setPointSizeF(pointSizeF);
     font.setWeight(weight);
     font.setItalic(italic);
     font.setBold(bold);

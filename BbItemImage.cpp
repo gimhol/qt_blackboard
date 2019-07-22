@@ -81,3 +81,8 @@ BlackboardScene *BbItemImage::scene()
 {
     return dynamic_cast<BlackboardScene *>(QGraphicsItem::scene());
 }
+
+BbItemData *BbItemImage::data()
+{
+    return _myData;
+}

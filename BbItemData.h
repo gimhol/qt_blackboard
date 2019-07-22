@@ -6,6 +6,7 @@
 #include "BbToolType.h"
 #include <QDataStream>
 
+class IItemIndex;
 /**
  * @brief The BbItemData class
  *      黑板上item的数据，
@@ -40,7 +41,25 @@ public:
      */
     qreal y = -9999;
 
+    /**
+     * @brief z 层次，越大的越在上面
+     */
     qreal z = -9999;
+
+    /**
+     * @brief x 上一次的x坐标， -9999代表没有移动
+     */
+    qreal prevX = -9999;
+
+    /**
+     * @brief y 上一次的y坐标,-9999代表没有移动
+     */
+    qreal prevY = -9999;
+
+    /**
+     * @brief z 上一次的层次，越大的越在上面
+     */
+    qreal prevZ = -9999;
 
     /**
      * @brief isEmpty 是否为空
@@ -56,6 +75,11 @@ public:
 
     virtual ~BbItemData() override;
 
+    virtual bool isPositionValid();
+
+    virtual bool isPrevPositionValid();
+
+    virtual void updatePostion(IItemIndex *itemIdx);
     // IStreamWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;

@@ -19,8 +19,13 @@ public:
      */
     QPen pen;
 
+    /**
+     * @brief a 起点
+     */
     QPointF a;
-
+    /**
+     * @brief b 终点
+     */
     QPointF b;
 
     explicit BbItemStraightData(CoordMode mode = CM_ABSOLUTE);

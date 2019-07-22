@@ -40,6 +40,7 @@ void BbItemTriangle::begin(const QPointF &point)
     _myData->isEmpty = false;
 
     setupRectWithABC();
+    _myData->updatePostion(this);
 }
 
 void BbItemTriangle::drag(const QPointF &point)
@@ -55,6 +56,7 @@ void BbItemTriangle::drag(const QPointF &point)
         _myData->points[2] = point;
     }
     setupRectWithABC();
+    _myData->updatePostion(this);
 }
 
 void BbItemTriangle::done()
@@ -71,27 +73,27 @@ void BbItemTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
         painter->setPen(_myData->pen);
         painter->setRenderHint(QPainter::Antialiasing);
 
-        if(_myData->points[0] == _myData->points[1])
+        if(_myData->points[0] == _myData->points[1])  // 一个点。
         {
             qreal halfPenW = 0.5 * _myData->pen.widthF();
             painter->setBrush(QBrush(_myData->pen.color()));
             painter->setPen(Qt::NoPen);
-            painter->drawEllipse(_myData->points[0].x() - halfPenW,
-                                 _myData->points[0].y() - halfPenW,
-                                 2*halfPenW,
-                                 2*halfPenW);
+            painter->drawEllipse(int(halfPenW),
+                                 int(halfPenW),
+                                 int(2*halfPenW),
+                                 int(2*halfPenW));
         }
-        else if(_myData->points[1] == _myData->points[2])
+        else if(_myData->points[1] == _myData->points[2]) // 两个点。
         {
             painter->setBrush(Qt::NoBrush);
             painter->setPen(_myData->pen);
-            painter->drawLine(_myData->points[0],_myData->points[1]);
+            painter->drawLine(_points[0],_points[1]);
         }
-        else
+        else // 三个点。
         {
             painter->setBrush(_myData->brush);
             painter->setPen(_myData->pen);
-            painter->drawPolygon(_myData->points,3);
+            painter->drawPolygon(_points,3);
         }
     }
 }
@@ -123,11 +125,17 @@ void BbItemTriangle::setupRectWithABC()
             maxy = _myData->points[i].y();
         }
     }
-    qreal x = -halfPenW + minx - pos().x();
-    qreal y = -halfPenW + miny - pos().y();
-    qreal w = halfPenW + maxx - pos().x() - x;
-    qreal h = halfPenW + maxy -pos().y() - y;
-    setRect(x,y,w,h);
+    qreal x = -halfPenW + minx;
+    qreal y = -halfPenW + miny;
+    qreal w = halfPenW + maxx - x;
+    qreal h = halfPenW + maxy - y;
+
+    setPos(x+halfPenW,y+halfPenW);
+    setRect(-halfPenW,-halfPenW,w,h);
+    for(int i=0;i<3;++i)
+    {
+        _points[i] = _myData->points[i] - pos();
+    }
     update();
 }
 
@@ -142,7 +150,7 @@ void BbItemTriangle::repaintWithItemData()
         _myData->points[2] *= ratio;
     }
     setupRectWithABC();
-    if( _myData->x > -9998 && _myData->y > -9998 )
+    if( _myData->isPositionValid() )
     {
         qreal x = _myData->x;
         qreal y = _myData->y;
@@ -243,4 +251,9 @@ BbToolType BbItemTriangle::toolType() const
 BlackboardScene *BbItemTriangle::scene()
 {
     return dynamic_cast<BlackboardScene *>(QGraphicsRectItem::scene());
+}
+
+BbItemData *BbItemTriangle::data()
+{
+    return _myData;
 }

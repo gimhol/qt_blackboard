@@ -154,6 +154,20 @@ void BlackboardScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 localStraightBegin(_mouseBeginPos);
                 break;
             }
+            case BBTT_Picker:
+            {
+                for(auto item: selectedItems())
+                {
+                    IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
+                    if(idx)
+                    {
+                        auto data = idx->data();
+                        data->prevX = data->x;
+                        data->prevY = data->y;
+                    }
+                }
+                break;
+            }
             default:
             {
                 break;
@@ -172,6 +186,7 @@ void BlackboardScene::emitItemMovingSignals()
         {
             continue;
         }
+        idx->data()->updatePostion(idx);
 #ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
         emit EMIT_ITEM_CHANGE(itemMoving,idx);
 #else
@@ -231,6 +246,7 @@ void BlackboardScene::emitItemMovedSignals()
         {
             continue;
         }
+        idx->data()->updatePostion(idx);
 #ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
         emit EMIT_ITEM_CHANGE(itemMoved,idx);
 #else

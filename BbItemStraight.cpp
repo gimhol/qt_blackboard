@@ -33,12 +33,14 @@ BbItemStraight::~BbItemStraight()
 
 void BbItemStraight::begin(const QPointF &point)
 {
+    setPos(point);
+    _myData->updatePostion(this);
     _myData->a = point;
     _myData->b = point;
-    _mousePos = point;
     _myData->isEmpty = false;
-
+    _mousePos = point;
     setupRectWithAB();
+    _myData->updatePostion(this);
 }
 
 void BbItemStraight::drag(const QPointF &point)
@@ -53,6 +55,7 @@ void BbItemStraight::drag(const QPointF &point)
         _myData->b = point;
     }
     setupRectWithAB();
+    _myData->updatePostion(this);
 }
 
 void BbItemStraight::done()
@@ -73,16 +76,16 @@ void BbItemStraight::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
             qreal halfPenW = 0.5 * _myData->pen.widthF();
             painter->setBrush(QBrush(_myData->pen.color()));
             painter->setPen(Qt::NoPen);
-            painter->drawEllipse(_myData->a.x() - halfPenW,
-                                 _myData->a.y() - halfPenW,
-                                 2*halfPenW,
-                                 2*halfPenW);
+            painter->drawEllipse(int(halfPenW),
+                                 int(halfPenW),
+                                 int(2*halfPenW),
+                                 int(2*halfPenW));
         }
         else
         {
             painter->setBrush(Qt::NoBrush);
             painter->setPen(_myData->pen);
-            painter->drawLine(_myData->a,_myData->b);
+            painter->drawLine(_a,_b);
         }
     }
 }
@@ -125,11 +128,16 @@ QPointF BbItemStraight::toFortyFive(const QPointF &point)
 void BbItemStraight::setupRectWithAB()
 {
     qreal halfPenW = 0.5 * _myData->pen.widthF();
-    qreal x = -halfPenW+std::min(_myData->a.x()-pos().x(), _myData->b.x()-pos().x());
-    qreal y = -halfPenW+std::min(_myData->a.y()-pos().y(), _myData->b.y()-pos().y());
-    qreal w = halfPenW+std::max(_myData->a.x()-pos().x(), _myData->b.x()-pos().x()) - x;
-    qreal h = halfPenW+std::max(_myData->a.y()-pos().y(), _myData->b.y()-pos().y()) - y;
-    setRect(x,y,w,h);
+    qreal x = -halfPenW+std::min(_myData->a.x(), _myData->b.x());
+    qreal y = -halfPenW+std::min(_myData->a.y(), _myData->b.y());
+    qreal w = halfPenW+std::max(_myData->a.x(), _myData->b.x()) - x;
+    qreal h = halfPenW+std::max(_myData->a.y(), _myData->b.y()) - y;
+
+    setPos(x+halfPenW,y+halfPenW);
+    setRect(-halfPenW,-halfPenW,w,h);
+    _a = _myData->a - pos();
+    _b = _myData->b - pos();
+    update();
 }
 
 void BbItemStraight::repaintWithItemData()
@@ -142,18 +150,18 @@ void BbItemStraight::repaintWithItemData()
         _myData->b *= ratio;
     }
     setupRectWithAB();
-    if( _myData->x > -9998 && _myData->y > -9998 )
+    if( _myData->isPositionValid() )
     {
-        qreal x = _myData->x;
-        qreal y = _myData->y;
         if(_myData->mode == BbItemData::CM_PERCENTAGE)
         {
             qreal width = scene()->width();
             qreal ratio = width / 100;
-            x *= ratio;
-            y *= ratio;
+            setPos(_myData->x*ratio,_myData->y*ratio);
         }
-        setPos(x,y);
+        else
+        {
+            setPos(_myData->x,_myData->y);
+        }
     }
     setZValue(_myData->z);
     update();
@@ -245,4 +253,9 @@ BbToolType BbItemStraight::toolType() const
 BlackboardScene *BbItemStraight::scene()
 {
     return dynamic_cast<BlackboardScene *>(QGraphicsRectItem::scene());
+}
+
+BbItemData *BbItemStraight::data()
+{
+    return _myData;
 }

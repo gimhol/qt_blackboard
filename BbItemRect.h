@@ -70,6 +70,7 @@ public:
     void setId(const QString &id) override;
     BbToolType toolType() const override;
     BlackboardScene *scene() override;
+    BbItemData *data() override;
 };
 
 #endif // BBITEMRECT_H

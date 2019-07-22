@@ -3,7 +3,7 @@
 #include "Blackboard.h"
 #include "BbItemPenData.h"
 
-#if NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
+#ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
 float penSqrt(float number)
 {
     long i;
@@ -23,7 +23,7 @@ BbItemPen::BbItemPen():QGraphicsRectItem()
 {
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
-#if LINE_SMOOTHING
+#ifdef LINE_SMOOTHING
     _distances[0] = -1;
     _distances[1] = -1;
     _distances[2] = -1;
@@ -35,7 +35,7 @@ BbItemPen::BbItemPen(BbItemPenData *penData):QGraphicsRectItem()
 {
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
-#if LINE_SMOOTHING
+#ifdef LINE_SMOOTHING
     _distances[0] = -1;
     _distances[1] = -1;
     _distances[2] = -1;
@@ -55,7 +55,7 @@ BbItemPen::~BbItemPen()
         _path = nullptr;
     }
 
-#if SAVE_TO_PIXMAP_WHEN_DONE
+#ifdef SAVE_TO_PIXMAP_WHEN_DONE
     if(_pixmap){
         delete _pixmap;
         _pixmap = nullptr;
@@ -94,7 +94,7 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
             painter->drawLine(_straightLineFrom, _straightLineTo);
         }
     }
-#if SAVE_TO_PIXMAP_WHEN_DONE
+#ifdef SAVE_TO_PIXMAP_WHEN_DONE
     if(_pixmap != nullptr){
         int width = rect().width();
         int height = rect().height();
@@ -106,6 +106,7 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 void BbItemPen::penDown(const QPointF &point){
     setPos(point);
+    _myData->updatePostion(this);
 
     _myData->isEmpty = false;
 
@@ -132,7 +133,7 @@ void BbItemPen::penDraw(const QPointF &point)
 
     _mousePos = point;
 
-#if NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
+#ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
     appendPointSmoothing(point);
 #else
     addPointToPath(point);
@@ -264,6 +265,7 @@ void BbItemPen::straightLineDragging(const QPointF &point)
     _straightLineFrom += QPointF(oldLeft - newLeft,oldTop - newTop);
     _path->translate(oldLeft - newLeft,oldTop - newTop);
     setPos(newLeft, newTop);
+    _myData->updatePostion(this);
 
     QRectF pathRect = _path->boundingRect();
 
@@ -312,7 +314,7 @@ void BbItemPen::addPointToPath(const QPointF &point)
     _path->lineTo(point - QPointF(newLeft, newTop));
 
      setPos(newLeft, newTop);
-
+     _myData->updatePostion(this);
      if(_myData->mode == BbItemPenData::CM_PERCENTAGE)
      {
          qreal ratio = scene()->width() / 100;
@@ -331,7 +333,7 @@ void BbItemPen::addPointToPath(const QPointF &point)
     _rect.setHeight(_rect.height()+halfPenW);
 }
 
-#if NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
+#ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
 void BbItemPen::appendPointSmoothing(const QPointF &point)
 {
     qreal halfPenW = 0.5 * _myData->pen.widthF();
@@ -433,11 +435,8 @@ void BbItemPen::repaintWithItemData()
 
         _path->translate(oldLeft-newLeft,oldTop-newTop);
         _path->lineTo(point-QPointF(newLeft, newTop));
-
          setPos(newLeft, newTop);
-
     }
-//    _path->translate(halfPenW,halfPenW);
     _rect = _path->boundingRect();
     _rect.setX(_rect.x()-halfPenW);
     _rect.setY(_rect.y()-halfPenW);
@@ -448,7 +447,7 @@ void BbItemPen::repaintWithItemData()
 
     done();
 
-    if( _myData->x > -9998 && _myData->y > -9998 ){
+    if( _myData->isPositionValid() ){
         qreal x = _myData->x;
         qreal y = _myData->y;
         if(_myData->mode == BbItemPenData::CM_PERCENTAGE)
@@ -501,15 +500,8 @@ QPointF BbItemPen::straightTo()
 
 void BbItemPen::writeStream(QDataStream &stream)
 {
-    _myData->x = x();
-    _myData->y = y();
+    _myData->updatePostion(this);
     _myData->z = zValue();
-    if(_myData->mode == BbItemPenData::CM_PERCENTAGE)
-    {
-        qreal ratio = scene()->width() / 100;
-        _myData->x /= ratio;
-        _myData->y /= ratio;
-    }
     _myData->writeStream(stream);
 }
 
@@ -537,5 +529,10 @@ BbToolType BbItemPen::toolType() const
 BlackboardScene *BbItemPen::scene()
 {
     return dynamic_cast<BlackboardScene *>(QGraphicsRectItem::scene());
+}
+
+BbItemData *BbItemPen::data()
+{
+    return _myData;
 }
 

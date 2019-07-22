@@ -16,6 +16,8 @@ protected:
     bool _fortyFive = false;
 
     QPointF _mousePos;
+    QPointF _a;
+    QPointF _b;
 public:
     BbItemStraight();
 
@@ -65,6 +67,7 @@ public:
     void setId(const QString &id) override;
     BbToolType toolType() const override;
     BlackboardScene *scene() override;
+    BbItemData *data();
 };
 
 #endif // BBITEMSTRAIGHT_H

@@ -2,6 +2,7 @@
 #include "BbItemRect.h"
 #include "BbItemStraight.h"
 #include "BbItemText.h"
+#include "BbItemData.h"
 #include "BbItemEllipse.h"
 #include "BbItemTriangle.h"
 #include "BlackboardTestWindow.h"
@@ -278,7 +279,19 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto itemMoved = itemMoving;
+    auto itemMoved = [itemMoving](QGraphicsItem *item)
+    {
+        itemMoving(item);
+        auto index = dynamic_cast<IItemIndex*>(item);
+        if(index)
+        {
+
+            qDebug() << QString("move item %1 from (%2,%3) to (%4,%5).").
+                        arg(index->id()).
+                        arg(index->data()->prevX).arg(index->data()->prevY).
+                        arg(index->data()->x).arg(index->data()->y);
+        }
+    };
     auto itemDelete = [blackboard1](QGraphicsItem *item){
         if(item)
         {
@@ -303,19 +316,19 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto penMoved = itemMoving;
+    auto penMoved = itemMoved;
     auto penMoving = itemMoving;
-    auto imageMoved = itemMoving;
+    auto imageMoved = itemMoved;
     auto imageMoving = itemMoving;
-    auto triangleMoved = itemMoving;
+    auto triangleMoved = itemMoved;
     auto triangleMoving = itemMoving;
-    auto ellipseMoved = itemMoving;
+    auto ellipseMoved = itemMoved;
     auto ellipseMoving = itemMoving;
-    auto rectMoved = itemMoving;
+    auto rectMoved = itemMoved;
     auto rectMoving = itemMoving;
-    auto textMoved = itemMoving;
+    auto textMoved = itemMoved;
     auto textMoving = itemMoving;
-    auto straightMoved = itemMoving;
+    auto straightMoved = itemMoved;
     auto straightMoving = itemMoving;
     auto penDelete = itemDelete;
     auto imageDelete = itemDelete;
@@ -463,7 +476,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     };
     auto textChanged = [blackboard1](BbItemText *item){
         auto copy = blackboard1->find<BbItemText>(item->id());
-        if(!copy)
+        if(copy)
         {
             copy->setPlainText(item->toPlainText());
         }

@@ -67,7 +67,7 @@ void BbItemText::repaintWithItemData()
     setDefaultTextColor(_myData->color);
     setPlainText(_myData->text);
 
-    if( _myData->x > -9998 && _myData->y > -9998 ){
+    if( _myData->isPositionValid() ){
         qreal x = _myData->x;
         qreal y = _myData->y;
         if(_myData->mode == BbItemData::CM_PERCENTAGE)
@@ -164,6 +164,11 @@ BbToolType BbItemText::toolType() const
 BlackboardScene *BbItemText::scene()
 {
     return dynamic_cast<BlackboardScene *>(QGraphicsTextItem::scene());
+}
+
+BbItemData *BbItemText::data()
+{
+    return _myData;
 }
 
 void BbItemText::setOnFoucsOutCallback(const onTextChangedCallback &onFoucsOut){

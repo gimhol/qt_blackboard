@@ -77,6 +77,7 @@ void BbItemEllipse::begin(const QPointF &point)
     _beginX = point.x();
     _beginY = point.y();
     setPos(point);
+    _myData->updatePostion(this);
 }
 void BbItemEllipse::drag(const QPointF &point)
 {
@@ -93,6 +94,7 @@ void BbItemEllipse::drag(const QPointF &point)
     qreal l = std::min(_dragX,_beginX);
     qreal t = std::min(_dragY,_beginY);
     setPos(l,t);
+    _myData->updatePostion(this);
     setRect(0,0,std::abs(_dragX-_beginX),std::abs(_dragY-_beginY));
 }
 
@@ -167,6 +169,11 @@ BbToolType BbItemEllipse::toolType() const
 BlackboardScene *BbItemEllipse::scene()
 {
     return dynamic_cast<BlackboardScene *>(QGraphicsItem::scene());
+}
+
+BbItemData *BbItemEllipse::data()
+{
+    return _myData;
 }
 
 bool BbItemEllipse::square()

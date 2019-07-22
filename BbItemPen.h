@@ -98,6 +98,7 @@ public:
     virtual void setId(const QString &id) override;
     virtual BbToolType toolType() const override;
     virtual BlackboardScene *scene() override;
+    virtual BbItemData *data() override;
 };
 
 #endif // CANVASELEMENTPEN3_HPP

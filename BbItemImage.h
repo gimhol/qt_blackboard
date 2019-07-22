@@ -31,6 +31,8 @@ public:
     BbToolType toolType() const override;
 
     BlackboardScene *scene() override;
+
+    BbItemData *data() override;
 };
 
 #endif // BBITEMIMAGE_H

@@ -77,6 +77,7 @@ void BbItemRect::begin(const QPointF &point)
     _beginX = point.x();
     _beginY = point.y();
     setPos(point);
+    _myData->updatePostion(this);
 }
 void BbItemRect::drag(const QPointF &point)
 {
@@ -93,6 +94,7 @@ void BbItemRect::drag(const QPointF &point)
     qreal l = std::min(_dragX,_beginX);
     qreal t = std::min(_dragY,_beginY);
     setPos(l,t);
+    _myData->updatePostion(this);
     setRect(0,0,std::abs(_dragX-_beginX),std::abs(_dragY-_beginY));
 }
 
@@ -167,6 +169,11 @@ BbToolType BbItemRect::toolType() const
 BlackboardScene *BbItemRect::scene()
 {
     return dynamic_cast<BlackboardScene *>(QGraphicsItem::scene());
+}
+
+BbItemData *BbItemRect::data()
+{
+    return _myData;
 }
 
 bool BbItemRect::square()
