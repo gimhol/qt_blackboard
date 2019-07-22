@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QDateTime>
+#include <QButtonGroup>
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::BlackboardTestWindow)
@@ -552,14 +553,17 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         }
     };
 
+
+
+
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+
 #define HANDLE_ITEM_EVENT(_EVENT_TYPE_,_ITEM_TYPE_) \
     case BBIET_##_EVENT_TYPE_: \
         _EVENT_TYPE_(dynamic_cast<_ITEM_TYPE_*>(index)); \
         break
 
 
-
-#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
     connect(blackboard0,&Blackboard::itemChanged,[=](BBItemEventType eventType,IItemIndex *index){
         switch(eventType)
         {

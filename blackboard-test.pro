@@ -3,12 +3,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 include(dev/dev.pri)
 win32
 {
-    QMAKE_LFLAGS_WINDOWS = /SUBSYSTEM:WINDOWS,5.01
-    QMAKE_LFLAGS_CONSOLE = /SUBSYSTEM:CONSOLE,5.01
-
-    DEFINES += _ATL_XP_TARGETING
-    QMAKE_CFLAGS += /D _USING_V120_SDK71_
-    QMAKE_CXXFLAGS += /D _USING_V120_SDK71_
+    QMAKE_LFLAGS_RELEASE += /MAP
+    QMAKE_CFLAGS_RELEASE += /Zi
+    QMAKE_LFLAGS_RELEASE += /debug /opt:ref
 }
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/shared/lib/ -lNsbBlackboard
