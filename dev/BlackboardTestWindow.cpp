@@ -306,7 +306,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto itemPaste = [&](QGraphicsItem *item){
+    auto itemPaste = [&,blackboard1](QGraphicsItem *item){
         if(item)
         {
             auto index = dynamic_cast<IItemIndex*>(item);
@@ -316,27 +316,6 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto penMoved = itemMoved;
-    auto penMoving = itemMoving;
-    auto imageMoved = itemMoved;
-    auto imageMoving = itemMoving;
-    auto triangleMoved = itemMoved;
-    auto triangleMoving = itemMoving;
-    auto ellipseMoved = itemMoved;
-    auto ellipseMoving = itemMoving;
-    auto rectMoved = itemMoved;
-    auto rectMoving = itemMoving;
-    auto textMoved = itemMoved;
-    auto textMoving = itemMoving;
-    auto straightMoved = itemMoved;
-    auto straightMoving = itemMoving;
-    auto penDelete = itemDelete;
-    auto imageDelete = itemDelete;
-    auto triangleDelete = itemDelete;
-    auto ellipseDelete = itemDelete;
-    auto rectDelete = itemDelete;
-    auto textDelete = itemDelete;
-    auto straightDelete = itemDelete;
     auto imageAdded = [blackboard1](BbItemImage *item){
         if(item)
         {
@@ -576,14 +555,27 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         _EVENT_TYPE_(dynamic_cast<_ITEM_TYPE_*>(index)); \
         break
 
-
+    connect(blackboard0,&Blackboard::multipleItemChanged,[=](BBItemEventType eventType,IItemIndex *current){
+        while(current)
+        {
+            auto next = current->next;
+            switch(eventType)
+            {
+                case BBIET_multipleItemMoving: itemMoving(dynamic_cast<QGraphicsItem*>(current));break;
+                case BBIET_multipleItemMoved: itemMoved(dynamic_cast<QGraphicsItem*>(current)); break;
+                case BBIET_multipleItemDelete: itemDelete(dynamic_cast<QGraphicsItem*>(current)); break;
+                case BBIET_multipleItemPaste: itemPaste(dynamic_cast<QGraphicsItem*>(current)); break;
+            }
+            current = next;
+        }
+    });
     connect(blackboard0,&Blackboard::itemChanged,[=](BBItemEventType eventType,IItemIndex *index){
         switch(eventType)
         {
-            HANDLE_ITEM_EVENT(itemMoving,QGraphicsItem);
-            HANDLE_ITEM_EVENT(itemMoved,QGraphicsItem);
-            HANDLE_ITEM_EVENT(itemDelete,QGraphicsItem);
-            HANDLE_ITEM_EVENT(itemPaste,QGraphicsItem);
+//            HANDLE_ITEM_EVENT(itemMoving,QGraphicsItem);
+//            HANDLE_ITEM_EVENT(itemMoved,QGraphicsItem);
+//            HANDLE_ITEM_EVENT(itemDelete,QGraphicsItem);
+//            HANDLE_ITEM_EVENT(itemPaste,QGraphicsItem);
             HANDLE_ITEM_EVENT(penStraighting,BbItemPen);
             HANDLE_ITEM_EVENT(penDown,BbItemPen);
             HANDLE_ITEM_EVENT(penDraw,BbItemPen);
@@ -610,6 +602,27 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         }
     });
 #else
+    auto penMoved = itemMoved;
+    auto penMoving = itemMoving;
+    auto imageMoved = itemMoved;
+    auto imageMoving = itemMoving;
+    auto triangleMoved = itemMoved;
+    auto triangleMoving = itemMoving;
+    auto ellipseMoved = itemMoved;
+    auto ellipseMoving = itemMoving;
+    auto rectMoved = itemMoved;
+    auto rectMoving = itemMoving;
+    auto textMoved = itemMoved;
+    auto textMoving = itemMoving;
+    auto straightMoved = itemMoved;
+    auto straightMoving = itemMoving;
+    auto penDelete = itemDelete;
+    auto imageDelete = itemDelete;
+    auto triangleDelete = itemDelete;
+    auto ellipseDelete = itemDelete;
+    auto rectDelete = itemDelete;
+    auto textDelete = itemDelete;
+    auto straightDelete = itemDelete;
     connect(blackboard0,&Blackboard::imageAdded,imageAdded);
     connect(blackboard0,&Blackboard::triangleBegun,triangleBegun);
     connect(blackboard0,&Blackboard::triangleDragged,triangleDragged);

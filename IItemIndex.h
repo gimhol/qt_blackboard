@@ -17,6 +17,7 @@ public:
     virtual BbItemData *data() = 0;
     virtual void repaintWithItemData() = 0;
     template<class T> T *data() { return dynamic_cast<T*>(data()); }
+    IItemIndex *next = nullptr;
 };
 
 #endif // IITEMINDEX_H

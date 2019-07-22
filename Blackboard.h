@@ -247,6 +247,8 @@ signals:
 
 #ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
     void itemChanged(BBItemEventType eventType,IItemIndex *index);
+    void multipleItemChanged(BBItemEventType eventType,IItemIndex *first);
+
 #else
     void penDown(BbItemPen *item);
     void penDraw(BbItemPen *item);

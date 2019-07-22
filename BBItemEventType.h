@@ -3,7 +3,6 @@
 enum BBItemEventType
 {
     BBIET_none = 0,
-
     BBIET_itemMoving,
     BBIET_itemMoved,
     BBIET_itemDelete,
@@ -29,6 +28,11 @@ enum BBItemEventType
     BBIET_triangleDragged,
     BBIET_triangleDone,
     BBIET_imageAdded,
+
+    BBIET_multipleItemMoving,
+    BBIET_multipleItemMoved,
+    BBIET_multipleItemDelete,
+    BBIET_multipleItemPaste,
 
 };
 #endif // BBITEMEVENTTYPE_H

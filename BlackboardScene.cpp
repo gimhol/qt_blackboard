@@ -74,6 +74,42 @@ BbToolType BlackboardScene::toolType()
 
 void BlackboardScene::removeSelectedItems()
 {
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+    IItemIndex *first = nullptr;
+    IItemIndex *current = nullptr;
+    for(auto item: selectedItems())
+    {
+        IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
+        if(idx)
+        {
+            if(first)
+            {
+                current->next = idx;
+                current = idx;
+            }
+            else
+            {
+                current = idx;
+                first = idx;
+            }
+            idx->next = nullptr;
+            emit EMIT_ITEM_CHANGE(itemDelete,idx);
+        }
+    }
+    emit blackboard()->multipleItemChanged(BBIET_multipleItemDelete,first);
+    current = first;
+    while(current)
+    {
+        auto next = current->next;
+        remove(dynamic_cast<QGraphicsItem *>(current));
+        current = next;
+    }
+#else
+#define REMOVE_ITEM_INDEX(_TYPE_,_CLASS_,_SIGNAL_) \
+    case _TYPE_: \
+        emit blackboard()->_SIGNAL_(dynamic_cast<_CLASS_ *>(item)); \
+        remove(item); \
+        break
     for(auto item: selectedItems())
     {
         IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
@@ -81,17 +117,6 @@ void BlackboardScene::removeSelectedItems()
         {
             continue;
         }
-
-#define REMOVE_ITEM_INDEX(_TYPE_,_CLASS_,_SIGNAL_) \
-    case _TYPE_: \
-        emit blackboard()->_SIGNAL_(dynamic_cast<_CLASS_ *>(item)); \
-        remove(item); \
-        break
-
-#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
-        emit EMIT_ITEM_CHANGE(itemDelete,idx);
-        remove(item);
-#else
         switch(idx->toolType())
         {
             REMOVE_ITEM_INDEX(BBTT_Rectangle,BbItemRect,rectDelete);
@@ -106,9 +131,8 @@ void BlackboardScene::removeSelectedItems()
                 break;
             }
         }
-#endif
-
     }
+#endif
 }
 
 void BlackboardScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -179,6 +203,34 @@ void BlackboardScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void BlackboardScene::emitItemMovingSignals()
 {
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+    IItemIndex *first = nullptr;
+    IItemIndex *current = nullptr;
+    for(auto item: selectedItems())
+    {
+        IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
+        if(idx)
+        {
+            if(!first)
+            {
+                first = idx;
+                current = idx;
+            }
+            else
+            {
+                current->next = idx;
+                current = idx;
+            }
+            idx->next = nullptr;
+            idx->data()->updatePostion(idx);
+            emit EMIT_ITEM_CHANGE(itemMoving,idx);
+        }
+    }
+    if(first)
+    {
+        emit blackboard()->multipleItemChanged(BBIET_multipleItemMoving,first);
+    }
+#else
     for(auto item: selectedItems())
     {
         IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
@@ -187,58 +239,76 @@ void BlackboardScene::emitItemMovingSignals()
             continue;
         }
         idx->data()->updatePostion(idx);
-#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
-        emit EMIT_ITEM_CHANGE(itemMoving,idx);
-#else
+#define MOVING_TOOL_TYPE_CASE(_TOOL_TYPE_,_FUNC_,_CLASS_) \
+    case _TOOL_TYPE_:emit blackboard()->_FUNC_(dynamic_cast<_CLASS_ *>(item));break
         switch(idx->toolType())
         {
-            case BBTT_Triangle:
-            {
-                emit blackboard()->triangleMoving(dynamic_cast<BbItemTriangle *>(item));
-                break;
-            }
-            case BBTT_Ellipse:
-            {
-                emit blackboard()->ellipseMoving(dynamic_cast<BbItemEllipse *>(item));
-                break;
-            }
-            case BBTT_Rectangle:
-            {
-                emit blackboard()->rectMoving(dynamic_cast<BbItemRect *>(item));
-                break;
-            }
-            case BBTT_Text:
-            {
-                emit blackboard()->textMoving(dynamic_cast<BbItemText *>(item));
-                break;
-            }
-            case BBTT_Pen:
-            {
-                emit blackboard()->penMoving(dynamic_cast<BbItemPen *>(item));
-                break;
-            }
-            case BBTT_Straight:
-            {
-                emit blackboard()->straightMoving(dynamic_cast<BbItemStraight *>(item));
-                break;
-            }
-            case BBTT_Image:
-            {
-                emit blackboard()->imageMoving(dynamic_cast<BbItemImage *>(item));
-                break;
-            }
+            MOVING_TOOL_TYPE_CASE(BBTT_Triangle,triangleMoving,BbItemTriangle);
+            MOVING_TOOL_TYPE_CASE(BBTT_Ellipse,ellipseMoving,BbItemEllipse);
+            MOVING_TOOL_TYPE_CASE(BBTT_Rectangle,rectMoving,BbItemRect);
+            MOVING_TOOL_TYPE_CASE(BBTT_Text,textMoving,BbItemText);
+            MOVING_TOOL_TYPE_CASE(BBTT_Pen,penMoving,BbItemPen);
+            MOVING_TOOL_TYPE_CASE(BBTT_Straight,straightMoving,BbItemStraight);
+            MOVING_TOOL_TYPE_CASE(BBTT_Image,imageMoving,BbItemImage);
             default:
             {
                 qDebug() << "Try to move unkowning element!" << endl;
                 break;
             }
         }
-#endif
     }
+#endif
 }
 
 void BlackboardScene::emitItemMovedSignals()
 {
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+    IItemIndex *first = nullptr;
+    IItemIndex *current = nullptr;
+    bool hasMoved = false;
+    for(auto item: selectedItems())
+    {
+        IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
+        if(idx)
+        {
+            if(!first)
+            {
+                first = idx;
+                current = idx;
+                idx->next = nullptr;
+                QGraphicsItem *itemBase = dynamic_cast<QGraphicsItem *>(first);
+                qreal dx = std::abs(first->data()->prevX - itemBase->x());
+                qreal dy = std::abs(first->data()->prevY - itemBase->y());
+                hasMoved = dx >= 1 || dy >= 1;
+                if(!hasMoved)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                current->next = idx;
+                current = idx;
+            }
+
+        }
+    }
+    if(first && hasMoved)
+    {
+        emit blackboard()->multipleItemChanged(BBIET_multipleItemMoved,first);
+        current = first;
+        while(current)
+        {
+            auto data = current->data();
+            data->updatePostion(current);
+            emit EMIT_ITEM_CHANGE(itemMoved,current);
+            data->prevX = data->x;
+            data->prevY = data->y;
+            current = current->next;
+        }
+    }
+
+#else
     for(auto item: selectedItems())
     {
         IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
@@ -246,55 +316,29 @@ void BlackboardScene::emitItemMovedSignals()
         {
             continue;
         }
-        idx->data()->updatePostion(idx);
-#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
-        emit EMIT_ITEM_CHANGE(itemMoved,idx);
-#else
+        auto data = idx->data();
+        data->updatePostion(idx);
+#define MOVED_TOOL_TYPE_CASE(_TOOL_TYPE_,_FUNC_,_CLASS_) \
+    case _TOOL_TYPE_:emit blackboard()->_FUNC_(dynamic_cast<_CLASS_ *>(item));break
         switch(idx->toolType())
         {
-            case BBTT_Triangle:
-            {
-                emit blackboard()->triangleMoved(dynamic_cast<BbItemTriangle *>(item));
-                break;
-            }
-            case BBTT_Ellipse:
-            {
-                emit blackboard()->ellipseMoved(dynamic_cast<BbItemEllipse *>(item));
-                break;
-            }
-            case BBTT_Rectangle:
-            {
-                emit blackboard()->rectMoved(dynamic_cast<BbItemRect *>(item));
-                break;
-            }
-            case BBTT_Text:
-            {
-                emit blackboard()->textMoved(dynamic_cast<BbItemText *>(item));
-                break;
-            }
-            case BBTT_Pen:
-            {
-                emit blackboard()->penMoved(dynamic_cast<BbItemPen *>(item));
-                break;
-            }
-            case BBTT_Straight:
-            {
-                emit blackboard()->straightMoved(dynamic_cast<BbItemStraight *>(item));
-                break;
-            }
-            case BBTT_Image:
-            {
-                emit blackboard()->imageMoved(dynamic_cast<BbItemImage *>(item));
-                break;
-            }
+            MOVED_TOOL_TYPE_CASE(BBTT_Triangle,triangleMoved,BbItemTriangle);
+            MOVED_TOOL_TYPE_CASE(BBTT_Ellipse,ellipseMoved,BbItemEllipse);
+            MOVED_TOOL_TYPE_CASE(BBTT_Rectangle,rectMoved,BbItemRect);
+            MOVED_TOOL_TYPE_CASE(BBTT_Text,textMoved,BbItemText);
+            MOVED_TOOL_TYPE_CASE(BBTT_Pen,penMoved,BbItemPen);
+            MOVED_TOOL_TYPE_CASE(BBTT_Straight,straightMoved,BbItemStraight);
+            MOVED_TOOL_TYPE_CASE(BBTT_Image,imageMoved,BbItemImage);
             default:
             {
                 qDebug() << "Try to move unkowning element!" << endl;
                 break;
             }
         }
-#endif
+        data->prevX = data->x;
+        data->prevY = data->y;
     }
+#endif
 }
 
 void BlackboardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -589,10 +633,12 @@ void BlackboardScene::copyItems()
 
 void BlackboardScene::pasteItems()
 {
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+    IItemIndex *first = nullptr;
+    IItemIndex *current = nullptr;
+#endif
     QClipboard *clipboard = QApplication::clipboard();
-
     const QMimeData *mimeData = clipboard->mimeData();
-
     for(auto item: selectedItems())
     {
         item->setSelected(false);
@@ -612,7 +658,21 @@ void BlackboardScene::pasteItems()
             baseItem->setSelected(true);
 #ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
             IItemIndex * index = dynamic_cast<IItemIndex*>(baseItem);
-            emit EMIT_ITEM_CHANGE(itemPaste,index);
+            if(index)
+            {
+                if(first)
+                {
+                    current->next = index;
+                    current = index;
+                }
+                else
+                {
+                    first = index;
+                    current = index;
+                }
+                index->next = nullptr;
+                emit EMIT_ITEM_CHANGE(itemPaste,index);
+            }
 #else
 #define EMIT_PASTE_SIGAL(_ITEM_CLASS_,_ITEM_PASTE_SIGNAL_) \
     do{ \
@@ -622,7 +682,7 @@ void BlackboardScene::pasteItems()
             baseItem = nullptr; \
         }\
     } while(false); \
-    if(!baseItem) \
+    if(!baseItem)
             continue;
             EMIT_PASTE_SIGAL(BbItemEllipse,ellipsePaste);
             EMIT_PASTE_SIGAL(BbItemRect,rectPaste);
@@ -634,6 +694,12 @@ void BlackboardScene::pasteItems()
 #endif
         }
     }
+#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
+    if(first)
+    {
+        emit blackboard()->multipleItemChanged(BBIET_multipleItemPaste,first);
+    }
+#endif
 }
 
 QSizeF BlackboardScene::backgroundSize() const
