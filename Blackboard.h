@@ -3,68 +3,21 @@
 
 #include <QGraphicsView>
 #include "BBItemEventType.h"
-#include "BbToolType.h"
-#include "BlackboardScene.h"
+#include "BbHelper.h"
+#include "BbScene.h"
+
 class BbItemData;
 class BbPointer;
+class BlackboardPrivate;
 class NSB_BLACKBOARD_EXPORT Blackboard: public QGraphicsView, public IStreamWR
 {
     Q_OBJECT
-protected:
-    qreal _scaleRatio;
-
-    QSize _orginalSize;
-
-    QSize _canvasSize;
-
-    bool _leftButtonDown = false;
-
-    QMap<QString, QPoint> _lazerPenPositions;
-
-    QMap<BbToolType,QCursor> _cursors;
-
-    QPixmap _pointerPixmap;
-
-    QPoint _mousePos;
-
-    QPoint _scrollValue;
-
-    QPen _pen;
-
-    qreal _penWeight = 0;
-
-    QPen _straightPen;
-
-    qreal _straightPenWeight = 0;
-
-    QFont _font;
-
-    QColor _textColor;
-
-    qreal _textPointWeight = 0;
-
-    QPen _rectPen;
-
-    QBrush _rectBrush;
-
-    qreal _rectWeight = 0;
-
-    QPen _ellipsePen;
-
-    QBrush _ellipseBrush;
-
-    qreal _ellipseWeight = 0;
-
-    QPen _trianglePen;
-
-    QBrush _triangleBrush;
-
-    qreal _triangleWeight = 0;
-
 public:
     Blackboard(QWidget *parent = Q_NULLPTR);
 
-    BlackboardScene *scene() const;
+    ~Blackboard() override;
+
+    BbScene *scene() const;
 
     BbPointer *addPointer(const QString & pointerId, int x, int y);
 
@@ -130,32 +83,9 @@ public:
 
     void removeSelectedItems();
 
-    void remove(QGraphicsItem *item);
+    void remove(IItemIndex *item);
 
-    void add(QGraphicsItem *item);
-
-
-    template<typename T>
-    inline T *find(const std::string &lid)
-    {
-        auto scene = this->scene();
-        if(scene)
-        {
-            return scene->find<T>(QString::fromStdString(lid));
-        }
-        return nullptr;
-    }
-
-    template<typename T>
-    inline T *find(const QString &lid)
-    {
-        auto scene = this->scene();
-        if(scene)
-        {
-            return scene->find<T>(lid);
-        }
-        return nullptr;
-    }
+    void add(IItemIndex *item);
 
     void onScrollXChanged(int x);
 
@@ -176,60 +106,7 @@ public:
 
     void onToolChanged(BbToolType previous, BbToolType current);
 
-    static void setDefaultPen(const QPen & defaultPen);
-
-    static const QPen & defaultPen();
-
-    static void setDefaultFont(const QFont & defaultFont);
-
-    static const QFont & defaultFont();
-
-    static void setDefaultTextColor(const QColor & color);
-
-    static const QColor & defaultTextColor();
-
-    const QFont & font();
-    const QColor & textColor();
-    qreal textPointWeight();
-    void setFont(const QFont & font);
-    void setTextColor(const QColor & color);
-    void setTextPointWeight(const qreal & weight);
-
-    const QPen & pen();
-    qreal penWeight();
-    QColor penColor();
-    void setPen(const QPen & pen);
-    void setPenWeight(const qreal & weight);
-    void setPenColor(const QColor & color);
-
-    const QPen & straightPen();
-    qreal straightPenWeight();
-    QColor straightPenColor();
-    void setStraightPen(const QPen & pen);
-    void setStraightPenWeight(const qreal & weight);
-    void setStraightPenColor(const QColor & color);
-
-    QColor rectPenColor();
-    QColor rectBrushColor();
-    qreal rectWeight();
-    void setRectPenColor(const QColor & color);
-    void setRectBrushColor(const QColor & color);
-    void setRectWeight(const qreal & weight);
-
-    QColor ellipsePenColor();
-    QColor ellipseBrushColor();
-    qreal ellipseWeight();
-    void setEllipsePenColor(const QColor & color);
-    void setEllipseBrushColor(const QColor & color);
-    void setEllipseWeight(const qreal & weight);
-
-    QColor trianglePenColor();
-    QColor triangleBrushColor();
-    qreal triangleWeight();
-    void setTrianglePenColor(const QColor & color);
-    void setTriangleBrushColor(const QColor & color);
-    void setTriangleWeight(const qreal & weight);
-
+    BbItemData *toolSettings(const BbToolType &toolType);
     void addPixmapItem(const QPixmap & pixmap);
     void selectedAll();
     void deselectAll();
@@ -239,66 +116,26 @@ public:
     bool hasBackground() const;
     void setBackground(const QPixmap &pixmap);
     void clearBackground();
+    template<class T> inline T *toolSettings(const BbToolType &toolType)
+    {
+        return dynamic_cast<T*>(toolSettings(toolType));
+    }
+    template<typename T> inline T *find(const std::string &lid)
+    {
+        return find<T>(QString::fromStdString(lid));
+    }
+    template<typename T> inline T *find(const QString &lid)
+    {
+        return scene()->find<T>(lid);
+    }
 signals:
     void moved();
     void resized(float scale);
     void scrolled(float x, float y);
     void itemSelected(IItemIndex *index, bool selected);
 
-#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
     void itemChanged(BBItemEventType eventType,IItemIndex *index);
     void multipleItemChanged(BBItemEventType eventType,IItemIndex *first);
-
-#else
-    void penDown(BbItemPen *item);
-    void penDraw(BbItemPen *item);
-    void penStraighting(BbItemPen *item);
-    void penDone(BbItemPen *item);
-    void straightBegun(BbItemStraight *item);
-    void straightDragged(BbItemStraight *item);
-    void straightDone(BbItemStraight *item);
-    void textAdded(BbItemText *item);
-    void textChanged(BbItemText *item);
-    void textDone(BbItemText *item);
-    void rectBegun(BbItemRect *item);
-    void rectDragged(BbItemRect *item);
-    void rectDone(BbItemRect *item);
-    void ellipseBegun(BbItemEllipse *item);
-    void ellipseDragged(BbItemEllipse *item);
-    void ellipseDone(BbItemEllipse *item);
-    void triangleBegun(BbItemTriangle *item);
-    void triangleDragged(BbItemTriangle *item);
-    void triangleDone(BbItemTriangle *item);
-    void imageAdded(BbItemImage *item);
-    void penMoving(BbItemPen *item);
-    void penMoved(BbItemPen *item);
-    void penDelete(BbItemPen *item);
-    void penPaste(BbItemPen *item);
-    void straightMoving(BbItemStraight *item);
-    void straightMoved(BbItemStraight *item);
-    void straightDelete(BbItemStraight *item);
-    void straightPaste(BbItemStraight *item);
-    void textMoving(BbItemText *item);
-    void textMoved(BbItemText *item);
-    void textDelete(BbItemText *item);
-    void textPaste(BbItemText *item);
-    void rectMoving(BbItemRect *item);
-    void rectMoved(BbItemRect *item);
-    void rectDelete(BbItemRect *item);
-    void rectPaste(BbItemRect *item);
-    void ellipseMoving(BbItemEllipse *item);
-    void ellipseMoved(BbItemEllipse *item);
-    void ellipseDelete(BbItemEllipse *item);
-    void ellipsePaste(BbItemEllipse *item);
-    void triangleMoving(BbItemTriangle *item);
-    void triangleMoved(BbItemTriangle *item);
-    void triangleDelete(BbItemTriangle *item);
-    void trianglePaste(BbItemTriangle *item);
-    void imageMoving(BbItemImage *item);
-    void imageMoved(BbItemImage *item);
-    void imageDelete(BbItemImage *item);
-    void imagePaste(BbItemImage *item);
-#endif
 
     void pointerShown(QPoint localPoint);
     void pointerMoving(QPoint localPoint);
@@ -314,6 +151,9 @@ signals:
 public:
     virtual void writeStream(QDataStream &stream) override;
     virtual void readStream(QDataStream &stream) override;
+
+private:
+    BlackboardPrivate *dptr;
 };
 
 

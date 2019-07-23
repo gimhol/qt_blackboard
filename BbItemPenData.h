@@ -46,7 +46,11 @@ public:
      */
     virtual void readStream(QDataStream &stream) override;
 
+    void setColor(const QColor &color);
+
     void setWeight(qreal weight);
+
+    qreal weight();
 };
 
 #endif // CITEMPENDATA_H

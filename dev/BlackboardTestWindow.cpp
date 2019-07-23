@@ -13,6 +13,9 @@
 #include <QFileDialog>
 #include <QDateTime>
 #include <QButtonGroup>
+#include <QMutex>
+
+
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::BlackboardTestWindow)
@@ -20,13 +23,15 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     ui->setupUi(this);
 
     QButtonGroup * buttonGroup = new QButtonGroup(this);
+    buttonGroup->addButton(ui->picker);
     buttonGroup->addButton(ui->pen);
     buttonGroup->addButton(ui->text);
     buttonGroup->addButton(ui->pointer);
-    buttonGroup->addButton(ui->picker);
     buttonGroup->addButton(ui->straight);
     buttonGroup->addButton(ui->rect);
     buttonGroup->addButton(ui->ellipse);
+    buttonGroup->addButton(ui->triangle);
+
 
     for(auto blackboard : findChildren<Blackboard*>())
     {
@@ -38,8 +43,15 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
         });
     }
 
-    ui->penWeight->setValue(int(blackboard()->penWeight() * 100));
-    ui->penColor->setColor(blackboard()->penColor());
+    penSettings = blackboard()->toolSettings<BbItemPenData>(BBTT_Pen);
+    straightSettings = blackboard()->toolSettings<BbItemStraightData>(BBTT_Straight);
+    textSettings = blackboard()->toolSettings<BbItemTextData>(BBTT_Text);
+    rectSettings = blackboard()->toolSettings<BbItemRectData>(BBTT_Rectangle);
+    ellipseSettings = blackboard()->toolSettings<BbItemEllipseData>(BBTT_Ellipse);
+    triangleSettings = blackboard()->toolSettings<BbItemTriangleData>(BBTT_Triangle);
+
+    ui->penWeight->setValue(int(penSettings->weight() * 100));
+    ui->penColor->setColor(penSettings->pen.color());
     connect(ui->penColor,&ColorDisplayer::clicked,[&](){
         static ColorPanel * cp = nullptr;
         if(!cp)
@@ -47,15 +59,16 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
             cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setPenColor);
+            connect(cp,&ColorPanel::colorChanged,blackboard(),
+                    [&](const QColor &color){penSettings->setColor(color);});
             connect(cp,&ColorPanel::colorChanged,ui->penColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->penColor());
+        cp->setColor(penSettings->pen.color());
         cp->show();
     });
 
-    ui->straightWeight->setValue(int(blackboard()->straightPenWeight() * 100));
-    ui->straightColor->setColor(blackboard()->straightPenColor());
+    ui->straightWeight->setValue(int(straightSettings->weight() * 100));
+    ui->straightColor->setColor(straightSettings->pen.color());
     connect(ui->straightColor,&ColorDisplayer::clicked,[&](){
         static ColorPanel * cp = nullptr;
         if(!cp)
@@ -63,17 +76,18 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
             cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setStraightPenColor);
+            connect(cp,&ColorPanel::colorChanged,blackboard(),
+                    [&](const QColor &color){straightSettings->pen.setColor(color);});
             connect(cp,&ColorPanel::colorChanged,ui->straightColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->straightPenColor());
+        cp->setColor(straightSettings->pen.color());
         cp->show();
     });
 
 
 
-    ui->textWeight->setValue(int(blackboard()->textPointWeight() * 100));
-    ui->textColor->setColor(blackboard()->textColor());
+    ui->textWeight->setValue(int(textSettings->pointWeight() * 100));
+    ui->textColor->setColor(textSettings->color);
     connect(ui->textColor,&ColorDisplayer::clicked,[&](){
         static ColorPanel * cp = nullptr;
         if(!cp)
@@ -81,17 +95,18 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
             cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setTextColor);
+            connect(cp,&ColorPanel::colorChanged,blackboard(),
+                    [&](const QColor &color){textSettings->color = color;});
             connect(cp,&ColorPanel::colorChanged,ui->textColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->straightPenColor());
+        cp->setColor(textSettings->color);
         cp->show();
     });
 
 
-    ui->rectWeight->setValue(int(blackboard()->rectWeight() * 100));
-    ui->rectPenColor->setColor(blackboard()->rectPenColor());
-    ui->rectBrushColor->setColor(blackboard()->rectBrushColor());
+    ui->rectWeight->setValue(int(rectSettings->weight() * 100));
+    ui->rectPenColor->setColor(rectSettings->pen.color());
+    ui->rectBrushColor->setColor(rectSettings->brush.color());
     connect(ui->rectPenColor,&ColorDisplayer::clicked,[&](){
         static ColorPanel * cp = nullptr;
         if(!cp)
@@ -99,10 +114,11 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
             cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setRectPenColor);
+            connect(cp,&ColorPanel::colorChanged,blackboard(),
+                    [&](const QColor &color){rectSettings->pen.setColor(color);});
             connect(cp,&ColorPanel::colorChanged,ui->rectPenColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->rectPenColor());
+        cp->setColor(rectSettings->pen.color());
         cp->show();
     });
     connect(ui->rectBrushColor,&ColorDisplayer::clicked,[&](){
@@ -112,16 +128,17 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
             cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setRectBrushColor);
+            connect(cp,&ColorPanel::colorChanged,blackboard(),
+                    [&](const QColor &color){rectSettings->brush.setColor(color);});
             connect(cp,&ColorPanel::colorChanged,ui->rectBrushColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->rectBrushColor());
+        cp->setColor(rectSettings->brush.color());
         cp->show();
     });
 
-    ui->ellipseWeight->setValue(int(blackboard()->ellipseWeight() * 100));
-    ui->ellipsePenColor->setColor(blackboard()->ellipsePenColor());
-    ui->ellipseBrushColor->setColor(blackboard()->ellipseBrushColor());
+    ui->ellipseWeight->setValue(int(ellipseSettings->weight() * 100));
+    ui->ellipsePenColor->setColor(ellipseSettings->pen.color());
+    ui->ellipseBrushColor->setColor(ellipseSettings->brush.color());
     connect(ui->ellipsePenColor,&ColorDisplayer::clicked,[&](){
         static ColorPanel * cp = nullptr;
         if(!cp)
@@ -129,10 +146,11 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
             cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setEllipsePenColor);
+            connect(cp,&ColorPanel::colorChanged,blackboard(),
+                    [&](const QColor &color){ellipseSettings->pen.setColor(color);});
             connect(cp,&ColorPanel::colorChanged,ui->ellipsePenColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->ellipsePenColor());
+        cp->setColor(ellipseSettings->pen.color());
         cp->show();
     });
     connect(ui->ellipseBrushColor,&ColorDisplayer::clicked,[&](){
@@ -142,16 +160,17 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
             cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setEllipseBrushColor);
+            connect(cp,&ColorPanel::colorChanged,blackboard(),
+                    [&](const QColor &color){ellipseSettings->brush.setColor(color);});
             connect(cp,&ColorPanel::colorChanged,ui->ellipseBrushColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->ellipseBrushColor());
+        cp->setColor(ellipseSettings->brush.color());
         cp->show();
     });
 
-    ui->triangleWeight->setValue(int(blackboard()->triangleWeight() * 100));
-    ui->trianglePenColor->setColor(blackboard()->trianglePenColor());
-    ui->triangleBrushColor->setColor(blackboard()->triangleBrushColor());
+    ui->triangleWeight->setValue(int(triangleSettings->weight() * 100));
+    ui->trianglePenColor->setColor(triangleSettings->pen.color());
+    ui->triangleBrushColor->setColor(triangleSettings->brush.color());
     connect(ui->trianglePenColor,&ColorDisplayer::clicked,[&](){
         static ColorPanel * cp = nullptr;
         if(!cp)
@@ -159,10 +178,11 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
             cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setTrianglePenColor);
+            connect(cp,&ColorPanel::colorChanged,blackboard(),
+                    [&](const QColor &color){triangleSettings->pen.setColor(color);});
             connect(cp,&ColorPanel::colorChanged,ui->trianglePenColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->trianglePenColor());
+        cp->setColor(rectSettings->pen.color());
         cp->show();
     });
     connect(ui->triangleBrushColor,&ColorDisplayer::clicked,[&](){
@@ -172,10 +192,11 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
             cp = new ColorPanel();
             cp->setWindowModality(Qt::WindowModality::ApplicationModal);
             cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),&Blackboard::setTriangleBrushColor);
+            connect(cp,&ColorPanel::colorChanged,blackboard(),
+                    [&](const QColor &color){triangleSettings->brush.setColor(color);});
             connect(cp,&ColorPanel::colorChanged,ui->triangleBrushColor,&ColorDisplayer::setColor);
         }
-        cp->setColor(blackboard()->triangleBrushColor());
+        cp->setColor(triangleSettings->brush.color());
         cp->show();
     });
 
@@ -216,9 +237,6 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
 
     blackboard0->setCanvasSize(blackboard0->width(),blackboard0->width()*10);
     blackboard0->setPointerPixmap(*pm);
-    connect(blackboard0,&Blackboard::resized,[](float scale){qDebug()<< "resized, scale : " << scale;});
-
-
 
 #define TOINT(_NUM_) static_cast<int>(_NUM_)
 
@@ -329,7 +347,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto triangleBegun = [blackboard1](BbItemTriangle *item)
+    auto triangleDown = [blackboard1](BbItemTriangle *item)
     {
         if(item)
         {
@@ -346,13 +364,13 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto triangleDragged = [blackboard1](BbItemTriangle *item){
+    auto triangleDraw = [blackboard1](BbItemTriangle *item){
         if(item)
         {
             auto copy = blackboard1->find<BbItemTriangle>(item->id());
             if(copy)
             {
-                copy->drag(item->point(1+item->step()));
+                copy->draw(item->point(1+item->step()));
             }
         }
     };
@@ -366,7 +384,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto ellipseBegun =[blackboard1](BbItemEllipse *item){
+    auto ellipseDown =[blackboard1](BbItemEllipse *item){
         if(item)
         {
             auto copy = new BbItemEllipse();
@@ -382,13 +400,13 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto ellipseDragged = [blackboard1](BbItemEllipse *item){
+    auto ellipseDraw = [blackboard1](BbItemEllipse *item){
         if(item)
         {
             auto copy = blackboard1->find<BbItemEllipse>(item->id());
             if(copy)
             {
-                copy->drag(item->dragPos());
+                copy->draw(item->dragPos());
             }
         }
     };
@@ -402,7 +420,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto rectBegun =[blackboard1](BbItemRect *item){
+    auto rectDown =[blackboard1](BbItemRect *item){
         if(item)
         {
             auto copy = new BbItemRect();
@@ -418,13 +436,13 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto rectDragged = [blackboard1](BbItemRect *item){
+    auto rectDraw = [blackboard1](BbItemRect *item){
         if(item)
         {
             auto copy = blackboard1->find<BbItemRect>(item->id());
             if(copy)
             {
-                copy->drag(item->dragPos());
+                copy->draw(item->dragPos());
             }
         }
     };
@@ -461,7 +479,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         }
     };
     auto textDone = textChanged;
-    auto straightBegun = [blackboard1](BbItemStraight *item){
+    auto straightDown = [blackboard1](BbItemStraight *item){
         if(item)
         {
             auto copy = new BbItemStraight();
@@ -476,13 +494,13 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto straightDragged = [blackboard1](BbItemStraight *item){
+    auto straightDraw = [blackboard1](BbItemStraight *item){
         if(item)
         {
             auto copy = blackboard1->find<BbItemStraight>(item->id());
             if(copy)
             {
-                copy->drag(item->b());
+                copy->draw(item->b());
             }
         }
     };
@@ -545,11 +563,6 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         }
     };
 
-
-
-
-#ifdef BLACKBOARD_ITEM_INDEX_SIGNAL
-
 #define HANDLE_ITEM_EVENT(_EVENT_TYPE_,_ITEM_TYPE_) \
     case BBIET_##_EVENT_TYPE_: \
         _EVENT_TYPE_(dynamic_cast<_ITEM_TYPE_*>(index)); \
@@ -575,24 +588,25 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     connect(blackboard0,&Blackboard::itemChanged,[=](BBItemEventType eventType,IItemIndex *index){
         switch(eventType)
         {
+            HANDLE_ITEM_EVENT(itemMoved,QGraphicsItem);
             HANDLE_ITEM_EVENT(penStraighting,BbItemPen);
             HANDLE_ITEM_EVENT(penDown,BbItemPen);
             HANDLE_ITEM_EVENT(penDraw,BbItemPen);
             HANDLE_ITEM_EVENT(penDone,BbItemPen);
-            HANDLE_ITEM_EVENT(straightBegun,BbItemStraight);
-            HANDLE_ITEM_EVENT(straightDragged,BbItemStraight);
+            HANDLE_ITEM_EVENT(straightDown,BbItemStraight);
+            HANDLE_ITEM_EVENT(straightDraw,BbItemStraight);
             HANDLE_ITEM_EVENT(straightDone,BbItemStraight);
             HANDLE_ITEM_EVENT(textAdded,BbItemText);
             HANDLE_ITEM_EVENT(textChanged,BbItemText);
             HANDLE_ITEM_EVENT(textDone,BbItemText);
-            HANDLE_ITEM_EVENT(rectBegun,BbItemRect);
-            HANDLE_ITEM_EVENT(rectDragged,BbItemRect);
+            HANDLE_ITEM_EVENT(rectDown,BbItemRect);
+            HANDLE_ITEM_EVENT(rectDraw,BbItemRect);
             HANDLE_ITEM_EVENT(rectDone,BbItemRect);
-            HANDLE_ITEM_EVENT(ellipseBegun,BbItemEllipse);
-            HANDLE_ITEM_EVENT(ellipseDragged,BbItemEllipse);
+            HANDLE_ITEM_EVENT(ellipseDown,BbItemEllipse);
+            HANDLE_ITEM_EVENT(ellipseDraw,BbItemEllipse);
             HANDLE_ITEM_EVENT(ellipseDone,BbItemEllipse);
-            HANDLE_ITEM_EVENT(triangleBegun,BbItemTriangle);
-            HANDLE_ITEM_EVENT(triangleDragged,BbItemTriangle);
+            HANDLE_ITEM_EVENT(triangleDown,BbItemTriangle);
+            HANDLE_ITEM_EVENT(triangleDraw,BbItemTriangle);
             HANDLE_ITEM_EVENT(triangleDone,BbItemTriangle);
             HANDLE_ITEM_EVENT(imageAdded,BbItemImage);
             case BBIET_none:
@@ -600,77 +614,6 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
                 break;
         }
     });
-#else
-    auto penMoved = itemMoved;
-    auto penMoving = itemMoving;
-    auto imageMoved = itemMoved;
-    auto imageMoving = itemMoving;
-    auto triangleMoved = itemMoved;
-    auto triangleMoving = itemMoving;
-    auto ellipseMoved = itemMoved;
-    auto ellipseMoving = itemMoving;
-    auto rectMoved = itemMoved;
-    auto rectMoving = itemMoving;
-    auto textMoved = itemMoved;
-    auto textMoving = itemMoving;
-    auto straightMoved = itemMoved;
-    auto straightMoving = itemMoving;
-    auto penDelete = itemDelete;
-    auto imageDelete = itemDelete;
-    auto triangleDelete = itemDelete;
-    auto ellipseDelete = itemDelete;
-    auto rectDelete = itemDelete;
-    auto textDelete = itemDelete;
-    auto straightDelete = itemDelete;
-    connect(blackboard0,&Blackboard::imageAdded,imageAdded);
-    connect(blackboard0,&Blackboard::triangleBegun,triangleBegun);
-    connect(blackboard0,&Blackboard::triangleDragged,triangleDragged);
-    connect(blackboard0,&Blackboard::triangleDone,triangleDone);
-    connect(blackboard0,&Blackboard::ellipseMoved,ellipseMoved);
-    connect(blackboard0,&Blackboard::ellipseMoving,ellipseMoving);
-    connect(blackboard0,&Blackboard::ellipseBegun,ellipseBegun);
-    connect(blackboard0,&Blackboard::ellipseDragged,ellipseDragged);
-    connect(blackboard0,&Blackboard::ellipseDone,ellipseDone);
-    connect(blackboard0,&Blackboard::rectBegun,rectBegun);
-    connect(blackboard0,&Blackboard::rectDragged,rectDragged);
-    connect(blackboard0,&Blackboard::rectDone,rectDone);
-    connect(blackboard0,&Blackboard::textAdded,textAdded);
-    connect(blackboard0,&Blackboard::textChanged,textChanged);
-    connect(blackboard0,&Blackboard::textDone,textDone);
-    connect(blackboard0,&Blackboard::straightBegun,straightBegun);
-    connect(blackboard0,&Blackboard::straightDragged,straightDragged);
-    connect(blackboard0,&Blackboard::straightDone,straightDone);
-    connect(blackboard0,&Blackboard::penDone,penDone);
-    connect(blackboard0,&Blackboard::penDraw,penDraw);
-    connect(blackboard0,&Blackboard::penStraighting,penStraighting);
-    connect(blackboard0,&Blackboard::penDown,penDown);
-    connect(blackboard0,&Blackboard::penDelete,penDelete);
-    connect(blackboard0,&Blackboard::penMoving,penMoving);
-    connect(blackboard0,&Blackboard::penMoved,penMoved);
-    connect(blackboard0,&Blackboard::imageMoved,imageMoved);
-    connect(blackboard0,&Blackboard::imageMoving,imageMoving);
-    connect(blackboard0,&Blackboard::imageDelete,imageDelete);
-    connect(blackboard0,&Blackboard::triangleMoved,triangleMoved);
-    connect(blackboard0,&Blackboard::triangleMoving,triangleMoving);
-    connect(blackboard0,&Blackboard::triangleDelete,triangleDelete);
-    connect(blackboard0,&Blackboard::ellipseDelete,ellipseDelete);
-    connect(blackboard0,&Blackboard::rectMoved,rectMoved);
-    connect(blackboard0,&Blackboard::rectMoving,rectMoving);
-    connect(blackboard0,&Blackboard::textMoving,textMoving);
-    connect(blackboard0,&Blackboard::textMoved,textMoved);
-    connect(blackboard0,&Blackboard::rectDelete,rectDelete);
-    connect(blackboard0,&Blackboard::textDelete,textDelete);
-    connect(blackboard0,&Blackboard::straightMoved,straightMoved);
-    connect(blackboard0,&Blackboard::straightMoving,straightMoving);
-    connect(blackboard0,&Blackboard::straightDelete,straightDelete);
-    connect(blackboard0,&Blackboard::imagePaste,[copyFullItem,blackboard1](BbItemImage *item){copyFullItem(blackboard1,item,item);});
-    connect(blackboard0,&Blackboard::trianglePaste,[copyFullItem,blackboard1](BbItemTriangle *item){copyFullItem(blackboard1,item,item);});
-    connect(blackboard0,&Blackboard::ellipsePaste,[copyFullItem,blackboard1](BbItemEllipse *item){copyFullItem(blackboard1,item,item);});
-    connect(blackboard0,&Blackboard::rectPaste,[copyFullItem,blackboard1](BbItemRect *item){copyFullItem(blackboard1,item,item);});
-    connect(blackboard0,&Blackboard::textPaste,[copyFullItem,blackboard1](BbItemText *item){copyFullItem(blackboard1,item,item);});
-    connect(blackboard0,&Blackboard::penPaste,[copyFullItem,blackboard1](BbItemPen *item){copyFullItem(blackboard1,item,item);});
-    connect(blackboard0,&Blackboard::straightPaste,[copyFullItem,blackboard1](BbItemStraight *item){copyFullItem(blackboard1,item,item);});
-#endif
 }
 
 Blackboard *BlackboardTestWindow::blackboard()
@@ -715,6 +658,8 @@ void BlackboardTestWindow::on_text_clicked()
 
 void BlackboardTestWindow::on_repaint_clicked()
 {
+    static QMutex mutex;
+    mutex.lock();
     for(auto blackboard : findChildren<Blackboard*>())
     {
         QByteArray ba;
@@ -722,21 +667,22 @@ void BlackboardTestWindow::on_repaint_clicked()
         blackboard->clearItems();
         blackboard->readByteArray(ba);
     }
+    mutex.unlock();
 }
 
 void BlackboardTestWindow::on_penWeight_valueChanged(int arg1)
 {
-    blackboard()->setPenWeight(arg1 * 0.01);
+    penSettings->setWeight(arg1 * 0.01);
 }
 
 void BlackboardTestWindow::on_straightWeight_valueChanged(int arg1)
 {
-    blackboard()->setStraightPenWeight(arg1 * 0.01);
+    straightSettings->setWeight(arg1 * 0.01);
 }
 
 void BlackboardTestWindow::on_textWeight_valueChanged(int arg1)
 {
-    blackboard()->setTextPointWeight(arg1 * 0.01);
+    textSettings->setPointWeight(arg1 * 0.01);
 }
 
 void BlackboardTestWindow::on_rect_clicked()
@@ -751,7 +697,7 @@ void BlackboardTestWindow::on_ellipse_clicked()
 
 void BlackboardTestWindow::on_ellipseWeight_valueChanged(int arg1)
 {
-    blackboard()->setEllipseWeight(arg1 * 0.01);
+    ellipseSettings->setWeight(arg1 * 0.01);
 }
 
 void BlackboardTestWindow::on_triangle_clicked()
@@ -761,7 +707,7 @@ void BlackboardTestWindow::on_triangle_clicked()
 
 void BlackboardTestWindow::on_triangleWeight_valueChanged(int arg1)
 {
-    blackboard()->setTriangleWeight(arg1 * 0.01);
+    triangleSettings->setWeight(arg1 * 0.01);
 }
 
 void BlackboardTestWindow::on_localImage_clicked()
@@ -814,4 +760,9 @@ void BlackboardTestWindow::on_pushButton_clicked()
 void BlackboardTestWindow::on_pushButton_2_clicked()
 {
     blackboard()->clearBackground();
+}
+
+void BlackboardTestWindow::on_rectWeight_valueChanged(int arg1)
+{
+    rectSettings->setWeight(arg1 * 0.01);
 }

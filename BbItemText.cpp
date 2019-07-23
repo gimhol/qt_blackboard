@@ -1,25 +1,44 @@
 ﻿#include "BbItemText.h"
 #include "BbItemTextData.h"
-#include "BlackboardScene.h"
+#include "Blackboard.h"
+#include "BbScene.h"
 
-BbItemText::BbItemText():QGraphicsTextItem()
-  ,_onFoucsOut(nullptr)
+#include <QDateTime>
+#include <QKeyEvent>
+
+BbItemText::BbItemText():
+    QGraphicsTextItem(),
+    IItemIndex(nullptr),
+    _myData(new BbItemTextData()),
+    _onFoucsOut(nullptr),
+    _onContentChanged(nullptr)
 {
-    _myData = new BbItemTextData();
-    setFont(_myData->font);
-    setDefaultTextColor(_myData->color);
+    init();
 }
 
-BbItemText::BbItemText(BbItemTextData *data)
+BbItemText::BbItemText(BbItemData *data):
+    QGraphicsTextItem(),
+    IItemIndex (data),
+    _myData(dynamic_cast<BbItemTextData*>(data)),
+    _onFoucsOut(nullptr),
+    _onContentChanged(nullptr)
 {
-    _myData = data;
-    setFont(_myData->font);
-    setDefaultTextColor(_myData->color);
+    init();
 }
 
 BbItemText::~BbItemText()
 {
     delete _myData;
+}
+
+void BbItemText::init()
+{
+    if(!_myData)
+    {
+        _myData = new BbItemTextData();
+    }
+    setFont(_myData->font);
+    setDefaultTextColor(_myData->color);
 }
 
 void BbItemText::focusOutEvent(QFocusEvent *event)
@@ -30,38 +49,46 @@ void BbItemText::focusOutEvent(QFocusEvent *event)
     cursor.setPosition(0);
     setTextCursor(cursor);
     clearFocus();
-    if(_onFoucsOut){
-        _onFoucsOut(this);
+    scene()->unsetCurrentItem(this);
+    if(_onFoucsOut)
+    {
+        _onFoucsOut();
     }
-}
-
-void BbItemText::setContentChangedCallback(const onTextChangedCallback &onContentChanged){
-    _onContentChanged = onContentChanged;
 }
 
 void BbItemText::inputMethodEvent(QInputMethodEvent *event)
 {
     QGraphicsTextItem::inputMethodEvent(event);
-
-    auto curContent = toPlainText();
-    if(_onContentChanged && _lastContent != curContent){
-        _onContentChanged(this);
-        _lastContent = curContent;
-    }
+    updateContent();
 }
 
 void BbItemText::keyPressEvent(QKeyEvent *event)
 {
     QGraphicsTextItem::keyPressEvent(event);
-    auto curContent = toPlainText();
-
-    if(_onContentChanged && _lastContent != curContent){
-        _onContentChanged(this);
-        _lastContent = curContent;
+    switch(event->key())
+    {
+        case Qt::Key_Return:
+        {
+            if(event->modifiers() == Qt::ControlModifier)
+            {
+                done();
+            }
+            break;
+        }
+        case Qt::Key_Escape:
+        {
+            done();
+            break;
+        }
+        default:
+        {
+            updateContent();
+            break;
+        }
     }
 }
 
-void BbItemText::repaintWithItemData()
+void BbItemText::repaint()
 {
     setFont(_myData->font);
     setDefaultTextColor(_myData->color);
@@ -79,7 +106,6 @@ void BbItemText::repaintWithItemData()
         }
         setPos(x,y);
     }
-
     setSelected(false);
     setEnabled(true);
     setZValue(_myData->z);
@@ -125,6 +151,27 @@ qreal BbItemText::weight()
     return _myData->pointWeight();
 }
 
+void BbItemText::done()
+{
+    clearFocus();
+//    emit blackboard()->itemChanged(BBIET_textDone,this);
+//    scene()->unsetCurrentItem(this);
+}
+
+void BbItemText::updateContent()
+{
+    auto curContent = toPlainText();
+    if(_lastContent != curContent)
+    {
+        _myData->text = curContent;
+        if(_onContentChanged)
+        {
+            _onContentChanged();
+        }
+        _lastContent = curContent;
+    }
+}
+
 void BbItemText::writeStream(QDataStream &stream)
 {
     _myData->text = toPlainText();
@@ -143,7 +190,7 @@ void BbItemText::writeStream(QDataStream &stream)
 void BbItemText::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    repaintWithItemData();
+    repaint();
 }
 
 QString BbItemText::id() const
@@ -161,9 +208,14 @@ BbToolType BbItemText::toolType() const
     return _myData->tooltype;
 }
 
-BlackboardScene *BbItemText::scene()
+Blackboard *BbItemText::blackboard()
 {
-    return dynamic_cast<BlackboardScene *>(QGraphicsTextItem::scene());
+    return scene()->blackboard();
+}
+
+BbScene *BbItemText::scene()
+{
+    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
 
 BbItemData *BbItemText::data()
@@ -171,6 +223,98 @@ BbItemData *BbItemText::data()
     return _myData;
 }
 
-void BbItemText::setOnFoucsOutCallback(const onTextChangedCallback &onFoucsOut){
-    _onFoucsOut = onFoucsOut;
+void BbItemText::toolDown(const QPointF &pos)
+{
+    if(scene()->currentItem() == this)
+    {
+        setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
+        _myData->updatePostion(this);
+        _myData->prevX = _myData->x;
+        _myData->prevY = _myData->y;
+        auto content = toPlainText().replace(QRegExp("\\s"),"");
+        if(!content.isEmpty())
+        {
+            emit blackboard()->itemChanged(BBIET_itemMoved,this);
+        }
+    }
+    else
+    {
+        scene()->setCurrentItem(this);
+        setId(scene()->generatItemId());
+        setZValue(QDateTime::currentMSecsSinceEpoch());
+
+        auto settings = blackboard()->toolSettings<BbItemTextData>(BBTT_Text);
+        setFont(settings->font);
+        setWeight(settings->pointWeight());
+        setColor(settings->color);
+
+        setTextInteractionFlags(Qt::TextEditorInteraction);
+        setFocus();
+        setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
+
+        if(!toPlainText().replace(QRegExp("\\s"),"").isEmpty())
+        {
+            emit blackboard()->itemChanged(BBIET_textAdded,this);
+        }
+    }
 }
+
+void BbItemText::toolDraw(const QPointF &pos)
+{
+    Q_UNUSED(pos);
+    // do nothing.
+}
+
+void BbItemText::toolDone(const QPointF &pos)
+{
+    Q_UNUSED(pos);
+    // do nothing.
+}
+
+void BbItemText::modifiersChanged(Qt::KeyboardModifiers modifiers)
+{
+    Q_UNUSED(modifiers);
+    // do nothing.
+}
+
+void BbItemText::removed()
+{
+    _onContentChanged = nullptr;
+    _onFoucsOut = nullptr;
+}
+
+void BbItemText::added()
+{
+    _onFoucsOut = [&]()
+    {
+        setActive(false);
+        setSelected(false);
+        auto currEmpty = toPlainText().replace(QRegExp("\\s"),"").isEmpty();
+        if(currEmpty) // 移除本地。
+        {
+            scene()->remove(this);
+        }
+        else
+        {
+            emit blackboard()->itemChanged(BBIET_textDone,this);
+        }
+    };
+    _onContentChanged = [&]()
+    {
+        auto prevEmpty = _lastContent.replace(QRegExp("\\s"),"").isEmpty();
+        auto currEmpty = _myData->text.replace(QRegExp("\\s"),"").isEmpty();
+        if(prevEmpty && !currEmpty) // 无》有
+        {
+            emit blackboard()->itemChanged(BBIET_textAdded,this);
+        }
+        else if(!prevEmpty && currEmpty) // 有》无
+        {
+            emit blackboard()->itemChanged(BBIET_itemDelete,this);
+        }
+        else if(!prevEmpty && !currEmpty) // 有》有
+        {
+            emit blackboard()->itemChanged(BBIET_textChanged,this);
+        }
+    };
+}
+

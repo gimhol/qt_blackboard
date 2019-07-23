@@ -14,11 +14,13 @@ protected:
 public:
     BbItemImage();
 
-    BbItemImage(BbItemImageData * data);
+    BbItemImage(BbItemData * data);
 
     virtual ~BbItemImage() override;
 
-    void repaintWithItemData();
+    void init();
+
+    void repaint() override;
 
     void writeStream(QDataStream &stream) override;
 
@@ -27,12 +29,16 @@ public:
     QString id() const override;
 
     void setId(const QString &id) override;
-
     BbToolType toolType() const override;
-
-    BlackboardScene *scene() override;
-
+    BbScene *scene() override;
     BbItemData *data() override;
+    Blackboard *blackboard() override;
+    void toolDown(const QPointF &pos) override;
+    void toolDraw(const QPointF &pos) override;
+    void toolDone(const QPointF &pos) override;
+    void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
+    void added() override {}
+    void removed() override {}
 };
 
 #endif // BBITEMIMAGE_H

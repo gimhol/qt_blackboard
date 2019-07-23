@@ -1,21 +1,25 @@
 ﻿#include "BbItemEllipse.h"
 #include "BbItemEllipseData.h"
-#include "BlackboardScene.h"
+#include "Blackboard.h"
+#include "BbScene.h"
 
+#include <QDateTime>
 #include <QPainter>
 
-BbItemEllipse::BbItemEllipse():QGraphicsEllipseItem()
+BbItemEllipse::BbItemEllipse():
+    QGraphicsEllipseItem(),
+    IItemIndex(nullptr),
+    _myData(new BbItemEllipseData())
 {
-   _myData = new BbItemEllipseData();
-   setPen(_myData->pen);
-   setBrush(_myData->brush);
+   init();
 }
 
-BbItemEllipse::BbItemEllipse(BbItemEllipseData *data):QGraphicsEllipseItem()
+BbItemEllipse::BbItemEllipse(BbItemData *data):
+    QGraphicsEllipseItem(),
+    IItemIndex(data),
+    _myData(dynamic_cast<BbItemEllipseData*>(data))
 {
-    _myData = data;
-    setPen(_myData->pen);
-    setBrush(_myData->brush);
+    init();
 }
 
 BbItemEllipse::~BbItemEllipse()
@@ -26,7 +30,26 @@ BbItemEllipse::~BbItemEllipse()
     }
 }
 
-void BbItemEllipse::repaintWithItemData()
+void BbItemEllipse::init()
+{
+    if(!_myData)
+    {
+        _myData = new BbItemEllipseData();
+    }
+    setPen(_myData->pen);
+    setBrush(_myData->brush);
+}
+
+void BbItemEllipse::modifiersChanged(Qt::KeyboardModifiers modifiers)
+{
+    if(_circle != (modifiers == Qt::ShiftModifier))
+    {
+        setCircle(modifiers == Qt::ShiftModifier);
+        emit blackboard()->itemChanged(BBIET_ellipseDraw,this);
+    }
+}
+
+void BbItemEllipse::repaint()
 {
     setPen(_myData->pen);
     setBrush(_myData->brush);
@@ -68,7 +91,7 @@ void BbItemEllipse::writeStream(QDataStream &stream)
 void BbItemEllipse::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    repaintWithItemData();
+    repaint();
 }
 
 void BbItemEllipse::begin(const QPointF &point)
@@ -79,7 +102,7 @@ void BbItemEllipse::begin(const QPointF &point)
     setPos(point);
     _myData->updatePostion(this);
 }
-void BbItemEllipse::drag(const QPointF &point)
+void BbItemEllipse::draw(const QPointF &point)
 {
     _mousePos = point;
     if(!_circle)
@@ -166,14 +189,48 @@ BbToolType BbItemEllipse::toolType() const
     return _myData->tooltype;
 }
 
-BlackboardScene *BbItemEllipse::scene()
+Blackboard *BbItemEllipse::blackboard()
 {
-    return dynamic_cast<BlackboardScene *>(QGraphicsItem::scene());
+    return scene()->blackboard();
+}
+
+BbScene *BbItemEllipse::scene()
+{
+    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
 
 BbItemData *BbItemEllipse::data()
 {
     return _myData;
+}
+
+void BbItemEllipse::toolDown(const QPointF &pos)
+{
+    setZValue(QDateTime::currentMSecsSinceEpoch());
+    auto settings = blackboard()->toolSettings<BbItemEllipseData>(BBTT_Ellipse);
+    setPenColor(settings->pen.color());
+    setBrushColor(settings->brush.color());
+    setWeight(settings->weight());
+
+    begin(pos);
+    setId(scene()->generatItemId());
+    setCircle(scene()->onlyShiftDown());
+    scene()->setCurrentItem(this);
+    emit blackboard()->itemChanged(BBIET_ellipseDown,this);
+}
+
+void BbItemEllipse::toolDraw(const QPointF &pos)
+{
+    draw(pos);
+    emit blackboard()->itemChanged(BBIET_ellipseDraw,this);
+}
+
+void BbItemEllipse::toolDone(const QPointF &pos)
+{
+    Q_UNUSED(pos);
+    done();
+    emit blackboard()->itemChanged(BBIET_ellipseDone,this);
+    scene()->unsetCurrentItem(this);
 }
 
 bool BbItemEllipse::square()
@@ -188,7 +245,7 @@ void BbItemEllipse::setCircle(const bool circle)
         return;
     }
     _circle = circle;
-    drag(_mousePos);
+    draw(_mousePos);
 }
 
 void BbItemEllipse::toNinety(const QPointF &point, qreal &outX, qreal &outY)

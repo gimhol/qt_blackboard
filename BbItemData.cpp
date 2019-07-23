@@ -1,6 +1,6 @@
 ﻿#include "BbItemData.h"
 #include "IItemIndex.h"
-#include "BlackboardScene.h"
+#include "BbScene.h"
 
 BbItemData::BbItemData(CoordMode mode):
     mode(mode)

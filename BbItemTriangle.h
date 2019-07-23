@@ -23,14 +23,16 @@ protected:
 public:
     BbItemTriangle();
 
-    BbItemTriangle(BbItemTriangleData * dta);
+    BbItemTriangle(BbItemData * data);
 
     virtual ~BbItemTriangle() override;
 
+    void init();
+
     void begin(const QPointF & point);
-    void drag(const QPointF & point);
+    void draw(const QPointF & point);
     void done();
-    void repaintWithItemData() override;
+    void repaint() override;
 
     unsigned char step();
 
@@ -47,8 +49,6 @@ public:
     qreal penWidth();
 
     qreal weight();
-
-    void setPenWidth(qreal width);
 
     void setWeight(qreal weight);
 protected:
@@ -69,8 +69,15 @@ public:
     QString id() const override;
     void setId(const QString &id) override;
     BbToolType toolType() const override;
-    BlackboardScene *scene() override;
+    BbScene *scene() override;
     BbItemData *data() override;
+    Blackboard *blackboard() override;
+    void toolDown(const QPointF &pos) override;
+    void toolDraw(const QPointF &pos) override;
+    void toolDone(const QPointF &pos) override;
+    void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
+    void removed() override { }
+    void added() override { }
 };
 
 

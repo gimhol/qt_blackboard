@@ -14,7 +14,7 @@
 #include <functional>
 
 class BbItemText;
-typedef std::function<void(BbItemText *)> onTextChangedCallback;
+typedef std::function<void()> onTextChangedCallback;
 class BbItemTextData;
 class NSB_BLACKBOARD_EXPORT BbItemText : public QGraphicsTextItem, public IStreamWR, public IItemIndex
 {
@@ -30,21 +30,19 @@ class NSB_BLACKBOARD_EXPORT BbItemText : public QGraphicsTextItem, public IStrea
 public:
     BbItemText();
 
-    BbItemText(BbItemTextData * data);
+    BbItemText(BbItemData * data);
 
     virtual ~BbItemText() override;
 
-    virtual void focusOutEvent(QFocusEvent *event) override;
+    void init();
 
-    void setOnFoucsOutCallback(const onTextChangedCallback &onFoucsOut);
-
-    void setContentChangedCallback(const onTextChangedCallback &onContentChanged);
+    void focusOutEvent(QFocusEvent *event) override;
 
     void inputMethodEvent(QInputMethodEvent *event) override;
 
     void keyPressEvent(QKeyEvent *event) override;
 
-    void repaintWithItemData() override;
+    void repaint() override;
 
     void setFont(const QFont & font);
 
@@ -60,6 +58,10 @@ public:
 
     qreal weight();
 
+    void done();
+
+    void updateContent();
+
     // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;
@@ -67,11 +69,18 @@ public:
 
     // IItemIndex interface
 public:
-    virtual QString id() const override;
-    virtual void setId(const QString &id) override;
-    virtual BbToolType toolType() const override;
-    virtual BlackboardScene *scene() override;
-    virtual BbItemData *data() override;
+    QString id() const override;
+    void setId(const QString &id) override;
+    BbToolType toolType() const override;
+    Blackboard *blackboard() override;
+    BbScene *scene() override;
+    BbItemData *data() override;
+    void toolDown(const QPointF &pos) override;
+    void toolDraw(const QPointF &pos) override;
+    void toolDone(const QPointF &pos) override;
+    void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
+    void removed() override;
+    void added() override;
 };
 
 

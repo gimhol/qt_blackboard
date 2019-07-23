@@ -21,14 +21,16 @@ protected:
 public:
     BbItemStraight();
 
-    BbItemStraight(BbItemStraightData * dta);
+    BbItemStraight(BbItemData *data);
 
     virtual ~BbItemStraight() override;
 
+    void init();
+
     void begin(const QPointF & point);
-    void drag(const QPointF & point);
+    void draw(const QPointF & point);
     void done();
-    void repaintWithItemData();
+    void repaint() override;
     void setFortyFive(const bool & fortyFive);
 
     QPointF a();
@@ -42,8 +44,6 @@ public:
     qreal penWidth();
 
     qreal weight();
-
-    void setPenWidth(qreal width);
 
     void setWeight(qreal weight);
 protected:
@@ -66,8 +66,15 @@ public:
     QString id() const override;
     void setId(const QString &id) override;
     BbToolType toolType() const override;
-    BlackboardScene *scene() override;
-    BbItemData *data();
+    BbScene *scene() override;
+    BbItemData *data() override;
+    Blackboard *blackboard() override;
+    void toolDown(const QPointF &pos) override;
+    void toolDraw(const QPointF &pos) override;
+    void toolDone(const QPointF &pos) override;
+    void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
+    void removed() override { }
+    void added() override { }
 };
 
 #endif // BBITEMSTRAIGHT_H

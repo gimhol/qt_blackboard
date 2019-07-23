@@ -74,3 +74,13 @@ void BbItemStraightData::readStream(QDataStream &stream)
     b.setX(bx);
     b.setY(by);
 }
+
+void BbItemStraightData::setWeight(qreal weight)
+{
+    pen.setWidthF(minWidth + weight * (maxWidth - minWidth));
+}
+
+qreal BbItemStraightData::weight()
+{
+    return (pen.widthF() - minWidth) / (maxWidth - minWidth);
+}

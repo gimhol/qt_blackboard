@@ -41,6 +41,10 @@ public:
      * @param stream 数据流
      */
     virtual void readStream(QDataStream &stream) override;
+
+    void setWeight(qreal weight);
+
+    qreal weight();
 };
 
 #endif // BBITEMSTRAIGHTDATA_H

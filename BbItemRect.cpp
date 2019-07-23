@@ -1,21 +1,25 @@
 ﻿#include "BbItemRect.h"
 #include "BbItemRectData.h"
-#include "BlackboardScene.h"
+#include "Blackboard.h"
+#include "BbScene.h"
 
+#include <QDateTime>
 #include <QPainter>
 
-BbItemRect::BbItemRect():QGraphicsRectItem()
+BbItemRect::BbItemRect():
+    QGraphicsRectItem(),
+    IItemIndex(nullptr),
+    _myData(new BbItemRectData())
 {
-   _myData = new BbItemRectData();
-   setPen(_myData->pen);
-   setBrush(_myData->brush);
+   init();
 }
 
-BbItemRect::BbItemRect(BbItemRectData *data):QGraphicsRectItem()
+BbItemRect::BbItemRect(BbItemData *data):
+    QGraphicsRectItem(),
+    IItemIndex(data),
+    _myData(dynamic_cast<BbItemRectData*>(data))
 {
-    _myData = data;
-    setPen(_myData->pen);
-    setBrush(_myData->brush);
+    init();
 }
 
 BbItemRect::~BbItemRect()
@@ -26,7 +30,17 @@ BbItemRect::~BbItemRect()
     }
 }
 
-void BbItemRect::repaintWithItemData()
+void BbItemRect::init()
+{
+    if(!_myData)
+    {
+        _myData = new BbItemRectData();
+    }
+    setPen(_myData->pen);
+    setBrush(_myData->brush);
+}
+
+void BbItemRect::repaint()
 {
     setPen(_myData->pen);
     setBrush(_myData->brush);
@@ -68,7 +82,7 @@ void BbItemRect::writeStream(QDataStream &stream)
 void BbItemRect::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    repaintWithItemData();
+    repaint();
 }
 
 void BbItemRect::begin(const QPointF &point)
@@ -79,7 +93,7 @@ void BbItemRect::begin(const QPointF &point)
     setPos(point);
     _myData->updatePostion(this);
 }
-void BbItemRect::drag(const QPointF &point)
+void BbItemRect::draw(const QPointF &point)
 {
     _mousePos = point;
     if(!_square)
@@ -166,14 +180,56 @@ BbToolType BbItemRect::toolType() const
     return _myData->tooltype;
 }
 
-BlackboardScene *BbItemRect::scene()
+Blackboard *BbItemRect::blackboard()
 {
-    return dynamic_cast<BlackboardScene *>(QGraphicsItem::scene());
+    return scene()->blackboard();
+}
+
+BbScene *BbItemRect::scene()
+{
+    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
 
 BbItemData *BbItemRect::data()
 {
     return _myData;
+}
+
+void BbItemRect::toolDown(const QPointF &pos)
+{
+    setId(scene()->generatItemId());
+    setZValue(QDateTime::currentMSecsSinceEpoch());
+    auto settings = blackboard()->toolSettings<BbItemRectData>(BBTT_Rectangle);
+    setPenColor(settings->pen.color());
+    setBrushColor(settings->brush.color());
+    setWeight(settings->weight());
+
+    scene()->setCurrentItem(this);
+    begin(pos);
+    setSquare(scene()->onlyShiftDown());
+    emit blackboard()->itemChanged(BBIET_rectDown,this);
+}
+
+void BbItemRect::toolDraw(const QPointF &pos)
+{
+    draw(pos);
+    emit blackboard()->itemChanged(BBIET_rectDraw,this);
+}
+
+void BbItemRect::toolDone(const QPointF &pos)
+{
+    Q_UNUSED(pos);
+    emit blackboard()->itemChanged(BBIET_rectDone,this);
+    scene()->unsetCurrentItem(this);
+}
+
+void BbItemRect::modifiersChanged(Qt::KeyboardModifiers modifiers)
+{
+    if(_square != (modifiers == Qt::ShiftModifier))
+    {
+        setSquare(modifiers == Qt::ShiftModifier);
+        emit blackboard()->itemChanged(BBIET_rectDraw,this);
+    }
 }
 
 bool BbItemRect::square()
@@ -188,7 +244,7 @@ void BbItemRect::setSquare(const bool square)
         return;
     }
     _square = square;
-    drag(_mousePos);
+    draw(_mousePos);
 }
 
 void BbItemRect::toNinety(const QPointF &point, qreal &outX, qreal &outY)

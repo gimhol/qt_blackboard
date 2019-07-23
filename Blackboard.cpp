@@ -1,13 +1,5 @@
-﻿#include "BbItemData.h"
-#include "BbItemPenData.h"
-#include "BbItemTextData.h"
-#include "BbItemStraightData.h"
-#include "BbItemRectData.h"
-#include "BbItemEllipseData.h"
-#include "BbItemTriangle.h"
-#include "BbItemTriangleData.h"
-#include "Blackboard.h"
-#include "BlackboardScene.h"
+﻿#include "Blackboard.h"
+#include "BbScene.h"
 #include "BbPointer.h"
 
 #include <QResizeEvent>
@@ -15,25 +7,26 @@
 #include <QTimer>
 #include <QScrollBar>
 
+class BlackboardPrivate
+{
+public:
+    qreal scaleRatio = 1;
+    QSize orginalSize;
+    QSize canvasSize;
+    QPixmap pointerPixmap;
+    QPoint mousePos;
+    QPoint scrollValue;
+    QString cid;
+
+    QMap<BbToolType,BbItemData*> toolSettings;
+    QMap<BbToolType,QCursor> cursors;
+    QMap<QString, QPoint> lazerPenPositions;
+};
+
 Blackboard::Blackboard(QWidget *parent):
     QGraphicsView(parent),
-    _scaleRatio(1)
+    dptr(new BlackboardPrivate)
 {
-    _pen = BbItemPenData::getDefaultPen();
-    _straightPen = BbItemStraightData::getDefaultPen();
-
-    _font = BbItemTextData::getDefalutFont();
-    _textColor = BbItemTextData::getDefalutColor();
-
-    _rectBrush = BbItemRectData::getDefaultBrush();
-    _rectPen = BbItemRectData::getDefaultPen();
-
-    _ellipseBrush = BbItemEllipseData::getDefaultBrush();
-    _ellipsePen = BbItemEllipseData::getDefaultPen();
-
-    _triangleBrush = BbItemTriangleData::getDefaultBrush();
-    _trianglePen = BbItemTriangleData::getDefaultPen();
-
     setToolCursor(BBTT_Pen,Qt::CrossCursor);
     setToolCursor(BBTT_Rectangle,Qt::CrossCursor);
     setToolCursor(BBTT_Ellipse,Qt::CrossCursor);
@@ -41,16 +34,24 @@ Blackboard::Blackboard(QWidget *parent):
     setToolCursor(BBTT_Text,Qt::IBeamCursor);
     setToolCursor(BBTT_Picker,Qt::ArrowCursor);
     setToolCursor(BBTT_Pointer,Qt::BlankCursor);
-
     setMouseTracking(true);
-    setScene(new BlackboardScene(this));
+    setScene(new BbScene(this));
     connect(horizontalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollXChanged);
     connect(verticalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollYChanged);
 }
 
-BlackboardScene *Blackboard::scene() const
+Blackboard::~Blackboard()
 {
-    return dynamic_cast<BlackboardScene *>(QGraphicsView::scene());
+    for(auto settings: dptr->toolSettings)
+    {
+        delete settings;
+    }
+    delete dptr;
+}
+
+BbScene *Blackboard::scene() const
+{
+    return dynamic_cast<BbScene *>(QGraphicsView::scene());
 }
 
 BbPointer *Blackboard::addPointer(const QString &pointerId, int x, int y)
@@ -60,7 +61,7 @@ BbPointer *Blackboard::addPointer(const QString &pointerId, int x, int y)
     {
         pointer = new BbPointer(this);
         pointer->setObjectName(pointerId);
-        pointer->setPixmap(_pointerPixmap);
+        pointer->setPixmap(dptr->pointerPixmap);
     }
     if(pointer->isHidden())
     {
@@ -87,18 +88,18 @@ void Blackboard::hidePointer(const QString &pointerId)
 
 void Blackboard::setToolCursor(const BbToolType &tool, const QCursor &cursor)
 {
-    _cursors[tool] = cursor;
+    dptr->cursors[tool] = cursor;
 }
 
 void Blackboard::setPointerPixmap(const QPixmap &pixmap)
 {
-    _pointerPixmap = pixmap;
+    dptr->pointerPixmap = pixmap;
 }
 
 void Blackboard::setScroll(int x,int y)
 {
-    _scrollValue.setX(x);
-    _scrollValue.setY(y);
+    dptr->scrollValue.setX(x);
+    dptr->scrollValue.setY(y);
     disconnect(this->horizontalScrollBar(), &QScrollBar::valueChanged,this, &Blackboard::onScrollXChanged);
     disconnect(this->verticalScrollBar(), &QScrollBar::valueChanged,this, &Blackboard::onScrollYChanged);
     horizontalScrollBar()->setValue(x);
@@ -109,43 +110,43 @@ void Blackboard::setScroll(int x,int y)
 
 QPoint Blackboard::getScrollValue()
 {
-    return _scrollValue;
+    return dptr->scrollValue;
 }
 
 void Blackboard::setCanvasId(const QString &id)
 {
-    scene()->setCanvasId(id);
+    dptr->cid = id;
 }
 
 QString Blackboard::canvasId() const
 {
-    return scene()->canvasId();
+    return dptr->cid;
 }
 
 qreal Blackboard::scaleRatio()
 {
-    return _scaleRatio;
+    return dptr->scaleRatio;
 }
 
 QSize Blackboard::orginalSize()
 {
-    return _orginalSize;
+    return dptr->orginalSize;
 }
 
 int Blackboard::orginalWidth()
 {
-    return _orginalSize.width();
+    return dptr->orginalSize.width();
 }
 
 int Blackboard::orginalHeight()
 {
-    return _orginalSize.height();
+    return dptr->orginalSize.height();
 }
 
 void Blackboard::setOrginalSize(int width, int height)
 {
-    _orginalSize.setWidth(width);
-    _orginalSize.setHeight(height);
+    dptr->orginalSize.setWidth(width);
+    dptr->orginalSize.setHeight(height);
 }
 
 void Blackboard::setOrginalSize(const QSize &size)
@@ -155,36 +156,35 @@ void Blackboard::setOrginalSize(const QSize &size)
 
 void Blackboard::resizeEvent(QResizeEvent *event)
 {
-    if(_orginalSize.width() == -1)
+    if(dptr->orginalSize.width() == -1)
     {
-        _orginalSize = event->size();
-        scene()->setSceneRect(0,0, _canvasSize.width(), _canvasSize.height());
+        dptr->orginalSize = event->size();
+        scene()->setSceneRect(0,0, dptr->canvasSize.width(), dptr->canvasSize.height());
     }
     else
     {
-        float orginalSizeRatio = static_cast<float>(_orginalSize.width()) / _orginalSize.height();
+        qreal orginalSizeRatio = qreal(dptr->orginalSize.width()) / dptr->orginalSize.height();
 
-        float eventSizeRatio = static_cast<float>(event->size().width()) / event->size().height();
+        qreal eventSizeRatio = qreal(event->size().width()) / event->size().height();
 
         if(eventSizeRatio > orginalSizeRatio)
         {  // 被拉宽
-            _scaleRatio = static_cast<float>(event->size().height()) / _orginalSize.height();
+            dptr->scaleRatio = qreal(event->size().height()) / dptr->orginalSize.height();
         }
         else
         {  // 被拉高
-            _scaleRatio = static_cast<float>(event->size().width()) / _orginalSize.width();
+            dptr->scaleRatio = qreal(event->size().width()) / dptr->orginalSize.width();
         }
 
         resetTransform();
 
-        scale(static_cast<qreal>(_scaleRatio), static_cast<qreal>(_scaleRatio));
+        scale(dptr->scaleRatio,dptr->scaleRatio);
 
-        scene()->setSceneRect(0,0, _canvasSize.width(), _canvasSize.height());
+        scene()->setSceneRect(0,0, dptr->canvasSize.width(), dptr->canvasSize.height());
 
-        setScroll(_scrollValue.x(),_scrollValue.y());
+        setScroll(dptr->scrollValue.x(),dptr->scrollValue.y());
 
-        // qDebug() << _scaleRatio;
-        emit resized(_scaleRatio);
+        emit resized(float(dptr->scaleRatio));
     }
     QGraphicsView::resizeEvent(event);
 }
@@ -198,7 +198,7 @@ void Blackboard::enterEvent(QEvent *event)
         {
             if(isEnabled())
             {
-                emit pointerShown(_mousePos);
+                emit pointerShown(dptr->mousePos);
             }
             return;
         }
@@ -206,7 +206,7 @@ void Blackboard::enterEvent(QEvent *event)
         {
             if(isEnabled())
             {
-                emit cursorShown(_mousePos);
+                emit cursorShown(dptr->mousePos);
             }
             break;
         }
@@ -222,7 +222,7 @@ void Blackboard::leaveEvent(QEvent *event)
         {
             if(isEnabled())
             {
-                emit pointerHidden(_mousePos);
+                emit pointerHidden(dptr->mousePos);
             }
             return;
         }
@@ -230,7 +230,7 @@ void Blackboard::leaveEvent(QEvent *event)
         {
             if(isEnabled())
             {
-                emit cursorHidden(_mousePos);
+                emit cursorHidden(dptr->mousePos);
             }
             break;
         }
@@ -239,7 +239,7 @@ void Blackboard::leaveEvent(QEvent *event)
 
 void Blackboard::mousePressEvent(QMouseEvent *event)
 {
-    _mousePos = event->pos();
+    dptr->mousePos = event->pos();
     switch(scene()->toolType())
     {
         case BBTT_Pointer:
@@ -255,7 +255,7 @@ void Blackboard::mousePressEvent(QMouseEvent *event)
         {
             if(event->button() == Qt::MouseButton::LeftButton)
             {
-                emit cursorHidden(_mousePos);
+                emit cursorHidden(dptr->mousePos);
             }
             break;
         }
@@ -265,24 +265,24 @@ void Blackboard::mousePressEvent(QMouseEvent *event)
 
 void Blackboard::mouseMoveEvent(QMouseEvent *event)
 {
-    _mousePos = event->pos();
+    dptr->mousePos = event->pos();
     switch(scene()->toolType())
     {
         case BBTT_Pointer:
         {
-            emit pointerMoving(_mousePos);
+            emit pointerMoving(dptr->mousePos);
             return;
         }
         case BBTT_Picker:
         {
-            emit cursorMoving(_mousePos);
+            emit cursorMoving(dptr->mousePos);
             break;
         }
         default:
         {
             if(!scene()->isMouseLeftButtonDown())
             {
-                emit cursorMoving(_mousePos);
+                emit cursorMoving(dptr->mousePos);
             }
             break;
         }
@@ -292,7 +292,7 @@ void Blackboard::mouseMoveEvent(QMouseEvent *event)
 
 void Blackboard::mouseReleaseEvent(QMouseEvent *event)
 {
-    _mousePos = event->pos();
+    dptr->mousePos = event->pos();
     switch(scene()->toolType())
     {
         case BBTT_Pointer:
@@ -307,7 +307,7 @@ void Blackboard::mouseReleaseEvent(QMouseEvent *event)
         {
             if(event->button() == Qt::MouseButton::LeftButton)
             {
-                emit cursorShown(_mousePos);
+                emit cursorShown(dptr->mousePos);
             }
             break;
         }
@@ -317,7 +317,7 @@ void Blackboard::mouseReleaseEvent(QMouseEvent *event)
 
 void Blackboard::removeSelectedElement()
 {
-    scene()->removeSelectedItems();
+    scene()->removeSelected();
 }
 
 void Blackboard::setToolType(BbToolType toolType)
@@ -334,8 +334,8 @@ void Blackboard::setCanvasSize(int width, int height)
 {
     scene()->setSceneRect(0,0, width, height);
 
-    _canvasSize.setWidth(width);
-    _canvasSize.setHeight(height);
+    dptr->canvasSize.setWidth(width);
+    dptr->canvasSize.setHeight(height);
 }
 
 void Blackboard::setControlEnable(bool enable)
@@ -350,11 +350,11 @@ void Blackboard::removeSelectedItems()
     auto inner = scene();
     if(inner)
     {
-        inner->removeSelectedItems();
+        inner->removeSelected();
     }
 }
 
-void Blackboard::remove(QGraphicsItem *item)
+void Blackboard::remove(IItemIndex *item)
 {
     auto inner = scene();
     if(inner)
@@ -363,7 +363,7 @@ void Blackboard::remove(QGraphicsItem *item)
     }
 }
 
-void Blackboard::add(QGraphicsItem *item)
+void Blackboard::add(IItemIndex *item)
 {
     auto inner = scene();
     if(inner)
@@ -384,8 +384,8 @@ void Blackboard::onScrollYChanged(int y)
 
 void Blackboard::onScrollChanged(int x, int y)
 {
-    _scrollValue.setX(x);
-    _scrollValue.setY(y);
+    dptr->scrollValue.setX(x);
+    dptr->scrollValue.setY(y);
     emit scrolled(x, y);
 }
 
@@ -405,7 +405,7 @@ void Blackboard::onToolChanged(BbToolType previous, BbToolType current)
     {
         case BBTT_Pointer:
         {
-            emit pointerHidden(_mousePos);
+            emit pointerHidden(dptr->mousePos);
             break;
         }
         default:
@@ -413,8 +413,8 @@ void Blackboard::onToolChanged(BbToolType previous, BbToolType current)
             break;
         }
     }
-    auto _cursorItr = _cursors.find(current);
-    if(_cursorItr != _cursors.end())
+    auto _cursorItr = dptr->cursors.find(current);
+    if(_cursorItr != dptr->cursors.end())
     {
         setCursor(*_cursorItr);
     }
@@ -422,8 +422,8 @@ void Blackboard::onToolChanged(BbToolType previous, BbToolType current)
     {
         case BBTT_Pointer:
         {
-            setCursor(QCursor(_pointerPixmap,_pointerPixmap.width()/2,_pointerPixmap.height()/2));
-            emit pointerShown(_mousePos);
+            setCursor(QCursor(dptr->pointerPixmap,dptr->pointerPixmap.width()/2,dptr->pointerPixmap.height()/2));
+            emit pointerShown(dptr->mousePos);
             break;
         }
         default:
@@ -434,214 +434,19 @@ void Blackboard::onToolChanged(BbToolType previous, BbToolType current)
     emit toolChanged(previous,current);
 }
 
-void Blackboard::setDefaultPen(const QPen &pen)
+BbItemData *Blackboard::toolSettings(const BbToolType &toolType)
 {
-    BbItemPenData::setDefaultPen(pen);
-}
-
-const QPen &Blackboard::defaultPen()
-{
-    return BbItemPenData::getDefaultPen();
-}
-
-void Blackboard::setDefaultFont(const QFont &font)
-{
-    BbItemTextData::setDefalutFont(font);
-}
-
-const QFont &Blackboard::defaultFont()
-{
-    return BbItemTextData::getDefalutFont();
-}
-
-void Blackboard::setDefaultTextColor(const QColor &color)
-{
-    BbItemTextData::setDefalutColor(color);
-}
-
-const QColor &Blackboard::defaultTextColor()
-{
-    return BbItemTextData::getDefalutColor();
-}
-
-void Blackboard::setStraightPen(const QPen &pen)
-{
-    _straightPen = pen;
-}
-
-const QPen &Blackboard::straightPen()
-{
-    return _straightPen;
-}
-
-void Blackboard::setPen(const QPen &pen)
-{
-    _pen = pen;
-}
-
-const QPen &Blackboard::pen()
-{
-    return _pen;
-}
-
-void Blackboard::setFont(const QFont &font)
-{
-    _font = font;
-}
-
-const QFont &Blackboard::font()
-{
-    return _font;
-}
-
-void Blackboard::setTextColor(const QColor &color)
-{
-    _textColor = color;
-}
-
-const QColor &Blackboard::textColor()
-{
-    return _textColor;
-}
-
-void Blackboard::setPenWeight(const qreal &weight)
-{
-    _penWeight = weight;
-}
-
-void Blackboard::setStraightPenWeight(const qreal &weight)
-{
-    _straightPenWeight = weight;
-}
-
-void Blackboard::setTextPointWeight(const qreal &weight)
-{
-    _textPointWeight = weight;
-}
-
-qreal Blackboard::textPointWeight()
-{
-    return _textPointWeight;
-}
-
-qreal Blackboard::penWeight()
-{
-    return _penWeight;
-}
-
-qreal Blackboard::straightPenWeight()
-{
-    return _straightPenWeight;
-}
-
-QColor Blackboard::penColor()
-{
-    return _pen.color();
-}
-
-void Blackboard::setPenColor(const QColor &color)
-{
-    _pen.setColor(color);
-}
-
-QColor Blackboard::straightPenColor()
-{
-    return _straightPen.color();
-}
-
-void Blackboard::setStraightPenColor(const QColor &color)
-{
-    _straightPen.setColor(color);
-}
-
-QColor Blackboard::rectPenColor()
-{
-    return _rectPen.color();
-}
-
-QColor Blackboard::rectBrushColor()
-{
-    return _rectBrush.color();
-}
-
-qreal Blackboard::rectWeight()
-{
-    return _rectWeight;
-}
-
-void Blackboard::setRectPenColor(const QColor &color)
-{
-    _rectPen.setColor(color);
-}
-
-void Blackboard::setRectBrushColor(const QColor &color)
-{
-    _rectBrush.setColor(color);
-}
-
-void Blackboard::setRectWeight(const qreal &weight)
-{
-    _rectWeight = weight;
-}
-
-QColor Blackboard::ellipsePenColor()
-{
-    return _ellipsePen.color();
-}
-
-QColor Blackboard::ellipseBrushColor()
-{
-    return _ellipseBrush.color();
-}
-
-qreal Blackboard::ellipseWeight()
-{
-    return _ellipseWeight;
-}
-
-void Blackboard::setEllipsePenColor(const QColor &color)
-{
-    _ellipsePen.setColor(color);
-}
-
-void Blackboard::setEllipseBrushColor(const QColor &color)
-{
-    _ellipseBrush.setColor(color);
-}
-
-void Blackboard::setEllipseWeight(const qreal &weight)
-{
-    _ellipseWeight = weight;
-}
-
-QColor Blackboard::trianglePenColor()
-{
-    return _trianglePen.color();
-}
-
-QColor Blackboard::triangleBrushColor()
-{
-    return _triangleBrush.color();
-}
-
-qreal Blackboard::triangleWeight()
-{
-    return _triangleWeight;
-}
-
-void Blackboard::setTrianglePenColor(const QColor &color)
-{
-    _trianglePen.setColor(color);
-}
-
-void Blackboard::setTriangleBrushColor(const QColor &color)
-{
-    _triangleBrush.setColor(color);
-}
-
-void Blackboard::setTriangleWeight(const qreal &weight)
-{
-    _triangleWeight = weight;
+    auto itr = dptr->toolSettings.find(toolType);
+    if(itr != dptr->toolSettings.end())
+    {
+        return itr.value();
+    }
+    auto settings = BbHelper::createToolSettings(toolType);
+    if(settings)
+    {
+        dptr->toolSettings.insert(toolType,settings);
+    }
+    return settings;
 }
 
 void Blackboard::addPixmapItem(const QPixmap &pixmap)
@@ -699,13 +504,13 @@ void Blackboard::readStream(QDataStream &stream)
     scene()->readStream(stream);
 }
 
-qreal Blackboard::orginalRatio(){return static_cast<qreal>(_orginalSize.width())/_orginalSize.height();  }
+qreal Blackboard::orginalRatio(){return static_cast<qreal>(dptr->orginalSize.width())/dptr->orginalSize.height();  }
 
-QSize Blackboard::canvasSize(){return _canvasSize;}
+QSize Blackboard::canvasSize(){return dptr->canvasSize;}
 
-int Blackboard::canvasWidth(){return _canvasSize.width();}
+int Blackboard::canvasWidth(){return dptr->canvasSize.width();}
 
-int Blackboard::canvasHeight(){return _canvasSize.height();}
+int Blackboard::canvasHeight(){return dptr->canvasSize.height();}
 
 void Blackboard::moveEvent(QMoveEvent *event)
 {

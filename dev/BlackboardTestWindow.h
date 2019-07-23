@@ -1,7 +1,7 @@
 ﻿#ifndef BLACKBOARDTESTWINDOW_H
 #define BLACKBOARDTESTWINDOW_H
 #include <QWidget>
-
+#include <Blackboard.h>
 namespace Ui {
     class BlackboardTestWindow;
 }
@@ -10,11 +10,19 @@ class BlackboardTestWindow : public QWidget
 {
     Q_OBJECT
 
+    BbItemPenData *penSettings;
+    BbItemStraightData *straightSettings;
+    BbItemTextData *textSettings;
+    BbItemRectData *rectSettings;
+    BbItemEllipseData *ellipseSettings;
+    BbItemTriangleData *triangleSettings;
+
     explicit BlackboardTestWindow(QWidget *parent = nullptr);
 
     static void bindBlackboard(Blackboard * blackboard0,Blackboard *blackboard1);
 
     Blackboard * blackboard();
+
 public:
 
     ~BlackboardTestWindow();
@@ -67,6 +75,8 @@ private slots:
     void on_pushButton_clicked();
 
     void on_pushButton_2_clicked();
+
+    void on_rectWeight_valueChanged(int arg1);
 
 private:
     Ui::BlackboardTestWindow *ui;

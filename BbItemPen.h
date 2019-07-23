@@ -39,9 +39,11 @@ protected:
 public:
     BbItemPen();
 
-    BbItemPen(BbItemPenData * penData);
+    BbItemPen(BbItemData * data);
 
     virtual ~BbItemPen() override;
+
+    void init();
 
     QList<QPointF>* changed();
 
@@ -67,7 +69,7 @@ public:
 
     void setWeight(qreal weight);
 
-    void repaintWithItemData();
+    void repaint();
 
     bool straight();
 
@@ -94,11 +96,19 @@ public:
 
     // IItemIndex interface
 public:
-    virtual QString id() const override;
-    virtual void setId(const QString &id) override;
-    virtual BbToolType toolType() const override;
-    virtual BlackboardScene *scene() override;
-    virtual BbItemData *data() override;
+   QString id() const override;
+   void setId(const QString &id) override;
+   BbToolType toolType() const override;
+   BbScene *scene() override;
+   BbItemData *data() override;
+
+    Blackboard *blackboard() override;
+    void toolDown(const QPointF &pos) override;
+    void toolDraw(const QPointF &pos) override;
+    void toolDone(const QPointF &pos) override;
+    void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
+    void removed() override { }
+    void added() override { }
 };
 
 #endif // CANVASELEMENTPEN3_HPP

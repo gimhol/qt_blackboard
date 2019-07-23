@@ -1,25 +1,27 @@
 ﻿#include "BbItemTriangle.h"
 #include "BbItemTriangleData.h"
-#include "BlackboardScene.h"
+#include "Blackboard.h"
+#include "BbScene.h"
 
 #include <QPainter>
 #include <QDebug>
 #include <QStyleOptionGraphicsItem>
+#include <QDateTime>
 
 BbItemTriangle::BbItemTriangle():
-    QGraphicsRectItem()
+    QGraphicsRectItem(),
+    IItemIndex (nullptr),
+    _myData(new BbItemTriangleData)
 {
-    setPen(Qt::NoPen);
-    setBrush(Qt::NoBrush);
-    _myData = new BbItemTriangleData();
+    init();
 }
 
-BbItemTriangle::BbItemTriangle(BbItemTriangleData *data):
-    QGraphicsRectItem()
+BbItemTriangle::BbItemTriangle(BbItemData *data):
+    QGraphicsRectItem(),
+    IItemIndex (data),
+    _myData(dynamic_cast<BbItemTriangleData*>(data))
 {
-    setPen(Qt::NoPen);
-    setBrush(Qt::NoBrush);
-    _myData = data;
+    init();
 }
 
 BbItemTriangle::~BbItemTriangle()
@@ -29,6 +31,60 @@ BbItemTriangle::~BbItemTriangle()
         delete _myData;
         _myData = nullptr;
     }
+}
+
+void BbItemTriangle::init()
+{
+    if(!_myData)
+    {
+        _myData = new BbItemTriangleData();
+    }
+    setPen(Qt::NoPen);
+    setBrush(Qt::NoBrush);
+}
+
+Blackboard *BbItemTriangle::blackboard()
+{
+    return scene()->blackboard();
+}
+
+void BbItemTriangle::toolDown(const QPointF &pos)
+{
+    if(step() == 0)
+    {
+        setZValue(QDateTime::currentMSecsSinceEpoch());
+        auto settings = blackboard()->toolSettings<BbItemTriangleData>(BBTT_Triangle);
+        setPenColor(settings->pen.color());
+        setBrushColor(settings->brush.color());
+        setWeight(settings->weight());
+        begin(pos);
+        setId(scene()->generatItemId());
+        scene()->setCurrentItem(this);
+        emit blackboard()->itemChanged(BBIET_triangleDown,this);
+    }
+}
+
+void BbItemTriangle::toolDraw(const QPointF &pos)
+{
+    draw(pos);
+    emit blackboard()->itemChanged(BBIET_triangleDraw,this);
+}
+
+void BbItemTriangle::toolDone(const QPointF &pos)
+{
+    Q_UNUSED(pos);
+    done();
+    emit blackboard()->itemChanged(BBIET_triangleDone,this);
+    if(step() > 1)
+    {
+        scene()->unsetCurrentItem(this);
+    }
+}
+
+void BbItemTriangle::modifiersChanged(Qt::KeyboardModifiers modifiers)
+{
+    Q_UNUSED(modifiers);
+    // do nothing
 }
 
 void BbItemTriangle::begin(const QPointF &point)
@@ -43,7 +99,7 @@ void BbItemTriangle::begin(const QPointF &point)
     _myData->updatePostion(this);
 }
 
-void BbItemTriangle::drag(const QPointF &point)
+void BbItemTriangle::draw(const QPointF &point)
 {
     _mousePos = point;
 
@@ -139,7 +195,7 @@ void BbItemTriangle::setupRectWithABC()
     update();
 }
 
-void BbItemTriangle::repaintWithItemData()
+void BbItemTriangle::repaint()
 {
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {
@@ -177,19 +233,23 @@ QPointF BbItemTriangle::point(int index)
     return _myData->points[index];
 }
 
-QColor BbItemTriangle::penColor(){
+QColor BbItemTriangle::penColor()
+{
     return _myData->pen.color();
 }
 
-void BbItemTriangle::setPenColor(const QColor &color){
+void BbItemTriangle::setPenColor(const QColor &color)
+{
     _myData->pen.setColor(color);
 }
 
-QColor BbItemTriangle::brushColor(){
+QColor BbItemTriangle::brushColor()
+{
     return _myData->brush.color();
 }
 
-void BbItemTriangle::setBrushColor(const QColor &color){
+void BbItemTriangle::setBrushColor(const QColor &color)
+{
     _myData->brush.setColor(color);
 }
 
@@ -201,11 +261,6 @@ qreal BbItemTriangle::penWidth()
 qreal BbItemTriangle::weight()
 {
     return _myData->weight();
-}
-
-void BbItemTriangle::setPenWidth(qreal width)
-{
-    _myData->pen.setWidthF(width);
 }
 
 void BbItemTriangle::setWeight(qreal weight)
@@ -230,7 +285,7 @@ void BbItemTriangle::writeStream(QDataStream &stream)
 void BbItemTriangle::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    repaintWithItemData();
+    repaint();
 }
 
 QString BbItemTriangle::id() const
@@ -248,9 +303,9 @@ BbToolType BbItemTriangle::toolType() const
     return _myData->tooltype;
 }
 
-BlackboardScene *BbItemTriangle::scene()
+BbScene *BbItemTriangle::scene()
 {
-    return dynamic_cast<BlackboardScene *>(QGraphicsRectItem::scene());
+    return dynamic_cast<BbScene *>(QGraphicsRectItem::scene());
 }
 
 BbItemData *BbItemTriangle::data()

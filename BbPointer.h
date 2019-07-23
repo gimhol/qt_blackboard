@@ -1,6 +1,6 @@
 ﻿#ifndef BBPOINTER_H
 #define BBPOINTER_H
-#include "BlackboardHeader.h"
+#include "BbHeader.h"
 #include <QWidget>
 class BbPointerPrivate;
 class NSB_BLACKBOARD_EXPORT BbPointer : public QWidget

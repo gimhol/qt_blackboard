@@ -1,9 +1,11 @@
 INCLUDEPATH += $$PWD
 
 HEADERS += \
+    $$PWD/BbHeader.h \
+    $$PWD/BbHelper.h \
+    $$PWD/BbScene.h \
     $$PWD/IStreamWR.h \
     $$PWD/Blackboard.h \
-    $$PWD/BlackboardScene.h \
     $$PWD/BbItemPen.h \
     $$PWD/BbItemPenData.h \
     $$PWD/BbItemText.h \
@@ -22,12 +24,12 @@ HEADERS += \
     $$PWD/BbItemImageData.h \
     $$PWD/BbItemImage.h \
     $$PWD/BbPointer.h \
-    $$PWD/BlackboardHeader.h \
     $$PWD/BBItemEventType.h
 
 SOURCES += \
+    $$PWD/BbHelper.cpp \
+    $$PWD/BbScene.cpp \
     $$PWD/Blackboard.cpp \
-    $$PWD/BlackboardScene.cpp \
     $$PWD/BbItemPen.cpp \
     $$PWD/BbItemPenData.cpp \
     $$PWD/BbItemText.cpp \

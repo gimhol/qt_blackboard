@@ -1,18 +1,21 @@
 ﻿#include "BbItemImage.h"
 #include "BbItemImageData.h"
-#include "BlackboardScene.h"
+#include "BbScene.h"
 
 BbItemImage::BbItemImage():
-    QGraphicsPixmapItem()
+    QGraphicsPixmapItem(),
+    IItemIndex (nullptr),
+    _myData(new BbItemImageData())
 {
-    _myData = new BbItemImageData();
+    init();
 }
 
-BbItemImage::BbItemImage(BbItemImageData *data):
-    QGraphicsPixmapItem()
+BbItemImage::BbItemImage(BbItemData *data):
+    QGraphicsPixmapItem(),
+    IItemIndex (data),
+    _myData(dynamic_cast<BbItemImageData*>(data))
 {
-    _myData = data;
-    setPixmap(data->pixmap);
+    init();
 }
 
 BbItemImage::~BbItemImage()
@@ -24,7 +27,44 @@ BbItemImage::~BbItemImage()
     }
 }
 
-void BbItemImage::repaintWithItemData()
+void BbItemImage::init()
+{
+    if(!_myData)
+    {
+        _myData = new BbItemImageData();
+    }
+    if(!_myData->pixmap.isNull())
+    {
+        setPixmap(_myData->pixmap);
+    }
+}
+
+Blackboard *BbItemImage::blackboard()
+{
+    return scene()->blackboard();
+}
+
+void BbItemImage::toolDown(const QPointF &pos)
+{
+
+}
+
+void BbItemImage::toolDraw(const QPointF &pos)
+{
+
+}
+
+void BbItemImage::toolDone(const QPointF &pos)
+{
+
+}
+
+void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
+{
+
+}
+
+void BbItemImage::repaint()
 {
     qreal x = _myData->x;
     qreal y = _myData->y;
@@ -59,7 +99,7 @@ void BbItemImage::writeStream(QDataStream &stream)
 void BbItemImage::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    repaintWithItemData();
+    repaint();
 }
 
 QString BbItemImage::id() const
@@ -77,9 +117,9 @@ BbToolType BbItemImage::toolType() const
     return _myData->tooltype;
 }
 
-BlackboardScene *BbItemImage::scene()
+BbScene *BbItemImage::scene()
 {
-    return dynamic_cast<BlackboardScene *>(QGraphicsItem::scene());
+    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
 
 BbItemData *BbItemImage::data()

@@ -8,4 +8,3 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 include(blackboard.pri)
 include(dev/dev.pri)
 CONFIG += c++11
-DEFINES += BLACKBOARD_ITEM_INDEX_SIGNAL

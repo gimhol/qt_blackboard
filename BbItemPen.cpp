@@ -1,7 +1,9 @@
 ﻿#include "BbItemPen.h"
-#include "BlackboardScene.h"
+#include "BbScene.h"
 #include "Blackboard.h"
 #include "BbItemPenData.h"
+
+#include <QDateTime>
 
 #ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
 float penSqrt(float number)
@@ -19,30 +21,36 @@ float penSqrt(float number)
 }
 #endif
 
-BbItemPen::BbItemPen():QGraphicsRectItem()
+BbItemPen::BbItemPen():
+    QGraphicsRectItem(),
+    IItemIndex(nullptr),
+    _myData(new BbItemPenData())
 {
-    setPen(Qt::NoPen);
-    setBrush(Qt::NoBrush);
+    init();
+}
+
+BbItemPen::BbItemPen(BbItemData *data):
+    QGraphicsRectItem(),
+    IItemIndex(data),
+    _myData(dynamic_cast<BbItemPenData *>(data))
+{
+    init();
+}
+
+void BbItemPen::init()
+{
+    if(!_myData)
+    {
+        _myData = new BbItemPenData();
+    }
 #ifdef LINE_SMOOTHING
     _distances[0] = -1;
     _distances[1] = -1;
     _distances[2] = -1;
 #endif
-    _myData = new BbItemPenData();
-}
-
-BbItemPen::BbItemPen(BbItemPenData *penData):QGraphicsRectItem()
-{
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
-#ifdef LINE_SMOOTHING
-    _distances[0] = -1;
-    _distances[1] = -1;
-    _distances[2] = -1;
-#endif
-    _myData = penData;
 }
-
 BbItemPen::~BbItemPen()
 {
     if(_myData){
@@ -212,7 +220,8 @@ QColor BbItemPen::color(){
     return _myData->pen.color();
 }
 
-void BbItemPen::setColor(const QColor &color){
+void BbItemPen::setColor(const QColor &color)
+{
     _myData->pen.setColor(color);
 }
 
@@ -403,7 +412,7 @@ void BbItemPen::appendPointSmoothing(const QPointF &point)
 }
 #endif
 
-void BbItemPen::repaintWithItemData()
+void BbItemPen::repaint()
 {
     if(_path){
         delete _path;
@@ -508,7 +517,7 @@ void BbItemPen::writeStream(QDataStream &stream)
 void BbItemPen::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    repaintWithItemData();
+    repaint();
 }
 
 QString BbItemPen::id() const
@@ -526,13 +535,70 @@ BbToolType BbItemPen::toolType() const
     return _myData->tooltype;
 }
 
-BlackboardScene *BbItemPen::scene()
+BbScene *BbItemPen::scene()
 {
-    return dynamic_cast<BlackboardScene *>(QGraphicsRectItem::scene());
+    return dynamic_cast<BbScene *>(QGraphicsRectItem::scene());
 }
 
 BbItemData *BbItemPen::data()
 {
     return _myData;
+}
+
+Blackboard *BbItemPen::blackboard()
+{
+    return scene()->blackboard();
+}
+
+void BbItemPen::toolDown(const QPointF &pos)
+{
+    setZValue(QDateTime::currentMSecsSinceEpoch());
+    auto settings = blackboard()->toolSettings<BbItemPenData>(BBTT_Pen);
+    setWeight(settings->weight());
+    setColor(settings->pen.color());
+    penDown(pos);
+    setId(scene()->generatItemId());
+    setStraight(scene()->onlyShiftDown());
+    scene()->setCurrentItem(this);
+    emit blackboard()->itemChanged(BBIET_penDown,this);
+}
+
+void BbItemPen::toolDraw(const QPointF &pos)
+{
+    if(!straight())
+    {
+        penDraw(pos);
+        emit blackboard()->itemChanged(BBIET_penDraw,this);
+    }
+    else
+    {
+        penStraighting(pos);
+        emit blackboard()->itemChanged(BBIET_penStraighting,this);
+    }
+}
+
+void BbItemPen::toolDone(const QPointF &pos)
+{
+    Q_UNUSED(pos);
+    if(straight())
+    {
+        setStraight(false);
+        emit blackboard()->itemChanged(BBIET_penDraw,this);
+    }
+    done();
+    emit blackboard()->itemChanged(BBIET_penDone,this);
+    scene()->unsetCurrentItem(this);
+}
+
+void BbItemPen::modifiersChanged(Qt::KeyboardModifiers modifiers)
+{
+    if(_straight != (modifiers == Qt::ShiftModifier))
+    {
+        setStraight(modifiers == Qt::ShiftModifier);
+        if(!_straight)
+        {
+            emit blackboard()->itemChanged(BBIET_penDraw,this);
+        }
+    }
 }
 

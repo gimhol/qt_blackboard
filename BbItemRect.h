@@ -21,11 +21,13 @@ protected:
 public:
     BbItemRect();
 
-    BbItemRect(BbItemRectData * data);
+    BbItemRect(BbItemData *data);
 
     ~BbItemRect() override;
 
-    void repaintWithItemData();
+    void init();
+
+    void repaint() override;
 
     void writeStream(QDataStream &stream) override;
 
@@ -33,7 +35,7 @@ public:
 
     void begin(const QPointF & point);
 
-    void drag(const QPointF & point);
+    void draw(const QPointF & point);
 
     void done();
 
@@ -69,8 +71,15 @@ public:
     QString id() const override;
     void setId(const QString &id) override;
     BbToolType toolType() const override;
-    BlackboardScene *scene() override;
+    Blackboard *blackboard() override;
+    BbScene *scene() override;
     BbItemData *data() override;
+    void toolDown(const QPointF &pos) override;
+    void toolDraw(const QPointF &pos) override;
+    void toolDone(const QPointF &pos) override;
+    void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
+    void removed() override { }
+    void added() override { }
 };
 
 #endif // BBITEMRECT_H

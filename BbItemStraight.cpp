@@ -1,25 +1,27 @@
 ﻿#include "BbItemStraight.h"
 #include "BbItemStraightData.h"
-#include "BlackboardScene.h"
+#include "Blackboard.h"
+#include "BbScene.h"
 
 #include <QPainter>
 #include <QDebug>
 #include <QStyleOptionGraphicsItem>
+#include <QDateTime>
 
 BbItemStraight::BbItemStraight():
-    QGraphicsRectItem()
+    QGraphicsRectItem(),
+    IItemIndex (nullptr),
+    _myData(new BbItemStraightData())
 {
-    setPen(Qt::NoPen);
-    setBrush(Qt::NoBrush);
-    _myData = new BbItemStraightData();
+    init();
 }
 
-BbItemStraight::BbItemStraight(BbItemStraightData *data):
-    QGraphicsRectItem()
+BbItemStraight::BbItemStraight(BbItemData *data):
+    QGraphicsRectItem(),
+    IItemIndex (data),
+    _myData(dynamic_cast<BbItemStraightData*>(data))
 {
-    setPen(Qt::NoPen);
-    setBrush(Qt::NoBrush);
-    _myData = data;
+    init();
 }
 
 BbItemStraight::~BbItemStraight()
@@ -28,6 +30,59 @@ BbItemStraight::~BbItemStraight()
     {
         delete _myData;
         _myData = nullptr;
+    }
+}
+
+void BbItemStraight::init()
+{
+    if(!_myData)
+    {
+        _myData = new BbItemStraightData();
+    }
+    setPen(Qt::NoPen);
+    setBrush(Qt::NoBrush);
+}
+
+Blackboard *BbItemStraight::blackboard()
+{
+    return scene()->blackboard();
+}
+
+void BbItemStraight::toolDown(const QPointF &pos)
+{
+    setZValue(QDateTime::currentMSecsSinceEpoch());
+
+    auto settings = blackboard()->toolSettings<BbItemStraightData>(BBTT_Straight);
+    setColor(settings->pen.color());
+    setWeight(settings->weight());
+
+    begin(pos);
+    setId(scene()->generatItemId());
+    setFortyFive(scene()->onlyShiftDown());
+    scene()->setCurrentItem(this);
+    emit blackboard()->itemChanged(BBIET_straightDown,this);
+}
+
+void BbItemStraight::toolDraw(const QPointF &pos)
+{
+    draw(pos);
+    emit blackboard()->itemChanged(BBIET_straightDraw,this);
+}
+
+void BbItemStraight::toolDone(const QPointF &pos)
+{
+    Q_UNUSED(pos);
+    done();
+    emit blackboard()->itemChanged(BBIET_straightDone,this);
+    scene()->unsetCurrentItem(this);
+}
+
+void BbItemStraight::modifiersChanged(Qt::KeyboardModifiers modifiers)
+{
+    if(_fortyFive != (modifiers == Qt::ShiftModifier))
+    {
+        setFortyFive(modifiers == Qt::ShiftModifier);
+        emit blackboard()->itemChanged(BBIET_straightDraw,this);
     }
 }
 
@@ -43,7 +98,7 @@ void BbItemStraight::begin(const QPointF &point)
     _myData->updatePostion(this);
 }
 
-void BbItemStraight::drag(const QPointF &point)
+void BbItemStraight::draw(const QPointF &point)
 {
     _mousePos = point;
     if(_fortyFive)
@@ -140,7 +195,7 @@ void BbItemStraight::setupRectWithAB()
     update();
 }
 
-void BbItemStraight::repaintWithItemData()
+void BbItemStraight::repaint()
 {
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {
@@ -174,7 +229,7 @@ void BbItemStraight::setFortyFive(const bool &fortyFive)
         return;
     }
     _fortyFive = fortyFive;
-    drag(_mousePos);
+    draw(_mousePos);
 }
 
 QPointF BbItemStraight::a()
@@ -205,14 +260,9 @@ qreal BbItemStraight::weight()
     return (_myData->pen.widthF() - BbItemStraightData::getMinWidth())  / (BbItemStraightData::getMaxWidth() - BbItemStraightData::getMinWidth());
 }
 
-void BbItemStraight::setPenWidth(qreal width)
-{
-    _myData->pen.setWidthF(width);
-}
-
 void BbItemStraight::setWeight(qreal weight)
 {
-    setPenWidth(BbItemStraightData::getMinWidth() + weight * (BbItemStraightData::getMaxWidth() - BbItemStraightData::getMinWidth()));
+    _myData->setWeight(weight);
 }
 
 void BbItemStraight::writeStream(QDataStream &stream)
@@ -232,7 +282,7 @@ void BbItemStraight::writeStream(QDataStream &stream)
 void BbItemStraight::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    repaintWithItemData();
+    repaint();
 }
 
 QString BbItemStraight::id() const
@@ -250,9 +300,9 @@ BbToolType BbItemStraight::toolType() const
     return _myData->tooltype;
 }
 
-BlackboardScene *BbItemStraight::scene()
+BbScene *BbItemStraight::scene()
 {
-    return dynamic_cast<BlackboardScene *>(QGraphicsRectItem::scene());
+    return dynamic_cast<BbScene *>(QGraphicsRectItem::scene());
 }
 
 BbItemData *BbItemStraight::data()

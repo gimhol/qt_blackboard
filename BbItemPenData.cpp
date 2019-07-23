@@ -79,7 +79,17 @@ void BbItemPenData::readStream(QDataStream &stream)
     }
 }
 
+void BbItemPenData::setColor(const QColor &color)
+{
+    pen.setColor(color);
+}
+
 void BbItemPenData::setWeight(qreal weight)
 {
     pen.setWidthF(minWidth + weight * (maxWidth - minWidth));
+}
+
+qreal BbItemPenData::weight()
+{
+    return (pen.widthF() - minWidth) / (maxWidth - minWidth);
 }
