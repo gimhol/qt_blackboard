@@ -3,14 +3,11 @@
 
 #include "IItemIndex.h"
 #include "IStreamWR.h"
-
 #include <QGraphicsItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QTextCursor>
 #include <QTextDocument>
-#include <QDebug>
 #include <QGraphicsScene>
-#include <QDebug>
 #include <functional>
 
 class BbItemText;

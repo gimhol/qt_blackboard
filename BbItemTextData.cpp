@@ -104,8 +104,6 @@ void BbItemTextData::setPointWeight(qreal weight)
 {
     qreal pointSize = minPointSize + weight * (maxPointSize - minPointSize);
     font.setPointSizeF(pointSize);
-
-    qDebug() << font.pointSize();
 }
 
 qreal BbItemTextData::pointWeight()

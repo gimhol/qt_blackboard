@@ -51,6 +51,9 @@ void BbItemText::focusOutEvent(QFocusEvent *event)
         cursor.clearSelection();
         setTextCursor(cursor);
 
+        // NOTE: 失去焦點后移除選擇狀態
+        setSelected(false);
+
         scene()->unsetCurrentItem(this);
         if(isEmpty())
         {
@@ -59,6 +62,7 @@ void BbItemText::focusOutEvent(QFocusEvent *event)
         else if(_myData->prevText != _myData->text)
         {
             emit blackboard()->itemChanged(BBIET_textDone,this);
+            _myData->prevText = _myData->text;
         }
     }
 }
@@ -88,8 +92,13 @@ void BbItemText::keyPressEvent(QKeyEvent *event)
         done();
         return;
     }
-    updateContent();
+    /*
+     * NOTE:必須先調用keyPressEvent,
+     *      updateContent中獲取的文本内容才會是當前文本内容，
+     *      否則會獲取到修改前的。
+     */
     QGraphicsTextItem::keyPressEvent(event);
+    updateContent();
 }
 
 void BbItemText::keyReleaseEvent(QKeyEvent *event)
@@ -157,10 +166,9 @@ void BbItemText::done()
 
 void BbItemText::updateContent()
 {
-    auto curContent = text();
-    if(_lastContent != curContent)
+    _myData->text = text();
+    if(_lastContent != _myData->text)
     {
-        _myData->text = curContent;
         auto prevEmpty = _lastContent.replace(QRegExp("\\s"),"").isEmpty();
         auto currEmpty = isEmpty();
         if(prevEmpty && !currEmpty) // 无》有
@@ -175,7 +183,7 @@ void BbItemText::updateContent()
         {
             emit blackboard()->itemChanged(BBIET_textChanged,this);
         }
-        _lastContent = curContent;
+        _lastContent = _myData->text;
     }
 }
 
@@ -359,6 +367,11 @@ void BbItemText::toAbsoluteCoords()
         {
             _myData->x *= ratio;
             _myData->y *= ratio;
+        }
+        if(_myData->isPrevPositionValid())
+        {
+            _myData->prevX *= ratio;
+            _myData->prevY *= ratio;
         }
     }
 }
