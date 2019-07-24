@@ -2,7 +2,7 @@
 #include "BbScene.h"
 #include "Blackboard.h"
 #include "BbItemPenData.h"
-
+#include <QDebug>
 #include <QDateTime>
 
 #ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
@@ -280,8 +280,6 @@ void BbItemPen::straightLineDragging(const QPointF &point)
     _rect.setHeight(h + 2 * halfPenW);
 
     update();
-
-    qDebug() << _rect;
 }
 
 void BbItemPen::addPointToPath(const QPointF &point)
@@ -588,6 +586,11 @@ void BbItemPen::toAbsoluteCoords()
         {
             _myData->x *= ratio;
             _myData->y *= ratio;
+        }
+        if(_myData->isPrevPositionValid())
+        {
+            _myData->prevX *= ratio;
+            _myData->prevY *= ratio;
         }
         for(int i=0;i<_myData->coords.length();++i)
         {

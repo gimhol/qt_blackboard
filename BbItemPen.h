@@ -4,7 +4,6 @@
 #include <QGraphicsItem>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
-#include <QDebug>
 #include "IStreamWR.h"
 #include "IItemIndex.h"
 
