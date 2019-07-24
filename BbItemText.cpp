@@ -150,7 +150,7 @@ void BbItemText::done()
 
 void BbItemText::updateContent()
 {
-    auto curContent = toPlainText();
+    auto curContent = text();
     if(_lastContent != curContent)
     {
         _myData->text = curContent;
@@ -171,12 +171,17 @@ void BbItemText::setText(const QString &text)
 
 QString BbItemText::text()
 {
-    return toPlainText();
+    return document()->toRawText();
+}
+
+bool BbItemText::isEmpty()
+{
+    return toPlainText().replace(QRegExp("\\s"),"").isEmpty();
 }
 
 void BbItemText::writeStream(QDataStream &stream)
 {
-    _myData->text = toPlainText();
+    _myData->text = text();
     _myData->x = x();
     _myData->y = y();
     _myData->z = zValue();
@@ -238,8 +243,7 @@ void BbItemText::toolDown(const QPointF &pos)
         _myData->updatePostion(this);
         _myData->prevX = _myData->x;
         _myData->prevY = _myData->y;
-        auto content = toPlainText().replace(QRegExp("\\s"),"");
-        if(!content.isEmpty())
+        if(!isEmpty())
         {
             emit blackboard()->itemChanged(BBIET_itemMoved,this);
         }
@@ -259,7 +263,7 @@ void BbItemText::toolDown(const QPointF &pos)
         setFocus();
         setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
 
-        if(!toPlainText().replace(QRegExp("\\s"),"").isEmpty())
+        if(!isEmpty())
         {
             emit blackboard()->itemChanged(BBIET_textAdded,this);
         }
@@ -296,8 +300,7 @@ void BbItemText::added()
     {
         setActive(false);
         setSelected(false);
-        auto currEmpty = toPlainText().replace(QRegExp("\\s"),"").isEmpty();
-        if(currEmpty) // 移除本地。
+        if(isEmpty()) // 移除本地。
         {
             scene()->remove(this);
         }
@@ -309,7 +312,7 @@ void BbItemText::added()
     _onContentChanged = [&]()
     {
         auto prevEmpty = _lastContent.replace(QRegExp("\\s"),"").isEmpty();
-        auto currEmpty = _myData->text.replace(QRegExp("\\s"),"").isEmpty();
+        auto currEmpty = isEmpty();
         if(prevEmpty && !currEmpty) // 无》有
         {
             emit blackboard()->itemChanged(BBIET_textAdded,this);

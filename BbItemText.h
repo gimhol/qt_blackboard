@@ -66,6 +66,8 @@ public:
 
     QString text();
 
+    bool isEmpty();
+
     // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;

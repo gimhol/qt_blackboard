@@ -473,6 +473,10 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     };
     auto textChanged = [blackboard1](BbItemText *item){
         auto copy = blackboard1->find<BbItemText>(item->id());
+        auto data = dynamic_cast<BbItemTextData*>(item->data());
+        auto t = item->document()->toRawText();
+        for(auto a : data->text)
+            qDebug() << a;
         if(copy)
         {
             copy->setText(item->text());
