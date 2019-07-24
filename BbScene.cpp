@@ -160,7 +160,6 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if(event->button() == Qt::MouseButton::LeftButton)
     {
         _mouseLeftButtonDown = true;
-
         switch(_toolType)
         {
             case BBTT_Picker:
@@ -261,11 +260,15 @@ void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             if(_mouseLeftButtonDown)
             {
                 QGraphicsScene::mouseMoveEvent(event);
+                /*
+                 * NOTE: 拖动item会使得此event被Accepted，故在此发出移动信号。
+                 *      但如果有其他被Accepted的情况就不应该这么做。但现在还没发现。
+                 */
                 if(event->isAccepted())
                 {
                     emitItemMovingSignals();
                 }
-                else
+                else // 没拖动任何东西，在这里进行框选item的工作。
                 {
                     pickingItems(_mousePos);
                 }

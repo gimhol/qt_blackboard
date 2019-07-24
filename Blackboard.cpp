@@ -91,6 +91,28 @@ void Blackboard::setToolCursor(const BbToolType &tool, const QCursor &cursor)
     dptr->cursors[tool] = cursor;
 }
 
+QCursor Blackboard::toolCursor(const BbToolType &tool)
+{
+    if(dptr->cursors.contains(tool))
+    {
+        return dptr->cursors[tool];
+    }
+    else
+    {
+        return Qt::ArrowCursor;
+    }
+}
+
+void Blackboard::toToolCursor(const BbToolType &tool)
+{
+    setCursor(toolCursor(tool));
+}
+
+void Blackboard::revertToolCursor()
+{
+    setCursor(toolCursor(toolType()));
+}
+
 void Blackboard::setPointerPixmap(const QPixmap &pixmap)
 {
     dptr->pointerPixmap = pixmap;
@@ -413,11 +435,7 @@ void Blackboard::onToolChanged(BbToolType previous, BbToolType current)
             break;
         }
     }
-    auto _cursorItr = dptr->cursors.find(current);
-    if(_cursorItr != dptr->cursors.end())
-    {
-        setCursor(*_cursorItr);
-    }
+    setCursor(toolCursor(current));
     switch(current)
     {
         case BBTT_Pointer:
@@ -432,6 +450,11 @@ void Blackboard::onToolChanged(BbToolType previous, BbToolType current)
         }
     }
     emit toolChanged(previous,current);
+}
+
+BbToolType Blackboard::toolType()
+{
+    return scene()->toolType();
 }
 
 BbItemData *Blackboard::toolSettings(const BbToolType &toolType)

@@ -474,6 +474,14 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     auto textChanged = [blackboard1](BbItemText *item){
         auto copy = blackboard1->find<BbItemText>(item->id());
         auto data = dynamic_cast<BbItemTextData*>(item->data());
+        if(copy)
+        {
+            copy->setText(item->text());
+        }
+    };
+    auto textDone = [blackboard1](BbItemText *item){
+        auto copy = blackboard1->find<BbItemText>(item->id());
+        auto data = dynamic_cast<BbItemTextData*>(item->data());
         auto t = item->document()->toRawText();
         for(auto a : data->text)
             qDebug() << a;
@@ -482,7 +490,6 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             copy->setText(item->text());
         }
     };
-    auto textDone = textChanged;
     auto straightDown = [blackboard1](BbItemStraight *item){
         if(item)
         {

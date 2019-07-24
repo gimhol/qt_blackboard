@@ -10,7 +10,6 @@ BbItemText::BbItemText():
     QGraphicsTextItem(),
     IItemIndex(nullptr),
     _myData(new BbItemTextData()),
-    _onFoucsOut(nullptr),
     _onContentChanged(nullptr)
 {
     init();
@@ -20,7 +19,6 @@ BbItemText::BbItemText(BbItemData *data):
     QGraphicsTextItem(),
     IItemIndex (data),
     _myData(dynamic_cast<BbItemTextData*>(data)),
-    _onFoucsOut(nullptr),
     _onContentChanged(nullptr)
 {
     init();
@@ -44,48 +42,61 @@ void BbItemText::init()
 void BbItemText::focusOutEvent(QFocusEvent *event)
 {
     Q_UNUSED(event);
-    setTextInteractionFlags(Qt::NoTextInteraction);
-    QTextCursor cursor = textCursor();
-    cursor.setPosition(0);
-    setTextCursor(cursor);
-    clearFocus();
-    scene()->unsetCurrentItem(this);
-    if(_onFoucsOut)
+    // NOTE: 文本编辑状态下失焦，才去done。
+    if(textInteractionFlags() == Qt::TextEditorInteraction)
     {
-        _onFoucsOut();
+        blackboard()->revertToolCursor();
+        // NOTE: 由于会修改光标样式，所以里需要还原
+        setTextInteractionFlags(Qt::NoTextInteraction);
+        // NOTE: 如果框选了一些，然后失焦，会导致保持这个状态，所以需要清除选择
+        auto cursor = textCursor();
+        cursor.clearSelection();
+        setTextCursor(cursor);
+
+        scene()->unsetCurrentItem(this);
+        if(isEmpty())
+        {
+            scene()->remove(this); // 空白的不要保留，移除本地的。
+        }
+        else
+        {
+            emit blackboard()->itemChanged(BBIET_textDone,this);
+        }
     }
 }
 
+// 输入法会走这个。
 void BbItemText::inputMethodEvent(QInputMethodEvent *event)
 {
     QGraphicsTextItem::inputMethodEvent(event);
     updateContent();
 }
 
+// 没输入法时，或其他功能按键会走这个。
 void BbItemText::keyPressEvent(QKeyEvent *event)
 {
-    QGraphicsTextItem::keyPressEvent(event);
-    switch(event->key())
+    /*
+     * Note：
+     *      done会清除焦点，触发focusOutEvent。
+     *      在focusOutEvent中，文本为空白时，会移除自己，内存会被释放。
+     *      若再调用基类的keyPressEvent，会导致奔溃。
+     *      所以执行done后不要调用keyPressEvent。
+     */
+    const auto key = event->key();
+    const auto modifiers = event->modifiers();
+    if(Qt::Key_Escape == key ||
+       (Qt::Key_Return == key && Qt::ControlModifier == modifiers))
     {
-        case Qt::Key_Return:
-        {
-            if(event->modifiers() == Qt::ControlModifier)
-            {
-                done();
-            }
-            break;
-        }
-        case Qt::Key_Escape:
-        {
-            done();
-            break;
-        }
-        default:
-        {
-            updateContent();
-            break;
-        }
+        done();
+        return;
     }
+    updateContent();
+    QGraphicsTextItem::keyPressEvent(event);
+}
+
+void BbItemText::keyReleaseEvent(QKeyEvent *event)
+{
+    QGraphicsTextItem::keyReleaseEvent(event);
 }
 
 void BbItemText::repaint()
@@ -144,8 +155,6 @@ qreal BbItemText::weight()
 void BbItemText::done()
 {
     clearFocus();
-//    emit blackboard()->itemChanged(BBIET_textDone,this);
-//    scene()->unsetCurrentItem(this);
 }
 
 void BbItemText::updateContent()
@@ -154,9 +163,19 @@ void BbItemText::updateContent()
     if(_lastContent != curContent)
     {
         _myData->text = curContent;
-        if(_onContentChanged)
+        auto prevEmpty = _lastContent.replace(QRegExp("\\s"),"").isEmpty();
+        auto currEmpty = isEmpty();
+        if(prevEmpty && !currEmpty) // 无》有
         {
-            _onContentChanged();
+            emit blackboard()->itemChanged(BBIET_textAdded,this);
+        }
+        else if(!prevEmpty && currEmpty) // 有》无
+        {
+            emit blackboard()->itemChanged(BBIET_itemDelete,this);
+        }
+        else if(!prevEmpty && !currEmpty) // 有》有
+        {
+            emit blackboard()->itemChanged(BBIET_textChanged,this);
         }
         _lastContent = curContent;
     }
@@ -227,7 +246,10 @@ BbItemData *BbItemText::data()
 
 bool BbItemText::doubleClicked(const QPointF &pos)
 {
-    if(boundingRect().contains(pos-this->pos())){
+    if(boundingRect().contains(pos-this->pos()))
+    {
+        // NOTE: 通过Picker工具双击文本来编辑时，外部的鼠标样式极可能不是“文本光标”，所以需要这里修改一下
+        blackboard()->toToolCursor(BBTT_Text);
         setTextInteractionFlags(Qt::TextEditorInteraction);
         setFocus();
         return true;
@@ -239,13 +261,16 @@ void BbItemText::toolDown(const QPointF &pos)
 {
     if(scene()->currentItem() == this)
     {
-        setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
-        _myData->updatePostion(this);
-        _myData->prevX = _myData->x;
-        _myData->prevY = _myData->y;
-        if(!isEmpty())
+        if(!boundingRect().contains(pos - this->pos()))
         {
-            emit blackboard()->itemChanged(BBIET_itemMoved,this);
+            setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
+            _myData->updatePostion(this);
+            _myData->prevX = _myData->x;
+            _myData->prevY = _myData->y;
+            if(!isEmpty())
+            {
+                emit blackboard()->itemChanged(BBIET_itemMoved,this);
+            }
         }
     }
     else
@@ -290,42 +315,10 @@ void BbItemText::modifiersChanged(Qt::KeyboardModifiers modifiers)
 
 void BbItemText::removed()
 {
-    _onContentChanged = nullptr;
-    _onFoucsOut = nullptr;
 }
 
 void BbItemText::added()
 {
-    _onFoucsOut = [&]()
-    {
-        setActive(false);
-        setSelected(false);
-        if(isEmpty()) // 移除本地。
-        {
-            scene()->remove(this);
-        }
-        else
-        {
-            emit blackboard()->itemChanged(BBIET_textDone,this);
-        }
-    };
-    _onContentChanged = [&]()
-    {
-        auto prevEmpty = _lastContent.replace(QRegExp("\\s"),"").isEmpty();
-        auto currEmpty = isEmpty();
-        if(prevEmpty && !currEmpty) // 无》有
-        {
-            emit blackboard()->itemChanged(BBIET_textAdded,this);
-        }
-        else if(!prevEmpty && currEmpty) // 有》无
-        {
-            emit blackboard()->itemChanged(BBIET_itemDelete,this);
-        }
-        else if(!prevEmpty && !currEmpty) // 有》有
-        {
-            emit blackboard()->itemChanged(BBIET_textChanged,this);
-        }
-    };
 }
 
 qreal BbItemText::z()

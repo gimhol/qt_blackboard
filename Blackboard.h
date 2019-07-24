@@ -27,6 +27,12 @@ public:
 
     void setToolCursor(const BbToolType &tool, const QCursor &cursor);
 
+    QCursor toolCursor(const BbToolType &tool);
+
+    void toToolCursor(const BbToolType &tool);
+
+    void revertToolCursor();
+
     void setPointerPixmap(const QPixmap & pixmap);
 
     void setScroll(int x,int y);
@@ -105,7 +111,7 @@ public:
     void readItemData(BbItemData *itemData);
 
     void onToolChanged(BbToolType previous, BbToolType current);
-
+    BbToolType toolType();
     BbItemData *toolSettings(const BbToolType &toolType);
     void addPixmapItem(const QPixmap & pixmap);
     void selectedAll();

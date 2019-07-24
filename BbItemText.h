@@ -23,8 +23,6 @@ class NSB_BLACKBOARD_EXPORT BbItemText : public QGraphicsTextItem, public IStrea
 
     QString _lastContent;
 
-    onTextChangedCallback _onFoucsOut;
-
     onTextChangedCallback _onContentChanged;
 
 public:
@@ -41,6 +39,8 @@ public:
     void inputMethodEvent(QInputMethodEvent *event) override;
 
     void keyPressEvent(QKeyEvent *event) override;
+
+    void keyReleaseEvent(QKeyEvent *event) override;
 
     void repaint() override;
 
