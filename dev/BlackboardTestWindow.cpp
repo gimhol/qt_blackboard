@@ -341,7 +341,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             if(copy)
             {
                 blackboard1->scene()->add(copy);
-                copy->setZValue(copy->zValue());
+                copy->setZ(copy->z());
                 copy->setPixmap(item->pixmap());
                 copy->setId(item->id());
             }
@@ -355,7 +355,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             if(copy)
             {
                 blackboard1->scene()->add(copy);
-                copy->setZValue(item->zValue());
+                copy->setZ(item->z());
                 copy->setPenColor(item->penColor());
                 copy->setWeight(item->weight());
                 copy->setBrushColor(item->brushColor());
@@ -391,7 +391,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             if(copy)
             {
                 blackboard1->scene()->add(copy);
-                copy->setZValue(item->zValue());
+                copy->setZ(item->z());
                 copy->setPenColor(item->penColor());
                 copy->setWeight(item->weight());
                 copy->setBrushColor(item->brushColor());
@@ -427,7 +427,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             if(copy)
             {
                 blackboard1->scene()->add(copy);
-                copy->setZValue(item->zValue());
+                copy->setZ(item->z());
                 copy->setPenColor(item->penColor());
                 copy->setWeight(item->weight());
                 copy->setBrushColor(item->brushColor());
@@ -462,7 +462,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             auto copy = new BbItemText();
             if(copy)
             {
-                copy->setZValue(copy->zValue());
+                copy->setZ(copy->z());
                 blackboard1->scene()->add(copy);
                 copy->setFont(item->font());
                 copy->setColor(item->color());
@@ -475,7 +475,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         auto copy = blackboard1->find<BbItemText>(item->id());
         if(copy)
         {
-            copy->setPlainText(item->toPlainText());
+            copy->setText(item->text());
         }
     };
     auto textDone = textChanged;
@@ -486,7 +486,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             if(copy)
             {
                 blackboard1->scene()->add(copy);
-                copy->setZValue(item->zValue());
+                copy->setZ(item->z());
                 copy->setColor(item->color());
                 copy->setWeight(item->weight());
                 copy->setId(item->id());
@@ -553,7 +553,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             BbItemPen *copy = new BbItemPen();
             if(copy)
             {
-                copy->setZValue(item->zValue());
+                copy->setZ(item->z());
                 copy->setColor(item->color());
                 copy->setWeight(item->weight());
                 copy->setId(item->id());

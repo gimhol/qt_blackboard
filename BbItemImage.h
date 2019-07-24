@@ -6,7 +6,7 @@
 #include "IItemIndex.h"
 
 class BbItemImageData;
-class NSB_BLACKBOARD_EXPORT BbItemImage : public QGraphicsPixmapItem, public IStreamWR, public IItemIndex
+class NSB_BLACKBOARD_EXPORT BbItemImage : protected QGraphicsPixmapItem, public IStreamWR, public IItemIndex
 {
 protected:
     BbItemImageData * _myData;
@@ -19,6 +19,10 @@ public:
     virtual ~BbItemImage() override;
 
     void init();
+
+    void setPixmap(const QPixmap &pixmap);
+
+    const QPixmap &pixmap();
 
     void repaint() override;
 
@@ -39,6 +43,9 @@ public:
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void added() override {}
     void removed() override {}
+    qreal z() override;
+    void setZ(const qreal &value) override;
+    void toAbsoluteCoords() override;
 };
 
 #endif // BBITEMIMAGE_H

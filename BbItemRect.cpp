@@ -47,14 +47,6 @@ void BbItemRect::repaint()
     qreal x = _myData->x;
     qreal y = _myData->y;
     QSizeF size = _myData->size;
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
-    {
-        qreal width = scene()->width();
-        qreal ratio = width / 100;
-        x *= ratio;
-        y *= ratio;
-        size *= ratio;
-    }
     setPos(x,y);
     setRect(0,0,size.width(),size.height());
     setSelected(false);
@@ -67,21 +59,15 @@ void BbItemRect::writeStream(QDataStream &stream)
 {
     _myData->x = x();
     _myData->y = y();
-    _myData->z = zValue();
+    _myData->z = z();
     _myData->size = rect().size();
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
-    {
-        qreal ratio = scene()->width() / 100;
-        _myData->x /= ratio;
-        _myData->y /= ratio;
-        _myData->size /= ratio;
-    }
     _myData->writeStream(stream);
 }
 
 void BbItemRect::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
+    toAbsoluteCoords();
     repaint();
 }
 
@@ -229,6 +215,35 @@ void BbItemRect::modifiersChanged(Qt::KeyboardModifiers modifiers)
     {
         setSquare(modifiers == Qt::ShiftModifier);
         emit blackboard()->itemChanged(BBIET_rectDraw,this);
+    }
+}
+
+qreal BbItemRect::z()
+{
+    return zValue();
+}
+
+void BbItemRect::setZ(const qreal &value)
+{
+    setZValue(value);
+    _myData->z = value;
+}
+
+void BbItemRect::toAbsoluteCoords()
+{
+    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    {
+        _myData->mode = BbItemData::CM_ABSOLUTE;
+        qreal ratio = scene()->width() / 100;
+        if(_myData->isPositionValid())
+        {
+            _myData->x *= ratio;
+            _myData->y *= ratio;
+        }
+        if(_myData->size.isValid())
+        {
+            _myData->size *= ratio;
+        }
     }
 }
 

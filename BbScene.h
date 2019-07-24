@@ -60,6 +60,8 @@ public:
 
     BbToolType toolType();
 
+    IItemIndex *enumAll(std::function<bool(IItemIndex *,int)> job);
+
     IItemIndex *enumSelected(std::function<bool(IItemIndex *,int)> job);
 
     /**

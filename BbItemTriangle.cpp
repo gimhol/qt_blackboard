@@ -87,6 +87,37 @@ void BbItemTriangle::modifiersChanged(Qt::KeyboardModifiers modifiers)
     // do nothing
 }
 
+qreal BbItemTriangle::z()
+{
+    return zValue();
+}
+
+void BbItemTriangle::setZ(const qreal &value)
+{
+    setZValue(value);
+}
+
+void BbItemTriangle::toAbsoluteCoords()
+{
+    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    {
+        _myData->mode = BbItemData::CM_ABSOLUTE;
+        qreal ratio = scene()->width() / 100;
+        if(_myData->isPositionValid())
+        {
+            _myData->x *= ratio;
+            _myData->y *= ratio;
+        }
+        for(int i = 0; i < 3; ++i)
+        {
+            if(!_myData->points[i].isNull())
+            {
+                _myData->points[i] *= ratio;
+            }
+        }
+    }
+}
+
 void BbItemTriangle::begin(const QPointF &point)
 {
     _myData->points[0] = point;
@@ -197,27 +228,10 @@ void BbItemTriangle::setupRectWithABC()
 
 void BbItemTriangle::repaint()
 {
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
-    {
-        qreal width = scene()->width();
-        qreal ratio = width / 100;
-        _myData->points[0] *= ratio;
-        _myData->points[1] *= ratio;
-        _myData->points[2] *= ratio;
-    }
     setupRectWithABC();
     if( _myData->isPositionValid() )
     {
-        qreal x = _myData->x;
-        qreal y = _myData->y;
-        if(_myData->mode == BbItemData::CM_PERCENTAGE)
-        {
-            qreal width = scene()->width();
-            qreal ratio = width / 100;
-            x *= ratio;
-            y *= ratio;
-        }
-        setPos(x,y);
+        setPos(_myData->x,_myData->y);
     }
     setZValue(_myData->z);
     update();
@@ -273,18 +287,13 @@ void BbItemTriangle::writeStream(QDataStream &stream)
     _myData->x = x();
     _myData->y = y();
     _myData->z = zValue();
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
-    {
-        qreal ratio = scene()->width() / 100;
-        _myData->x /= ratio;
-        _myData->y /= ratio;
-    }
     _myData->writeStream(stream);
 }
 
 void BbItemTriangle::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
+    toAbsoluteCoords();
     repaint();
 }
 
@@ -305,7 +314,7 @@ BbToolType BbItemTriangle::toolType() const
 
 BbScene *BbItemTriangle::scene()
 {
-    return dynamic_cast<BbScene *>(QGraphicsRectItem::scene());
+    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
 
 BbItemData *BbItemTriangle::data()

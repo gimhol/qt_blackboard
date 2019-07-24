@@ -39,6 +39,17 @@ void BbItemImage::init()
     }
 }
 
+void BbItemImage::setPixmap(const QPixmap &pixmap)
+{
+    QGraphicsPixmapItem::setPixmap(pixmap);
+    _myData->pixmap = pixmap;
+}
+
+const QPixmap &BbItemImage::pixmap()
+{
+    return _myData->pixmap;
+}
+
 Blackboard *BbItemImage::blackboard()
 {
     return scene()->blackboard();
@@ -64,18 +75,34 @@ void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
 
 }
 
-void BbItemImage::repaint()
+qreal BbItemImage::z()
 {
-    qreal x = _myData->x;
-    qreal y = _myData->y;
+    return zValue();
+}
+
+void BbItemImage::setZ(const qreal &value)
+{
+    setZValue(value);
+    _myData->z = value;
+}
+
+void BbItemImage::toAbsoluteCoords()
+{
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {
-        qreal width = scene()->width();
-        qreal ratio = width / 100;
-        x *= ratio;
-        y *= ratio;
+        _myData->mode = BbItemData::CM_ABSOLUTE;
+        qreal ratio = scene()->width() / 100;
+        if(_myData->isPositionValid())
+        {
+            _myData->x *= ratio;
+            _myData->y *= ratio;
+        }
     }
-    setPos(x,y);
+}
+
+void BbItemImage::repaint()
+{
+    setPos(_myData->x,_myData->y);
     setZValue(_myData->z);
     setPixmap(_myData->pixmap);
     update();
@@ -87,18 +114,13 @@ void BbItemImage::writeStream(QDataStream &stream)
     _myData->x = x();
     _myData->y = y();
     _myData->z = zValue();
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
-    {
-        qreal ratio = scene()->width() / 100;
-        _myData->x /= ratio;
-        _myData->y /= ratio;
-    }
     _myData->writeStream(stream);
 }
 
 void BbItemImage::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
+    toAbsoluteCoords();
     repaint();
 }
 

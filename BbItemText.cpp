@@ -93,18 +93,8 @@ void BbItemText::repaint()
     setFont(_myData->font);
     setDefaultTextColor(_myData->color);
     setPlainText(_myData->text);
-
     if( _myData->isPositionValid() ){
-        qreal x = _myData->x;
-        qreal y = _myData->y;
-        if(_myData->mode == BbItemData::CM_PERCENTAGE)
-        {
-            qreal width = scene()->width();
-            qreal ratio = width / 100;
-            x *= ratio;
-            y *= ratio;
-        }
-        setPos(x,y);
+        setPos(_myData->x,_myData->y);
     }
     setSelected(false);
     setEnabled(true);
@@ -172,24 +162,31 @@ void BbItemText::updateContent()
     }
 }
 
+void BbItemText::setText(const QString &text)
+{
+    setPlainText(text);
+    _myData->text = text;
+    _lastContent = text;
+}
+
+QString BbItemText::text()
+{
+    return toPlainText();
+}
+
 void BbItemText::writeStream(QDataStream &stream)
 {
     _myData->text = toPlainText();
     _myData->x = x();
     _myData->y = y();
     _myData->z = zValue();
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
-    {
-        qreal ratio = scene()->width() / 100;
-        _myData->x /= ratio;
-        _myData->y /= ratio;
-    }
     _myData->writeStream(stream);
 }
 
 void BbItemText::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
+    toAbsoluteCoords();
     repaint();
 }
 
@@ -221,6 +218,16 @@ BbScene *BbItemText::scene()
 BbItemData *BbItemText::data()
 {
     return _myData;
+}
+
+bool BbItemText::doubleClicked(const QPointF &pos)
+{
+    if(boundingRect().contains(pos-this->pos())){
+        setTextInteractionFlags(Qt::TextEditorInteraction);
+        setFocus();
+        return true;
+    }
+    return false;
 }
 
 void BbItemText::toolDown(const QPointF &pos)
@@ -318,3 +325,46 @@ void BbItemText::added()
     };
 }
 
+qreal BbItemText::z()
+{
+    return zValue();
+}
+
+void BbItemText::setZ(const qreal &value)
+{
+    setZValue(value);
+    _myData->z = value;
+}
+
+void BbItemText::setPos(const QPointF &pos)
+{
+    QGraphicsItem::setPos(pos);
+    _myData->x = pos.x();
+    _myData->y = pos.y();
+}
+
+void BbItemText::setPos(qreal x, qreal y)
+{
+    QGraphicsItem::setPos(x,y);
+    _myData->x = x;
+    _myData->y = y;
+}
+
+QPointF BbItemText::pos()
+{
+    return QGraphicsItem::pos();
+}
+
+void BbItemText::toAbsoluteCoords()
+{
+    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    {
+        _myData->mode = BbItemData::CM_ABSOLUTE;
+        qreal ratio = scene()->width() / 100;
+        if(_myData->isPositionValid())
+        {
+            _myData->x *= ratio;
+            _myData->y *= ratio;
+        }
+    }
+}

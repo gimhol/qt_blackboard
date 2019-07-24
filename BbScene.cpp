@@ -67,6 +67,38 @@ BbToolType BbScene::toolType()
     return _toolType;
 }
 
+IItemIndex *BbScene::enumAll(std::function<bool (IItemIndex *, int)> job)
+{
+    IItemIndex *first = nullptr;
+    IItemIndex *current = nullptr;
+    int i = 0;
+    for(auto item: items())
+    {
+        IItemIndex *index = dynamic_cast<IItemIndex *>(item);
+        if(index)
+        {
+            if(first)
+            {
+                index->last = current;
+                current->next = index;
+            }
+            else
+            {
+                index->last = nullptr;
+                first = index;
+            }
+            index->next = nullptr;
+            if(job && job(index,i))
+            {
+                break;
+            }
+            current = index;
+            i++;
+        }
+    }
+    return first;
+}
+
 IItemIndex *BbScene::enumSelected(std::function<bool(IItemIndex *,int)> job)
 {
     IItemIndex *first = nullptr;
@@ -292,11 +324,13 @@ void BbScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     {
         case BBTT_Picker:
         {
-            for(auto item : items()){
-                BbItemText *text = dynamic_cast<BbItemText *>(item);
-                if(text && text->boundingRect().contains(event->scenePos()-item->pos())){
-                    text->setTextInteractionFlags(Qt::TextEditorInteraction);
-                    text->setFocus();
+            auto pos = event->scenePos();
+            for(auto item : items())
+            {
+                IItemIndex *index = dynamic_cast<IItemIndex *>(item);
+                if(index && index->doubleClicked(pos))
+                {
+                    break;
                 }
             }
             break;
@@ -585,18 +619,11 @@ IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
     auto index = BbHelper::createItem(static_cast<BbToolType>(type));
     if(index)
     {
+        add(index);
         auto streamReader = dynamic_cast<IStreamR*>(index);
         if(streamReader)
         {
             streamReader->readStream(stream);
-        }
-        auto item = dynamic_cast<QGraphicsItem*>(index);
-        if(item)
-        {
-            addItem(item);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,_toolType == BBTT_Picker);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,_toolType == BBTT_Picker);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,_toolType == BBTT_Picker);
         }
     }
     return index;
@@ -661,7 +688,6 @@ void BbScene::add(IItemIndex *index)
 {
     if(index)
     {
-        index->added();
         QGraphicsItem *item = dynamic_cast<QGraphicsItem *>(index);
         if(item)
         {
@@ -669,11 +695,13 @@ void BbScene::add(IItemIndex *index)
             item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,_toolType == BBTT_Picker);
             item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,_toolType == BBTT_Picker);
             QGraphicsScene::addItem(item);
+            index->toAbsoluteCoords();
         }
         else
         {
             qWarning() << "[BlackboardScene::add] item is not a 'QGraphicsItem'! what happen?!";
         }
+        index->added();
     }
     else
     {
@@ -688,7 +716,7 @@ void BbScene::setControlEnable(bool enable)
 
 void BbScene::clearItems()
 {
-    auto index = enumSelected(nullptr);
+    auto index = enumAll(nullptr);
     while(index)
     {
         auto next = index->next;
@@ -749,7 +777,7 @@ void BbScene::addImageItem(const QPixmap &pixmap)
     auto item = new BbItemImage();
     item->setPixmap(pixmap);
     add(item);
-    item->setZValue(QDateTime::currentMSecsSinceEpoch());
+    item->setZ(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
 }

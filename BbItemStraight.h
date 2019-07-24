@@ -75,6 +75,9 @@ public:
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void removed() override { }
     void added() override { }
+    qreal z() override;
+    void setZ(const qreal &value) override;
+    void toAbsoluteCoords() override;
 };
 
 #endif // BBITEMSTRAIGHT_H

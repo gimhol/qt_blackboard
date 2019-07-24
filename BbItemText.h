@@ -62,6 +62,10 @@ public:
 
     void updateContent();
 
+    void setText(const QString &text);
+
+    QString text();
+
     // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;
@@ -75,12 +79,19 @@ public:
     Blackboard *blackboard() override;
     BbScene *scene() override;
     BbItemData *data() override;
+    bool doubleClicked(const QPointF &pos) override;
     void toolDown(const QPointF &pos) override;
     void toolDraw(const QPointF &pos) override;
     void toolDone(const QPointF &pos) override;
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void removed() override;
     void added() override;
+    qreal z() override;
+    void setZ(const qreal &value) override;
+    void setPos(const QPointF &pos);
+    void setPos(qreal x,qreal y);
+    QPointF pos();
+    void toAbsoluteCoords() override;
 };
 
 

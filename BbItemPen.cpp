@@ -247,17 +247,8 @@ void BbItemPen::setWeight(qreal weight)
 
 void BbItemPen::straightLineDragging(const QPointF &point)
 {
-    if(_myData->mode == BbItemPenData::CM_PERCENTAGE)
-    {
-        qreal ratio = scene()->width() / 100;
-        _straightLineTo.setX(point.x() / ratio - pos().x());
-        _straightLineTo.setY(point.y() / ratio - pos().y());
-    }
-    else
-    {
-        _straightLineTo.setX(point.x() - pos().x());
-        _straightLineTo.setY(point.y() - pos().y());
-    }
+    _straightLineTo.setX(point.x() - pos().x());
+    _straightLineTo.setY(point.y() - pos().y());
     if(_straightLineFrom.x() < -999998)
     {
         _straightLineFrom = _mousePos - pos();
@@ -300,19 +291,8 @@ void BbItemPen::addPointToPath(const QPointF &point)
         return;
     }
     _changed.append(point);
-
-    if(_myData->mode == BbItemPenData::CM_PERCENTAGE)
-    {
-        qreal ratio = scene()->width() / 100;
-        _myData->coords.append(point.x() / ratio);
-        _myData->coords.append(point.y() / ratio);
-    }
-    else
-    {
-        _myData->coords.append(point.x());
-        _myData->coords.append(point.y());
-    }
-
+    _myData->coords.append(point.x());
+    _myData->coords.append(point.y());
     qreal halfPenW = 0.5 * _myData->pen.widthF();
     qreal oldLeft = pos().x();
     qreal oldTop = pos().y();
@@ -324,17 +304,7 @@ void BbItemPen::addPointToPath(const QPointF &point)
 
      setPos(newLeft, newTop);
      _myData->updatePostion(this);
-     if(_myData->mode == BbItemPenData::CM_PERCENTAGE)
-     {
-         qreal ratio = scene()->width() / 100;
-         _myData->x = newLeft / ratio;
-         _myData->y = newTop / ratio;
-     }
-     else
-     {
-         _myData->x = newLeft;
-         _myData->y = newTop;
-     }
+
     _rect = _path->boundingRect();
     _rect.setX(_rect.x()-halfPenW);
     _rect.setY(_rect.y()-halfPenW);
@@ -426,12 +396,6 @@ void BbItemPen::repaint()
     {
         qreal x = _myData->coords[i];
         qreal y = _myData->coords[i+1];
-        if(_myData->mode == BbItemPenData::CM_PERCENTAGE)
-        {
-            qreal ratio = scene()->width() / 100;
-            x *= ratio;
-            y *= ratio;
-        }
         QPointF point(x,y);
         if(i==0)
         {
@@ -517,6 +481,7 @@ void BbItemPen::writeStream(QDataStream &stream)
 void BbItemPen::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
+    toAbsoluteCoords();
     repaint();
 }
 
@@ -537,7 +502,7 @@ BbToolType BbItemPen::toolType() const
 
 BbScene *BbItemPen::scene()
 {
-    return dynamic_cast<BbScene *>(QGraphicsRectItem::scene());
+    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
 
 BbItemData *BbItemPen::data()
@@ -598,6 +563,35 @@ void BbItemPen::modifiersChanged(Qt::KeyboardModifiers modifiers)
         if(!_straight)
         {
             emit blackboard()->itemChanged(BBIET_penDraw,this);
+        }
+    }
+}
+
+qreal BbItemPen::z()
+{
+    return zValue();
+}
+
+void BbItemPen::setZ(const qreal &value)
+{
+    setZValue(value);
+    _myData->z = value;
+}
+
+void BbItemPen::toAbsoluteCoords()
+{
+    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    {
+        _myData->mode = BbItemData::CM_ABSOLUTE;
+        qreal ratio = scene()->width() / 100;
+        if(_myData->isPositionValid())
+        {
+            _myData->x *= ratio;
+            _myData->y *= ratio;
+        }
+        for(int i=0;i<_myData->coords.length();++i)
+        {
+            _myData->coords[i] = _myData->coords[i] * ratio;
         }
     }
 }

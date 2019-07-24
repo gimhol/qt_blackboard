@@ -86,6 +86,39 @@ void BbItemStraight::modifiersChanged(Qt::KeyboardModifiers modifiers)
     }
 }
 
+qreal BbItemStraight::z()
+{
+    return zValue();
+}
+
+void BbItemStraight::setZ(const qreal &value)
+{
+    setZValue(value);
+    _myData->z = value;
+}
+
+void BbItemStraight::toAbsoluteCoords()
+{
+    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    {
+        _myData->mode = BbItemData::CM_ABSOLUTE;
+        qreal ratio = scene()->width() / 100;
+        if(_myData->isPositionValid())
+        {
+            _myData->x *= ratio;
+            _myData->y *= ratio;
+        }
+        if(!_myData->a.isNull())
+        {
+            _myData->a *= ratio;
+        }
+        if(!_myData->b.isNull())
+        {
+            _myData->b *= ratio;
+        }
+    }
+}
+
 void BbItemStraight::begin(const QPointF &point)
 {
     setPos(point);
@@ -197,26 +230,10 @@ void BbItemStraight::setupRectWithAB()
 
 void BbItemStraight::repaint()
 {
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
-    {
-        qreal width = scene()->width();
-        qreal ratio = width / 100;
-        _myData->a *= ratio;
-        _myData->b *= ratio;
-    }
     setupRectWithAB();
     if( _myData->isPositionValid() )
     {
-        if(_myData->mode == BbItemData::CM_PERCENTAGE)
-        {
-            qreal width = scene()->width();
-            qreal ratio = width / 100;
-            setPos(_myData->x*ratio,_myData->y*ratio);
-        }
-        else
-        {
-            setPos(_myData->x,_myData->y);
-        }
+        setPos(_myData->x,_myData->y);
     }
     setZValue(_myData->z);
     update();
@@ -270,18 +287,13 @@ void BbItemStraight::writeStream(QDataStream &stream)
     _myData->x = x();
     _myData->y = y();
     _myData->z = zValue();
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
-    {
-        qreal ratio = scene()->width() / 100;
-        _myData->x /= ratio;
-        _myData->y /= ratio;
-    }
     _myData->writeStream(stream);
 }
 
 void BbItemStraight::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
+    toAbsoluteCoords();
     repaint();
 }
 
@@ -302,7 +314,7 @@ BbToolType BbItemStraight::toolType() const
 
 BbScene *BbItemStraight::scene()
 {
-    return dynamic_cast<BbScene *>(QGraphicsRectItem::scene());
+    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
 
 BbItemData *BbItemStraight::data()

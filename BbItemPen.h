@@ -12,11 +12,11 @@ class BbItemPenData;
 class NSB_BLACKBOARD_EXPORT BbItemPen : public QGraphicsRectItem, public IStreamWR, public IItemIndex{
 
 protected:
-#if SAVE_TO_PIXMAP_WHEN_DONE
+#ifdef SAVE_TO_PIXMAP_WHEN_DONE
     QPixmap *_pixmap = nullptr;
 #endif
 
-#if NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
+#ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
     QList<QPointF> _temp;
 
     float _distances[3];
@@ -69,7 +69,7 @@ public:
 
     void setWeight(qreal weight);
 
-    void repaint();
+    void repaint() override;
 
     bool straight();
 
@@ -84,7 +84,7 @@ protected:
 
     void addPointToPath(const QPointF &point);
 
-#if NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
+#ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
     void appendPointSmoothing(const QPointF &point);
 #endif
 
@@ -109,6 +109,9 @@ public:
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void removed() override { }
     void added() override { }
+    qreal z() override;
+    void setZ(const qreal &value) override;
+    void toAbsoluteCoords() override;
 };
 
 #endif // CANVASELEMENTPEN3_HPP
