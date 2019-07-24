@@ -31,6 +31,11 @@ public:
     QColor color;
 
     /**
+     * @brief prevText 修改前的文本内容
+     */
+    QString prevText;
+
+    /**
      * @brief text 当前文本内容
      */
     QString text;

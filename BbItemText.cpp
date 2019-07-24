@@ -61,6 +61,7 @@ void BbItemText::focusOutEvent(QFocusEvent *event)
         else
         {
             emit blackboard()->itemChanged(BBIET_textDone,this);
+            _myData->prevText = _myData->text;
         }
     }
 }

@@ -67,7 +67,7 @@ void BbItemTextData::writeStream(QDataStream &stream)
            << font.italic()
            << font.bold()
            << color.rgba()
-           << text;
+           << text << prevText;
 }
 
 void BbItemTextData::readStream(QDataStream &stream)
@@ -88,7 +88,8 @@ void BbItemTextData::readStream(QDataStream &stream)
             >> italic
             >> bold
             >> rgba
-            >> text;
+            >> text
+            >> prevText;
 
     isEmpty = text.length() == 0;
 
