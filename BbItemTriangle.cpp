@@ -108,6 +108,11 @@ void BbItemTriangle::toAbsoluteCoords()
             _myData->x *= ratio;
             _myData->y *= ratio;
         }
+        if(_myData->isPrevPositionValid())
+        {
+            _myData->prevX *= ratio;
+            _myData->prevY *= ratio;
+        }
         for(int i = 0; i < 3; ++i)
         {
             if(!_myData->points[i].isNull())

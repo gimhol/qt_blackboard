@@ -97,6 +97,11 @@ void BbItemImage::toAbsoluteCoords()
             _myData->x *= ratio;
             _myData->y *= ratio;
         }
+        if(_myData->isPrevPositionValid())
+        {
+            _myData->prevX *= ratio;
+            _myData->prevY *= ratio;
+        }
     }
 }
 

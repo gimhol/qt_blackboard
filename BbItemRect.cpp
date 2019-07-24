@@ -240,6 +240,11 @@ void BbItemRect::toAbsoluteCoords()
             _myData->x *= ratio;
             _myData->y *= ratio;
         }
+        if(_myData->isPrevPositionValid())
+        {
+            _myData->prevX *= ratio;
+            _myData->prevY *= ratio;
+        }
         if(_myData->size.isValid())
         {
             _myData->size *= ratio;
