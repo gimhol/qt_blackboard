@@ -22,9 +22,6 @@ class NSB_BLACKBOARD_EXPORT BbItemText : public QGraphicsTextItem, public IStrea
     BbItemTextData *_myData;
 
     QString _lastContent;
-
-    onTextChangedCallback _onContentChanged;
-
 public:
     BbItemText();
 

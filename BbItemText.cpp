@@ -9,8 +9,7 @@
 BbItemText::BbItemText():
     QGraphicsTextItem(),
     IItemIndex(nullptr),
-    _myData(new BbItemTextData()),
-    _onContentChanged(nullptr)
+    _myData(new BbItemTextData())
 {
     init();
 }
@@ -18,8 +17,7 @@ BbItemText::BbItemText():
 BbItemText::BbItemText(BbItemData *data):
     QGraphicsTextItem(),
     IItemIndex (data),
-    _myData(dynamic_cast<BbItemTextData*>(data)),
-    _onContentChanged(nullptr)
+    _myData(dynamic_cast<BbItemTextData*>(data))
 {
     init();
 }
@@ -58,10 +56,9 @@ void BbItemText::focusOutEvent(QFocusEvent *event)
         {
             scene()->remove(this); // 空白的不要保留，移除本地的。
         }
-        else
+        else if(_myData->prevText != _myData->text)
         {
             emit blackboard()->itemChanged(BBIET_textDone,this);
-            _myData->prevText = _myData->text;
         }
     }
 }
