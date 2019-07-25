@@ -121,6 +121,7 @@ void BbItemEllipse::begin(const QPointF &point)
     _beginY = point.y();
     setPos(point);
     _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 void BbItemEllipse::draw(const QPointF &point)
 {
@@ -137,13 +138,15 @@ void BbItemEllipse::draw(const QPointF &point)
     qreal l = std::min(_dragX,_beginX);
     qreal t = std::min(_dragY,_beginY);
     setPos(l,t);
-    _myData->updatePostion(this);
     setRect(0,0,std::abs(_dragX-_beginX),std::abs(_dragY-_beginY));
+    _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemEllipse::done()
 {
-    // maybe we dont need "done".
+    _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemEllipse::setPenColor(const QColor &color)

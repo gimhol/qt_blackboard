@@ -42,10 +42,15 @@ void BbItemData::updatePostion(IItemIndex *itemIdx)
         }
         if(!isPrevPositionValid())
         {
-            prevX = x;
-            prevY = y;
+            updatePrevPostion();
         }
     }
+}
+
+void BbItemData::updatePrevPostion()
+{
+    prevX = x;
+    prevY = y;
 }
 
 void BbItemData::writeStream(QDataStream &stream){

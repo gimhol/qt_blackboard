@@ -271,8 +271,7 @@ void BbItemText::toolDown(const QPointF &pos)
         {
             setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
             _myData->updatePostion(this);
-            _myData->prevX = _myData->x;
-            _myData->prevY = _myData->y;
+            _myData->updatePrevPostion();
             if(!isEmpty())
             {
                 emit blackboard()->itemChanged(BBIET_itemMoved,this);

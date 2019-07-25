@@ -127,13 +127,13 @@ void BbItemStraight::toAbsoluteCoords()
 void BbItemStraight::begin(const QPointF &point)
 {
     setPos(point);
-    _myData->updatePostion(this);
     _myData->a = point;
     _myData->b = point;
     _myData->isEmpty = false;
     _mousePos = point;
     setupRectWithAB();
     _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemStraight::draw(const QPointF &point)
@@ -149,10 +149,13 @@ void BbItemStraight::draw(const QPointF &point)
     }
     setupRectWithAB();
     _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemStraight::done()
 {
+    _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemStraight::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)

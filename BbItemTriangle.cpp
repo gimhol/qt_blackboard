@@ -133,6 +133,7 @@ void BbItemTriangle::begin(const QPointF &point)
 
     setupRectWithABC();
     _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemTriangle::draw(const QPointF &point)
@@ -149,11 +150,14 @@ void BbItemTriangle::draw(const QPointF &point)
     }
     setupRectWithABC();
     _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemTriangle::done()
 {
     ++_step;
+    _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)

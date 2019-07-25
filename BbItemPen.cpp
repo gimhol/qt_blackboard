@@ -114,10 +114,7 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 void BbItemPen::penDown(const QPointF &point){
     setPos(point);
-    _myData->updatePostion(this);
-
     _myData->isEmpty = false;
-
     if(_path == nullptr)
     {
         _path = new QPainterPath();
@@ -125,12 +122,13 @@ void BbItemPen::penDown(const QPointF &point){
     _path->moveTo(0,0);
     _mousePos = point;
     addPointToPath(point);
-
     if(_straight)
     {
         _straightLineFrom = QPointF(0,0);
     }
     update();
+    _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemPen::penDraw(const QPointF &point)
@@ -154,19 +152,17 @@ void BbItemPen::penDraw(const QPointF &point)
 void BbItemPen::penStraighting(const QPointF &point)
 {
     setStraight(true);
-
     _changed.clear();
-
     straightLineDragging(point);
-
     setRect(_rect);
-
     update();
 }
 
-void BbItemPen::done(){
-
-#if SAVE_TO_PIXMAP_WHEN_DONE
+void BbItemPen::done()
+{
+    _myData->updatePostion(this);
+    _myData->updatePrevPostion();
+#ifdef SAVE_TO_PIXMAP_WHEN_DONE
 
     do{
         if(_path == nullptr){
@@ -265,7 +261,6 @@ void BbItemPen::straightLineDragging(const QPointF &point)
     _straightLineFrom += QPointF(oldLeft - newLeft,oldTop - newTop);
     _path->translate(oldLeft - newLeft,oldTop - newTop);
     setPos(newLeft, newTop);
-    _myData->updatePostion(this);
 
     QRectF pathRect = _path->boundingRect();
 
@@ -280,6 +275,8 @@ void BbItemPen::straightLineDragging(const QPointF &point)
     _rect.setHeight(h + 2 * halfPenW);
 
     update();
+    _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemPen::addPointToPath(const QPointF &point)
@@ -301,13 +298,14 @@ void BbItemPen::addPointToPath(const QPointF &point)
     _path->lineTo(point - QPointF(newLeft, newTop));
 
      setPos(newLeft, newTop);
-     _myData->updatePostion(this);
 
     _rect = _path->boundingRect();
     _rect.setX(_rect.x()-halfPenW);
     _rect.setY(_rect.y()-halfPenW);
     _rect.setWidth(_rect.width()+halfPenW);
     _rect.setHeight(_rect.height()+halfPenW);
+    _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 #ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
@@ -415,19 +413,11 @@ void BbItemPen::repaint()
     _rect.setHeight(_rect.height()+halfPenW);
 
     setRect(_rect);
-
     done();
-
-    if( _myData->isPositionValid() ){
+    if(_myData->isPositionValid())
+    {
         qreal x = _myData->x;
         qreal y = _myData->y;
-        if(_myData->mode == BbItemPenData::CM_PERCENTAGE)
-        {
-            qreal width = scene()->width();
-            qreal ratio = width / 100;
-            x *= ratio;
-            y *= ratio;
-        }
         setPos(x,y);
     }
     setZValue(_myData->z);
@@ -452,14 +442,11 @@ void BbItemPen::setStraight(const bool & straight)
         _straightLineFrom = QPointF(-999999, -999999);
         _straightLineTo = QPointF(-999999, -999999);
     }
-    else
+    else if(_straightLineTo.x() > -999998)
     {
-        if(_straightLineTo.x() > -999998)
-        {
-            _mousePos = _straightLineTo + pos();
-            _changed.clear();
-            addPointToPath(_mousePos);
-        }
+        _mousePos = _straightLineTo + pos();
+        _changed.clear();
+        addPointToPath(_mousePos);
     }
     _straight = straight;
 }

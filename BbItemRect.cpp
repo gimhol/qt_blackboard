@@ -78,6 +78,7 @@ void BbItemRect::begin(const QPointF &point)
     _beginY = point.y();
     setPos(point);
     _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 void BbItemRect::draw(const QPointF &point)
 {
@@ -96,11 +97,14 @@ void BbItemRect::draw(const QPointF &point)
     setPos(l,t);
     _myData->updatePostion(this);
     setRect(0,0,std::abs(_dragX-_beginX),std::abs(_dragY-_beginY));
+    _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemRect::done()
 {
-    // maybe we dont need "done".
+    _myData->updatePostion(this);
+    _myData->updatePrevPostion();
 }
 
 void BbItemRect::setPenColor(const QColor &color)

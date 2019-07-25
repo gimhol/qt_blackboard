@@ -80,6 +80,8 @@ public:
     virtual bool isPrevPositionValid();
 
     virtual void updatePostion(IItemIndex *itemIdx);
+
+    virtual void updatePrevPostion();
     // IStreamWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;
