@@ -342,6 +342,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             {
                 blackboard1->scene()->add(copy);
                 copy->setZ(copy->z());
+                copy->setRect(item->rect());
                 copy->setPixmap(item->pixmap());
                 copy->setId(item->id());
             }
@@ -719,19 +720,6 @@ void BlackboardTestWindow::on_triangleWeight_valueChanged(int arg1)
     triangleSettings->setWeight(arg1 * 0.01);
 }
 
-void BlackboardTestWindow::on_localImage_clicked()
-{
-    QString fileName = QFileDialog::getOpenFileName(nullptr,QStringLiteral("选择图片"),".","*.png;*.jpg");
-
-    if(fileName.isEmpty())
-    {
-        return;
-    }
-
-    QPixmap pm(fileName);
-    blackboard()->addPixmapItem(pm);
-}
-
 void BlackboardTestWindow::on_onlineImage_clicked()
 {
 //    QPixmap pm(100,100);
@@ -774,4 +762,29 @@ void BlackboardTestWindow::on_pushButton_2_clicked()
 void BlackboardTestWindow::on_rectWeight_valueChanged(int arg1)
 {
     rectSettings->setWeight(arg1 * 0.01);
+}
+
+void BlackboardTestWindow::on_imagePick_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(nullptr,QStringLiteral("选择图片"),".","*.png;*.jpg");
+    if(!fileName.isEmpty())
+    {
+        image = QPixmap(fileName);
+        ui->spinBoxImageWidth->setValue(image.width());
+        ui->spinBoxImageHeight->setValue(image.height());
+    }
+}
+
+void BlackboardTestWindow::on_imageInsert_clicked()
+{
+    if(!image.isNull())
+    {
+        blackboard()->addImageItem(image);
+    }
+    else
+    {
+        blackboard()->addImageItem(
+            ui->spinBoxImageWidth->value(),
+            ui->spinBoxImageHeight->value());
+    }
 }

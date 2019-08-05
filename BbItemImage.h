@@ -6,7 +6,7 @@
 #include "IItemIndex.h"
 
 class BbItemImageData;
-class NSB_BLACKBOARD_EXPORT BbItemImage : protected QGraphicsPixmapItem, public IStreamWR, public IItemIndex
+class NSB_BLACKBOARD_EXPORT BbItemImage : public QGraphicsRectItem, public IStreamWR, public IItemIndex
 {
 protected:
     BbItemImageData * _myData;
@@ -46,6 +46,9 @@ public:
     qreal z() override;
     void setZ(const qreal &value) override;
     void toAbsoluteCoords() override;
+protected:
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) override;
+
 };
 
 #endif // BBITEMIMAGE_H

@@ -93,7 +93,9 @@ public:
 
     bool isMouseLeftButtonDown();
 
-    void addImageItem(const QPixmap &pixmap);
+    BbItemImage *addImageItem(const qreal &width, const qreal &height);
+
+    BbItemImage *addImageItem(const QPixmap &pixmap);
 
     IItemIndex *copyItemFromStream(QDataStream &stream);
 
@@ -168,7 +170,7 @@ protected:
      */
     void pickingItems(const QPointF &mousePos);
 
-    void onToolChanged(BbToolType previous, BbToolType current);
+    void onToolChanged(BbToolType previous);
 
     // ItemDataWR interface
 public:
@@ -179,6 +181,8 @@ public:
     void emitItemMovingSignals();
 
     void emitItemMovedSignals();
+
+    void setItemPicking(bool picking);
 };
 
 #endif // CANVASSCENE3_H

@@ -14,6 +14,21 @@
    <string>Form</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>3</number>
+   </property>
+   <property name="leftMargin">
+    <number>3</number>
+   </property>
+   <property name="topMargin">
+    <number>3</number>
+   </property>
+   <property name="rightMargin">
+    <number>3</number>
+   </property>
+   <property name="bottomMargin">
+    <number>3</number>
+   </property>
    <item>
     <widget class="QWidget" name="toolbar" native="true">
      <property name="sizePolicy">
@@ -27,307 +42,36 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QPushButton" name="picker">
-        <property name="text">
-         <string>选择&amp;&amp;移动</string>
+       <widget class="QGroupBox" name="groupBoxTool">
+        <property name="title">
+         <string>工具</string>
         </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pointer">
-        <property name="text">
-         <string>激光笔</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="horizontalWidget" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <property name="spacing">
-          <number>2</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="pen">
-           <property name="text">
-            <string>画笔</string>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="ColorDisplayer" name="penColor" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>23</width>
-             <height>23</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="penWeight">
-           <property name="maximum">
-            <number>100</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widget_2" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
          <property name="spacing">
           <number>3</number>
          </property>
          <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="straight">
-           <property name="text">
-            <string>直线</string>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="ColorDisplayer" name="straightColor" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>23</width>
-             <height>23</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="straightWeight">
-           <property name="maximum">
-            <number>100</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widget" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <property name="spacing">
           <number>3</number>
          </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
          <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="text">
-           <property name="text">
-            <string>文本</string>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="ColorDisplayer" name="textColor" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>23</width>
-             <height>23</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="textWeight">
-           <property name="maximum">
-            <number>100</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="horizontalWidget" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <property name="spacing">
           <number>3</number>
          </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
          <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="rect">
-           <property name="text">
-            <string>矩形</string>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="ColorDisplayer" name="rectPenColor" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>23</width>
-             <height>23</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="ColorDisplayer" name="rectBrushColor" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>23</width>
-             <height>23</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="rectWeight">
-           <property name="maximum">
-            <number>100</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widget_3" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <property name="spacing">
           <number>3</number>
          </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
          <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="ellipse">
-           <property name="text">
-            <string>椭圆</string>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="ColorDisplayer" name="ellipsePenColor" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>23</width>
-             <height>23</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="ColorDisplayer" name="ellipseBrushColor" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>23</width>
-             <height>23</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="ellipseWeight">
-           <property name="maximum">
-            <number>100</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widget_4" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <property name="spacing">
           <number>3</number>
          </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
          <item>
-          <widget class="QPushButton" name="triangle">
+          <widget class="QPushButton" name="pointer">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
-            <string>三角</string>
+            <string>激光笔</string>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -335,44 +79,643 @@
           </widget>
          </item>
          <item>
-          <widget class="ColorDisplayer" name="trianglePenColor" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>23</width>
-             <height>23</height>
-            </size>
+          <widget class="QPushButton" name="picker">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>选择&amp;&amp;移动</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="ColorDisplayer" name="triangleBrushColor" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>23</width>
-             <height>23</height>
-            </size>
-           </property>
+          <widget class="QWidget" name="horizontalWidget" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <property name="spacing">
+             <number>2</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="pen">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>画笔</string>
+              </property>
+              <property name="shortcut">
+               <string>Ctrl+P</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ColorDisplayer" name="penColor" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>23</width>
+                <height>23</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>线条颜色</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="penWeight">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="triangleWeight">
-           <property name="maximum">
-            <number>100</number>
-           </property>
+          <widget class="QWidget" name="widget_2" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <property name="spacing">
+             <number>3</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="straight">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>直线</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ColorDisplayer" name="straightColor" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>23</width>
+                <height>23</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>线条颜色</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="straightWeight">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widget" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <property name="spacing">
+             <number>3</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="text">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>文本</string>
+              </property>
+              <property name="shortcut">
+               <string>Ctrl+T</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ColorDisplayer" name="textColor" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>23</width>
+                <height>23</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>线条颜色</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="textWeight">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="horizontalWidget" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <property name="spacing">
+             <number>3</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="rect">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>矩形</string>
+              </property>
+              <property name="shortcut">
+               <string>Ctrl+R</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ColorDisplayer" name="rectPenColor" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>23</width>
+                <height>23</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>线条颜色</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ColorDisplayer" name="rectBrushColor" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>23</width>
+                <height>23</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>填充色</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="rectWeight">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widget_3" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <property name="spacing">
+             <number>3</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="ellipse">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>椭圆</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ColorDisplayer" name="ellipsePenColor" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>23</width>
+                <height>23</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>线条颜色</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ColorDisplayer" name="ellipseBrushColor" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>23</width>
+                <height>23</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>填充色</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="ellipseWeight">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widget_4" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <property name="spacing">
+             <number>3</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="triangle">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>三角</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ColorDisplayer" name="trianglePenColor" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>23</width>
+                <height>23</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>线条颜色</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ColorDisplayer" name="triangleBrushColor" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>23</width>
+                <height>23</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>填充色</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="triangleWeight">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="localImage">
-        <property name="text">
-         <string>插入图片</string>
+       <widget class="QGroupBox" name="groupBoxImage">
+        <property name="title">
+         <string>图片</string>
         </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="spacing">
+          <number>3</number>
+         </property>
+         <property name="leftMargin">
+          <number>3</number>
+         </property>
+         <property name="topMargin">
+          <number>3</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>3</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="imageSizeRow">
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>宽</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBoxImageWidth">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>1920</number>
+             </property>
+             <property name="value">
+              <number>10</number>
+             </property>
+             <property name="displayIntegerBase">
+              <number>10</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>高</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBoxImageHeight">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>1920</number>
+             </property>
+             <property name="value">
+              <number>10</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="imagebuttonrow">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="imagePick">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>选择</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="imageInsert">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>插入</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>编辑</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <property name="spacing">
+          <number>3</number>
+         </property>
+         <property name="leftMargin">
+          <number>3</number>
+         </property>
+         <property name="topMargin">
+          <number>3</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>3</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <item>
+            <widget class="QPushButton" name="selectedAll">
+             <property name="text">
+              <string>全选</string>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+A</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="remove">
+             <property name="text">
+              <string>移除</string>
+             </property>
+             <property name="shortcut">
+              <string>Del</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QPushButton" name="copy">
+             <property name="text">
+              <string>复制</string>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+C</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="paste">
+             <property name="text">
+              <string>粘贴</string>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+V</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_10">
+           <item>
+            <widget class="QPushButton" name="repaint">
+             <property name="text">
+              <string>重绘</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="clear">
+             <property name="text">
+              <string>清除</string>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+Del</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
          <string>设置背景</string>
         </property>
@@ -380,80 +723,52 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
          <string>清除背景</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QTextBrowser" name="textBrowser"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="selectedAll">
-        <property name="text">
-         <string>全选</string>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
-        <property name="shortcut">
-         <string>Ctrl+A</string>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
         </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_8">
-        <item>
-         <widget class="QPushButton" name="copy">
-          <property name="text">
-           <string>复制</string>
-          </property>
-          <property name="shortcut">
-           <string>Ctrl+C</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="paste">
-          <property name="text">
-           <string>粘贴</string>
-          </property>
-          <property name="shortcut">
-           <string>Ctrl+V</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QPushButton" name="remove">
-        <property name="text">
-         <string>移除</string>
-        </property>
-        <property name="shortcut">
-         <string>Del</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="clear">
-        <property name="text">
-         <string>清除</string>
-        </property>
-        <property name="shortcut">
-         <string>Ctrl+Del</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="repaint">
-        <property name="text">
-         <string>重绘</string>
-        </property>
-       </widget>
+       </spacer>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="Blackboard" name="graphicsView"/>
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <property name="spacing">
+      <number>3</number>
+     </property>
+     <item>
+      <widget class="Blackboard" name="graphicsView"/>
+     </item>
+     <item>
+      <widget class="QTextBrowser" name="textBrowser">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

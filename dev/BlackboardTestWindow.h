@@ -9,7 +9,7 @@ class Blackboard;
 class BlackboardTestWindow : public QWidget
 {
     Q_OBJECT
-
+    QPixmap image;
     BbItemPenData *penSettings;
     BbItemStraightData *straightSettings;
     BbItemTextData *textSettings;
@@ -62,8 +62,6 @@ private slots:
 
     void on_triangleWeight_valueChanged(int arg1);
 
-    void on_localImage_clicked();
-
     void on_onlineImage_clicked();
 
     void on_copy_clicked();
@@ -77,6 +75,10 @@ private slots:
     void on_pushButton_2_clicked();
 
     void on_rectWeight_valueChanged(int arg1);
+
+    void on_imagePick_clicked();
+
+    void on_imageInsert_clicked();
 
 private:
     Ui::BlackboardTestWindow *ui;

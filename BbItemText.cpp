@@ -310,6 +310,10 @@ void BbItemText::toolDone(const QPointF &pos)
 {
     Q_UNUSED(pos);
     // do nothing.
+    if(scene()->toolType() != BBTT_Text)
+    {
+        clearFocus();
+    }
 }
 
 void BbItemText::modifiersChanged(Qt::KeyboardModifiers modifiers)

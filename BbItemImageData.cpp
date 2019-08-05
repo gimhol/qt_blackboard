@@ -9,11 +9,15 @@ BbItemImageData::BbItemImageData(CoordMode mode):
 void BbItemImageData::writeStream(QDataStream &stream)
 {
     BbItemData::writeStream(stream);
+    stream << width;
+    stream << height;
     stream << pixmap;
 }
 
 void BbItemImageData::readStream(QDataStream &stream)
 {
     BbItemData::readStream(stream);
+    stream >> width;
+    stream >> height;
     stream >> pixmap;
 }

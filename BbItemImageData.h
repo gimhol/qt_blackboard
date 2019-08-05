@@ -7,6 +7,10 @@
 class NSB_BLACKBOARD_EXPORT BbItemImageData : public BbItemData
 {
 public:
+    qreal width = 0;
+
+    qreal height = 0;
+
     QPixmap pixmap;
 
     explicit BbItemImageData(CoordMode mode = CM_ABSOLUTE);

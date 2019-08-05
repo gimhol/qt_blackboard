@@ -110,10 +110,11 @@ public:
      */
     void readItemData(BbItemData *itemData);
 
-    void onToolChanged(BbToolType previous, BbToolType current);
+    void onToolChanged(BbToolType previous);
     BbToolType toolType();
     BbItemData *toolSettings(const BbToolType &toolType);
-    void addPixmapItem(const QPixmap & pixmap);
+    BbItemImage *addImageItem(const qreal &width,const qreal &height);
+    BbItemImage *addImageItem(const QPixmap & pixmap);
     void selectedAll();
     void deselectAll();
     void copyItems();

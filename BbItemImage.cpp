@@ -2,8 +2,10 @@
 #include "BbItemImageData.h"
 #include "BbScene.h"
 
+#include <QPainter>
+
 BbItemImage::BbItemImage():
-    QGraphicsPixmapItem(),
+    QGraphicsRectItem(),
     IItemIndex (nullptr),
     _myData(new BbItemImageData())
 {
@@ -11,7 +13,7 @@ BbItemImage::BbItemImage():
 }
 
 BbItemImage::BbItemImage(BbItemData *data):
-    QGraphicsPixmapItem(),
+    QGraphicsRectItem(),
     IItemIndex (data),
     _myData(dynamic_cast<BbItemImageData*>(data))
 {
@@ -41,7 +43,6 @@ void BbItemImage::init()
 
 void BbItemImage::setPixmap(const QPixmap &pixmap)
 {
-    QGraphicsPixmapItem::setPixmap(pixmap);
     _myData->pixmap = pixmap;
 }
 
@@ -102,11 +103,23 @@ void BbItemImage::toAbsoluteCoords()
             _myData->prevX *= ratio;
             _myData->prevY *= ratio;
         }
+        _myData->width *= ratio;
+        _myData->height *= ratio;
     }
+}
+
+void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    if(!_myData->pixmap.isNull())
+    {
+        painter->drawPixmap(rect().toRect(),_myData->pixmap);
+    }
+    QGraphicsRectItem::paint(painter,option,widget);
 }
 
 void BbItemImage::repaint()
 {
+    setRect(QRectF(0,0,_myData->width,_myData->height));
     setPos(_myData->x,_myData->y);
     setZValue(_myData->z);
     setPixmap(_myData->pixmap);
@@ -115,9 +128,10 @@ void BbItemImage::repaint()
 
 void BbItemImage::writeStream(QDataStream &stream)
 {
-    _myData->pixmap = pixmap();
     _myData->x = x();
     _myData->y = y();
+    _myData->width = rect().width();
+    _myData->height = rect().height();
     _myData->z = zValue();
     _myData->writeStream(stream);
 }

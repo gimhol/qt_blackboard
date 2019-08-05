@@ -56,9 +56,11 @@ void BbScene::setToolType(BbToolType toolType)
     _mouseLeftButtonDown = false;
     if(_toolType != toolType)
     {
-        onToolChanged(_toolType, toolType);
-        blackboard()->onToolChanged(_toolType, toolType);
-        _toolType = toolType;
+        auto prev = _toolType;
+        _toolType = toolType; // 在下面的
+
+        onToolChanged(prev);
+        blackboard()->onToolChanged(prev);
     }
 }
 
@@ -159,39 +161,42 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     _mousePos = event->scenePos();
     if(event->button() == Qt::MouseButton::LeftButton)
     {
-        _mouseLeftButtonDown = true;
-        switch(_toolType)
+        if(!_mouseLeftButtonDown)
         {
-            case BBTT_Picker:
+            _mouseLeftButtonDown = true;
+            switch(_toolType)
             {
-                for(auto item: selectedItems())
+                case BBTT_Picker:
                 {
-                    IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
-                    if(idx)
+                    for(auto item: selectedItems())
                     {
-                        auto data = idx->data();
-                        data->prevX = data->x;
-                        data->prevY = data->y;
+                        IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
+                        if(idx)
+                        {
+                            auto data = idx->data();
+                            data->prevX = data->x;
+                            data->prevY = data->y;
+                        }
                     }
+                    break;
                 }
-                break;
-            }
-            default:
-            {
-                if(!_curItemIndex)
+                default:
                 {
-                    auto item = BbHelper::createItem(_toolType);
-                    if(item)
+                    if(!_curItemIndex)
                     {
-                        add(item);
-                        item->toolDown(_mousePos);
+                        auto item = BbHelper::createItem(_toolType);
+                        if(item)
+                        {
+                            add(item);
+                            item->toolDown(_mousePos);
+                        }
                     }
+                    else
+                    {
+                        _curItemIndex->toolDown(_mousePos);
+                    }
+                    break;
                 }
-                else
-                {
-                    _curItemIndex->toolDown(_mousePos);
-                }
-                break;
             }
         }
     }
@@ -567,21 +572,26 @@ bool BbScene::onlyShiftDown()
     return _onlyShiftDown;
 }
 
-void BbScene::onToolChanged(BbToolType previous, BbToolType current)
+void BbScene::setItemPicking(bool picking)
+{
+    for(auto item: items())
+    {
+        if(!isPrivateItem(item))
+        {
+            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,picking);
+            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,picking);
+            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,picking);
+        }
+    }
+}
+
+void BbScene::onToolChanged(BbToolType previous)
 {
     switch(previous)
     {
         case BBTT_Picker:
         {
-            for(auto item: items())
-            {
-                if(!isPrivateItem(item))
-                {
-                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,false);
-                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,false);
-                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,false);
-                }
-            }
+            setItemPicking(false);
             break;
         }
         default:
@@ -593,19 +603,11 @@ void BbScene::onToolChanged(BbToolType previous, BbToolType current)
     {
         _curItemIndex->toolDone(_mousePos);
     }
-    switch(current)
+    switch(_toolType)
     {
         case BBTT_Picker:
         {
-            for(auto item: items())
-            {
-                if(!isPrivateItem(item))
-                {
-                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable);
-                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable);
-                    item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable);
-                }
-            }
+            setItemPicking(true);
             break;
         }
         default:
@@ -775,14 +777,22 @@ bool BbScene::isMouseLeftButtonDown()
     return _mouseLeftButtonDown;
 }
 
-void BbScene::addImageItem(const QPixmap &pixmap)
+BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height)
 {
     auto item = new BbItemImage();
-    item->setPixmap(pixmap);
+    item->setRect(QRectF(0,0,width,height));
     add(item);
     item->setZ(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
+    return item;
+}
+
+BbItemImage *BbScene::addImageItem(const QPixmap &pixmap)
+{
+    auto item = addImageItem(pixmap.width(),pixmap.height());
+    item->setPixmap(pixmap);
+    return item;
 }
 
 IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)

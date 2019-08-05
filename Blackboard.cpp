@@ -27,6 +27,8 @@ Blackboard::Blackboard(QWidget *parent):
     QGraphicsView(parent),
     dptr(new BlackboardPrivate)
 {
+    setScene(new BbScene(this));
+    setMouseTracking(true);
     setToolCursor(BBTT_Pen,Qt::CrossCursor);
     setToolCursor(BBTT_Rectangle,Qt::CrossCursor);
     setToolCursor(BBTT_Ellipse,Qt::CrossCursor);
@@ -34,8 +36,6 @@ Blackboard::Blackboard(QWidget *parent):
     setToolCursor(BBTT_Text,Qt::IBeamCursor);
     setToolCursor(BBTT_Picker,Qt::ArrowCursor);
     setToolCursor(BBTT_Pointer,Qt::BlankCursor);
-    setMouseTracking(true);
-    setScene(new BbScene(this));
     connect(horizontalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollXChanged);
     connect(verticalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollYChanged);
 }
@@ -89,6 +89,10 @@ void Blackboard::hidePointer(const QString &pointerId)
 void Blackboard::setToolCursor(const BbToolType &tool, const QCursor &cursor)
 {
     dptr->cursors[tool] = cursor;
+    if(toolType()==tool)
+    {
+        setCursor(cursor);
+    }
 }
 
 QCursor Blackboard::toolCursor(const BbToolType &tool)
@@ -116,6 +120,7 @@ void Blackboard::revertToolCursor()
 void Blackboard::setPointerPixmap(const QPixmap &pixmap)
 {
     dptr->pointerPixmap = pixmap;
+    setToolCursor(BBTT_Pointer,QCursor(pixmap,pixmap.width()/2,pixmap.height()/2));
 }
 
 void Blackboard::setScroll(int x,int y)
@@ -421,7 +426,7 @@ void Blackboard::readItemData(BbItemData *itemData)
     scene()->readItemData(itemData);
 }
 
-void Blackboard::onToolChanged(BbToolType previous, BbToolType current)
+void Blackboard::onToolChanged(BbToolType previous)
 {
     switch(previous)
     {
@@ -435,12 +440,12 @@ void Blackboard::onToolChanged(BbToolType previous, BbToolType current)
             break;
         }
     }
+    BbToolType current = toolType();
     setCursor(toolCursor(current));
     switch(current)
     {
         case BBTT_Pointer:
         {
-            setCursor(QCursor(dptr->pointerPixmap,dptr->pointerPixmap.width()/2,dptr->pointerPixmap.height()/2));
             emit pointerShown(dptr->mousePos);
             break;
         }
@@ -472,9 +477,14 @@ BbItemData *Blackboard::toolSettings(const BbToolType &toolType)
     return settings;
 }
 
-void Blackboard::addPixmapItem(const QPixmap &pixmap)
+BbItemImage *Blackboard::addImageItem(const qreal &width, const qreal &height)
 {
-    scene()->addImageItem(pixmap);
+    return scene()->addImageItem(width, height);
+}
+
+BbItemImage *Blackboard::addImageItem(const QPixmap &pixmap)
+{
+    return scene()->addImageItem(pixmap);
 }
 
 void Blackboard::selectedAll()
