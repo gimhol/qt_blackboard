@@ -159,48 +159,65 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
     _mouseBeginPos = event->scenePos();
     _mousePos = event->scenePos();
-    if(event->button() == Qt::MouseButton::LeftButton)
+    if(event->button() == Qt::MouseButton::LeftButton && !_mouseLeftButtonDown)
     {
-        if(!_mouseLeftButtonDown)
+        _mouseLeftButtonDown = true;
+        switch(_toolType)
         {
-            _mouseLeftButtonDown = true;
-            switch(_toolType)
+            case BBTT_Picker:
             {
-                case BBTT_Picker:
+                bool interrupt = false;
+                if(_editingItemIndex)
                 {
+                    interrupt = _editingItemIndex->mouseDown(_mousePos);
+                }
+                if(!interrupt)
+                {
+                    QGraphicsScene::mousePressEvent(event);
+                    bool editing = false;
+                    bool response = false;
                     for(auto item: selectedItems())
                     {
                         IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
                         if(idx)
                         {
+                            auto pos = event->scenePos();
                             auto data = idx->data();
                             data->prevX = data->x;
                             data->prevY = data->y;
+                            if(_editingItemIndex == idx && item->isUnderMouse())
+                            {
+                                editing = true;
+                            }
+                            if(!response && item->isUnderMouse())
+                            {
+                                response = idx->clicked(pos);
+                            }
                         }
                     }
-                    break;
                 }
-                default:
+                break;
+            }
+            default:
+            {
+                if(!_curItemIndex)
                 {
-                    if(!_curItemIndex)
+                    auto item = BbHelper::createItem(_toolType);
+                    if(item)
                     {
-                        auto item = BbHelper::createItem(_toolType);
-                        if(item)
-                        {
-                            add(item);
-                            item->toolDown(_mousePos);
-                        }
+                        add(item);
+                        item->toolDown(_mousePos);
                     }
-                    else
-                    {
-                        _curItemIndex->toolDown(_mousePos);
-                    }
-                    break;
                 }
+                else
+                {
+                    _curItemIndex->toolDown(_mousePos);
+                }
+                QGraphicsScene::mousePressEvent(event);
+                break;
             }
         }
     }
-    QGraphicsScene::mousePressEvent(event);
 }
 
 void BbScene::emitItemMovingSignals()
@@ -215,42 +232,6 @@ void BbScene::emitItemMovingSignals()
     emit blackboard()->multipleItemChanged(BBIET_itemMoving,index);
 }
 
-void BbScene::emitItemMovedSignals()
-{
-    bool moved = false;
-    auto enumJob = [&](IItemIndex *index,int i)
-    {
-        if(i == 0)
-        {
-            auto item = dynamic_cast<QGraphicsItem *>(index);
-            auto dx = std::abs(index->data()->prevX - item->x());
-            auto dy = std::abs(index->data()->prevY - item->y());
-            moved = dx >= 1 || dy >= 1;
-            if(!moved)
-            {
-                return true;
-            }
-        }
-        return false;
-    };
-    auto index = enumSelected(enumJob);
-    emit blackboard()->multipleItemChanged(BBIET_itemMoving,index);
-    if(moved)
-    {
-        emit blackboard()->multipleItemChanged(BBIET_itemMoved,index);
-        while(index)
-        {
-            auto next = index->next;
-            auto data = index->data();
-            data->updatePostion(index);
-            emit blackboard()->itemChanged(BBIET_itemMoved,index);
-            data->prevX = data->x;
-            data->prevY = data->y;
-            index = next;
-        }
-    }
-}
-
 void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if(!_controlEnable)
@@ -262,20 +243,28 @@ void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     {
         case BBTT_Picker:
         {
-            if(_mouseLeftButtonDown)
+            auto interrupt = false;
+            if(_editingItemIndex)
             {
-                QGraphicsScene::mouseMoveEvent(event);
-                /*
-                 * NOTE: 拖动item会使得此event被Accepted，故在此发出移动信号。
-                 *      但如果有其他被Accepted的情况就不应该这么做。但现在还没发现。
-                 */
-                if(event->isAccepted())
+                interrupt = _editingItemIndex->mouseMove(_mousePos);
+            }
+            if(!interrupt)
+            {
+                QGraphicsScene::mouseMoveEvent(event); // 调用函数才能拖动。
+                if(_mouseLeftButtonDown)
                 {
-                    emitItemMovingSignals();
-                }
-                else // 没拖动任何东西，在这里进行框选item的工作。
-                {
-                    pickingItems(_mousePos);
+                    /*
+                     * NOTE: 拖动item会使得此event被Accepted，故在此发出移动信号。
+                     *      但如果有其他被Accepted的情况就不应该这么做。但现在还没发现。
+                     */
+                    if(event->isAccepted())
+                    {
+                        emitItemMovingSignals();
+                    }
+                    else // 没拖动任何东西，在这里进行框选item的工作。
+                    {
+                        pickingItems(_mousePos);
+                    }
                 }
             }
             break;
@@ -296,7 +285,6 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if(!_controlEnable){
         return;
     }
-    QGraphicsScene::mouseReleaseEvent(event);
     _mousePos = event->scenePos();
     if(event->button() == Qt::MouseButton::LeftButton)
     {
@@ -305,12 +293,22 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         {
             case BBTT_Picker:
             {
+                auto interrupt = false;
+                if(_editingItemIndex)
+                {
+                    interrupt = _editingItemIndex->mouseRelease(_mousePos);
+                }
+                if(!interrupt)
+                {
+                    QGraphicsScene::mouseReleaseEvent(event);
+                    emitItemMovedSignals();
+                }
                 _pickerRect->hide();
-                emitItemMovedSignals();
                 break;
             }
             default:
             {
+                QGraphicsScene::mouseReleaseEvent(event);
                 if(_curItemIndex)
                 {
                     _curItemIndex->toolDone(_mousePos);
@@ -327,7 +325,6 @@ void BbScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     {
         return;
     }
-    QGraphicsScene::mouseDoubleClickEvent(event);
     switch(_toolType)
     {
         case BBTT_Picker:
@@ -336,7 +333,7 @@ void BbScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             for(auto item : items())
             {
                 IItemIndex *index = dynamic_cast<IItemIndex *>(item);
-                if(index && index->doubleClicked(pos))
+                if(index && item->isUnderMouse() && index->doubleClicked(pos))
                 {
                     break;
                 }
@@ -348,6 +345,7 @@ void BbScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             break;
         }
     }
+    QGraphicsScene::mouseDoubleClickEvent(event);
 }
 
 void BbScene::keyPressEvent(QKeyEvent *e)
@@ -567,6 +565,24 @@ void BbScene::unsetCurrentItem(IItemIndex *item)
     }
 }
 
+IItemIndex *BbScene::editingItem()
+{
+    return _editingItemIndex;
+}
+
+void BbScene::setEditingItem(IItemIndex *item)
+{
+    _editingItemIndex = item;
+}
+
+void BbScene::unsetEditingItem(IItemIndex *item)
+{
+    if(_editingItemIndex == item)
+    {
+        _editingItemIndex = nullptr;
+    }
+}
+
 bool BbScene::onlyShiftDown()
 {
     return _onlyShiftDown;
@@ -591,6 +607,7 @@ void BbScene::onToolChanged(BbToolType previous)
     {
         case BBTT_Picker:
         {
+            _editingItemIndex = nullptr;
             setItemPicking(false);
             break;
         }
@@ -671,6 +688,10 @@ void BbScene::remove(IItemIndex *index)
         if(_curItemIndex == index)
         {
             _curItemIndex = nullptr;
+        }
+        if(_editingItemIndex == index)
+        {
+            _editingItemIndex= nullptr;
         }
         auto item = dynamic_cast<QGraphicsItem*>(index);
         if(item)
@@ -780,8 +801,10 @@ bool BbScene::isMouseLeftButtonDown()
 BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height)
 {
     auto item = new BbItemImage();
-    item->setRect(QRectF(0,0,width,height));
     add(item);
+    item->resize(width,height);
+    item->updatePrevSize();
+    item->updatePrevPosition();
     item->setZ(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
@@ -790,8 +813,29 @@ BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height)
 
 BbItemImage *BbScene::addImageItem(const QPixmap &pixmap)
 {
-    auto item = addImageItem(pixmap.width(),pixmap.height());
+    auto item = new BbItemImage();
+    add(item);
+    item->resize(pixmap.width(),pixmap.height());
+    item->updatePrevSize();
+    item->updatePrevPosition();
+    item->setZ(QDateTime::currentMSecsSinceEpoch());
+    item->setId(generatItemId());
     item->setPixmap(pixmap);
+    emit blackboard()->itemChanged(BBIET_imageAdded,item);
+    return item;
+}
+
+BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height, const QPixmap &pixmap)
+{
+    auto item = new BbItemImage();
+    add(item);
+    item->resize(width,height);
+    item->updatePrevSize();
+    item->updatePrevPosition();
+    item->setZ(QDateTime::currentMSecsSinceEpoch());
+    item->setId(generatItemId());
+    item->setPixmap(pixmap);
+    emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
 }
 
@@ -815,4 +859,40 @@ IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)
     }
     ++time;
     return index;
+}
+
+void BbScene::emitItemMovedSignals()
+{
+    bool moved = false;
+    auto enumJob = [&](IItemIndex *index,int i)
+    {
+        if(i == 0)
+        {
+            auto item = dynamic_cast<QGraphicsItem *>(index);
+            auto dx = std::abs(index->data()->prevX - item->x());
+            auto dy = std::abs(index->data()->prevY - item->y());
+            moved = dx >= 1 || dy >= 1;
+            if(!moved)
+            {
+                return true;
+            }
+        }
+        return false;
+    };
+    auto index = enumSelected(enumJob);
+    emit blackboard()->multipleItemChanged(BBIET_itemMoving,index);
+    if(moved)
+    {
+        emit blackboard()->multipleItemChanged(BBIET_itemMoved,index);
+        while(index)
+        {
+            auto next = index->next;
+            auto data = index->data();
+            data->updatePostion(index);
+            emit blackboard()->itemChanged(BBIET_itemMoved,index);
+            data->prevX = data->x;
+            data->prevY = data->y;
+            index = next;
+        }
+    }
 }

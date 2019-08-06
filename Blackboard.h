@@ -115,6 +115,7 @@ public:
     BbItemData *toolSettings(const BbToolType &toolType);
     BbItemImage *addImageItem(const qreal &width,const qreal &height);
     BbItemImage *addImageItem(const QPixmap & pixmap);
+    BbItemImage *addImageItem(const qreal &width,const qreal &height,const QPixmap &pixmap);
     void selectedAll();
     void deselectAll();
     void copyItems();

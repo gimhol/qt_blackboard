@@ -1,5 +1,11 @@
 ﻿#include "BbItemImageData.h"
 
+void BbItemImageData::updatePrevSize()
+{
+    prevWidth = width;
+    prevHeight = height;
+}
+
 BbItemImageData::BbItemImageData(CoordMode mode):
     BbItemData(mode)
 {
@@ -9,15 +15,11 @@ BbItemImageData::BbItemImageData(CoordMode mode):
 void BbItemImageData::writeStream(QDataStream &stream)
 {
     BbItemData::writeStream(stream);
-    stream << width;
-    stream << height;
-    stream << pixmap;
+    stream << width << height << prevWidth << prevHeight << pixmap;
 }
 
 void BbItemImageData::readStream(QDataStream &stream)
 {
     BbItemData::readStream(stream);
-    stream >> width;
-    stream >> height;
-    stream >> pixmap;
+    stream >> width >> height >> prevWidth >> prevHeight >> pixmap;
 }

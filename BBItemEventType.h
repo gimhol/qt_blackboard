@@ -27,6 +27,16 @@ enum BBItemEventType
     BBIET_triangleDown,
     BBIET_triangleDraw,
     BBIET_triangleDone,
-    BBIET_imageAdded
+    BBIET_imageAdded,
+    BBIET_imageResizing,
+    BBIET_imageResized,
+    // TODO
+    BBIET_straightChanged, // TODO: 支持对直线进行编辑，允许拖动两个顶点允许的任意一个
+    BBIET_rectResizing, // TODO: 支持对矩形进行编辑，支持八方向拉伸
+    BBIET_rectResized,  // TODO: 支持对矩形进行编辑，支持八方向拉伸
+    BBIET_ellipseResizing, // TODO: 支持对椭圆进行编辑，支持八方向拉伸
+    BBIET_ellipseResized,  // TODO: 支持对椭圆进行编辑，支持八方向拉伸
+    BBIET_triangleChanging, // TODO: 支持对三角形进行编辑，允许拖动三个顶点的任意一个
+    BBIET_triangleChanged,  // TODO: 支持对三角形进行编辑，允许拖动三个顶点的任意一个
 };
 #endif // BBITEMEVENTTYPE_H

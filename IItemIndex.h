@@ -4,10 +4,10 @@
 #include "BbHeader.h"
 #include <QPointF>
 #include <QString>
+#include "BbItemData.h"
 #include "BbToolType.h"
 class Blackboard;
 class BbScene;
-class BbItemData;
 class NSB_BLACKBOARD_EXPORT IItemIndex
 {
 public:
@@ -32,16 +32,19 @@ public:
     virtual BbItemData *data() = 0;
     virtual void repaint() = 0;
     template<class T> T *data() { return dynamic_cast<T*>(data()); }
-
-    virtual bool doubleClicked(const QPointF &pos){ return false; } // 默认不响应双击。
-    virtual void toolDown(const QPointF &pos) = 0;
-    virtual void toolDraw(const QPointF &pos) = 0;
-    virtual void toolDone(const QPointF &pos) = 0;
+    virtual bool mouseDown(const QPointF &pos){Q_UNUSED(pos);return false; } // 默认不响应。
+    virtual bool mouseMove(const QPointF &pos){Q_UNUSED(pos);return false; } // 默认不响应。
+    virtual bool mouseRelease(const QPointF &pos){Q_UNUSED(pos);return false; } // 默认不响应。
+    virtual bool clicked(const QPointF &pos){Q_UNUSED(pos);return false; } // 默认不响应单击。
+    virtual bool doubleClicked(const QPointF &pos){Q_UNUSED(pos);return false; } // 默认不响应双击。
+    virtual void toolDown(const QPointF &pos){Q_UNUSED(pos);}
+    virtual void toolDraw(const QPointF &pos){Q_UNUSED(pos);}
+    virtual void toolDone(const QPointF &pos){Q_UNUSED(pos);}
     virtual void modifiersChanged(Qt::KeyboardModifiers modifiers) = 0;
     virtual void removed() = 0;
     virtual void added() = 0;
     virtual void toAbsoluteCoords() = 0;
-
+    virtual void updatePrevPosition(){data()->updatePrevPostion();}
     virtual qreal z() = 0;
     virtual void setZ(const qreal &value) = 0;
 

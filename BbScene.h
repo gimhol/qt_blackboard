@@ -37,6 +37,7 @@ protected:
     bool _mouseLeftButtonDown = false;
     QGraphicsRectItem * _pickerRect = nullptr;
     IItemIndex * _curItemIndex = nullptr;
+    IItemIndex * _editingItemIndex = nullptr;
     ItemIDGenerator _itemIdGenerator = nullptr;
     bool _controlEnable = true;
     Qt::KeyboardModifiers _lastModifiers = Qt::NoModifier;
@@ -97,6 +98,8 @@ public:
 
     BbItemImage *addImageItem(const QPixmap &pixmap);
 
+    BbItemImage *addImageItem(const qreal &width, const qreal &height, const QPixmap &pixmap);
+
     IItemIndex *copyItemFromStream(QDataStream &stream);
 
     IItemIndex *readItemFromStream(QDataStream &stream);
@@ -128,6 +131,12 @@ public:
     void setCurrentItem(IItemIndex *item);
 
     void unsetCurrentItem(IItemIndex *item);
+
+    IItemIndex *editingItem();
+
+    void setEditingItem(IItemIndex *item);
+
+    void unsetEditingItem(IItemIndex *item);
 
     bool onlyShiftDown();
 

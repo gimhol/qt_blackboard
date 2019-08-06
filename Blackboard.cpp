@@ -487,6 +487,11 @@ BbItemImage *Blackboard::addImageItem(const QPixmap &pixmap)
     return scene()->addImageItem(pixmap);
 }
 
+BbItemImage *Blackboard::addImageItem(const qreal &width, const qreal &height,const QPixmap &pixmap)
+{
+    return scene()->addImageItem(width, height, pixmap);
+}
+
 void Blackboard::selectedAll()
 {
     scene()->selectedAll();

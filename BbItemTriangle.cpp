@@ -129,7 +129,7 @@ void BbItemTriangle::begin(const QPointF &point)
     _myData->points[1] = point;
     _myData->points[2] = point;
     _mousePos = point;
-    _myData->isEmpty = false;
+    _myData->empty = false;
 
     setupRectWithABC();
     _myData->updatePostion(this);
@@ -163,7 +163,7 @@ void BbItemTriangle::done()
 void BbItemTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     QGraphicsRectItem::paint(painter,option,widget);
-    if(!_myData->isEmpty)
+    if(!_myData->empty)
     {
         painter->setBrush(Qt::NoBrush);
         painter->setPen(_myData->pen);

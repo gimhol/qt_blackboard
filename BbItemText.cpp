@@ -252,15 +252,13 @@ BbItemData *BbItemText::data()
 
 bool BbItemText::doubleClicked(const QPointF &pos)
 {
-    if(boundingRect().contains(pos-this->pos()))
-    {
-        // NOTE: 通过Picker工具双击文本来编辑时，外部的鼠标样式极可能不是“文本光标”，所以需要这里修改一下
-        blackboard()->toToolCursor(BBTT_Text);
-        setTextInteractionFlags(Qt::TextEditorInteraction);
-        setFocus();
-        return true;
-    }
-    return false;
+    Q_UNUSED(pos);
+    // NOTE: 通过Picker工具双击文本来编辑时，外部的鼠标样式极可能不是“文本光标”，所以需要这里修改一下
+    scene()->setEditingItem(this);
+    blackboard()->toToolCursor(BBTT_Text);
+    setTextInteractionFlags(Qt::TextEditorInteraction);
+    setFocus();
+    return true;
 }
 
 void BbItemText::toolDown(const QPointF &pos)

@@ -118,5 +118,5 @@ void BbItemEllipseData::readStream(QDataStream &stream)
     brush.setColor(QColor::fromRgba(brushRgba));
     size.setHeight(height);
     size.setWidth(width);
-    isEmpty = !size.isEmpty();
+    empty = !size.isEmpty();
 }

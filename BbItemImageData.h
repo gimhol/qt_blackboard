@@ -11,7 +11,13 @@ public:
 
     qreal height = 0;
 
+    qreal prevWidth = 0;
+
+    qreal prevHeight = 0;
+
     QPixmap pixmap;
+
+    void updatePrevSize();
 
     explicit BbItemImageData(CoordMode mode = CM_ABSOLUTE);
 

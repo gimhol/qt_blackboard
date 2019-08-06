@@ -14,6 +14,7 @@
 #include <QDateTime>
 #include <QButtonGroup>
 #include <QMutex>
+#include <BbItemImageData.h>
 
 
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
@@ -337,14 +338,55 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     auto imageAdded = [blackboard1](BbItemImage *item){
         if(item)
         {
+            auto data = dynamic_cast<BbItemImageData*>(item->data());
             auto copy = new BbItemImage();
             if(copy)
             {
                 blackboard1->scene()->add(copy);
-                copy->setZ(copy->z());
-                copy->setRect(item->rect());
-                copy->setPixmap(item->pixmap());
-                copy->setId(item->id());
+                copy->setZ(data->z);
+                copy->resize(data->width,data->height);
+                if(data->isPositionValid()){
+                    copy->setPos(data->x,data->y);
+                    copy->updatePrevPosition();
+                }
+                copy->setPixmap(data->pixmap);
+                copy->setId(data->lid);
+                copy->updatePrevSize();
+                copy->update();
+            }
+        }
+    };
+    auto imageResizing = [blackboard1](BbItemImage *item){
+        if(item)
+        {
+            auto data = dynamic_cast<BbItemImageData*>(item->data());
+            auto copy = blackboard1->find<BbItemImage>(item->id());
+            if(copy)
+            {
+                copy->resize(data->width,data->height);
+                if(data->isPositionValid()){
+                    copy->setPos(data->x,data->y);
+                    copy->updatePrevPosition();
+                }
+                copy->updatePrevSize();
+                copy->update();
+            }
+        }
+    };
+    auto imageResized = [blackboard1](BbItemImage *item){
+        if(item)
+        {
+            auto data = dynamic_cast<BbItemImageData*>(item->data());
+            auto copy = blackboard1->find<BbItemImage>(item->id());
+            if(copy)
+            {
+                copy->resize(data->width,data->height);
+                if(data->isPositionValid()){
+                    copy->setPos(data->x,data->y);
+                    copy->updatePrevPosition();
+                }
+                copy->updatePrevSize();
+                copy->update();
             }
         }
     };
@@ -619,6 +661,8 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             HANDLE_ITEM_EVENT(triangleDraw,BbItemTriangle);
             HANDLE_ITEM_EVENT(triangleDone,BbItemTriangle);
             HANDLE_ITEM_EVENT(imageAdded,BbItemImage);
+            HANDLE_ITEM_EVENT(imageResizing,BbItemImage);
+            HANDLE_ITEM_EVENT(imageResized,BbItemImage);
             case BBIET_none:
             default:
                 break;
@@ -779,7 +823,10 @@ void BlackboardTestWindow::on_imageInsert_clicked()
 {
     if(!image.isNull())
     {
-        blackboard()->addImageItem(image);
+        blackboard()->addImageItem(
+                    ui->spinBoxImageWidth->value(),
+                    ui->spinBoxImageHeight->value(),
+                    image);
     }
     else
     {

@@ -69,7 +69,7 @@ public:
     /**
      * @brief editable 是否允许被编辑
      */
-    bool editable = true;
+    bool editable = false;
 
     /**
      * @brief tooltype 工具类型
