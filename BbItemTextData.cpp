@@ -91,7 +91,7 @@ void BbItemTextData::readStream(QDataStream &stream)
             >> text
             >> prevText;
 
-    isEmpty = text.length() == 0;
+    empty = text.length() == 0;
 
     font.setFamily(fontFamily);
     font.setPointSizeF(pointSizeF);

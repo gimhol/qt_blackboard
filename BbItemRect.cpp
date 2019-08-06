@@ -99,6 +99,7 @@ void BbItemRect::draw(const QPointF &point)
     setRect(0,0,std::abs(_dragX-_beginX),std::abs(_dragY-_beginY));
     _myData->updatePostion(this);
     _myData->updatePrevPostion();
+    _myData->isEmpty = !size().isEmpty();
 }
 
 void BbItemRect::done()

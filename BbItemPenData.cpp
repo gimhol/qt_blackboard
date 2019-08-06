@@ -65,7 +65,7 @@ void BbItemPenData::readStream(QDataStream &stream)
     stream >> penWidth >> rgba >> penStyle
            >> coordsCount;
 
-    isEmpty = coordsCount == 0;
+    empty = coordsCount == 0;
 
     pen.setWidthF(penWidth);
     pen.setStyle(static_cast<Qt::PenStyle>(penStyle));

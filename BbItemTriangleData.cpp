@@ -109,7 +109,7 @@ void BbItemTriangleData::writeStream(QDataStream &stream)
 void BbItemTriangleData::readStream(QDataStream &stream)
 {
     BbItemData::readStream(stream);
-    isEmpty = false;
+    empty = false;
     qreal penWidth;
     QRgb penRgba,brushRgba;
     short penStyle;

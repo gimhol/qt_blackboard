@@ -62,9 +62,14 @@ public:
     qreal prevZ = -9999;
 
     /**
-     * @brief isEmpty 是否为空
+     * @brief empty 是否为空
      */
-    bool isEmpty = true;
+    bool empty = true;
+
+    /**
+     * @brief editable 是否允许被编辑
+     */
+    bool editable = true;
 
     /**
      * @brief tooltype 工具类型

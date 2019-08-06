@@ -129,7 +129,7 @@ void BbItemStraight::begin(const QPointF &point)
     setPos(point);
     _myData->a = point;
     _myData->b = point;
-    _myData->isEmpty = false;
+    _myData->empty = false;
     _mousePos = point;
     setupRectWithAB();
     _myData->updatePostion(this);
@@ -161,7 +161,7 @@ void BbItemStraight::done()
 void BbItemStraight::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     QGraphicsRectItem::paint(painter,option,widget);
-    if(!_myData->isEmpty)
+    if(!_myData->empty)
     {
         painter->setBrush(Qt::NoBrush);
         painter->setPen(_myData->pen);

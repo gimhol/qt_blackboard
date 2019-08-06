@@ -73,7 +73,7 @@ BbItemPen::~BbItemPen()
 
 QList<QPointF> *BbItemPen::changed(){ return &_changed ;}
 
-bool BbItemPen::isEmpty() { return _myData->isEmpty; }
+bool BbItemPen::isEmpty() { return _myData->empty; }
 
 void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
 
@@ -114,7 +114,7 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 void BbItemPen::penDown(const QPointF &point){
     setPos(point);
-    _myData->isEmpty = false;
+    _myData->empty = false;
     if(_path == nullptr)
     {
         _path = new QPainterPath();

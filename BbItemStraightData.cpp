@@ -63,7 +63,7 @@ void BbItemStraightData::readStream(QDataStream &stream)
            >> ax >> ay
            >> bx >> by;
 
-    isEmpty = false;
+    empty = false;
 
     pen.setWidthF(penWidth);
     pen.setStyle(static_cast<Qt::PenStyle>(penStyle));
