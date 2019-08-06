@@ -10,6 +10,7 @@ BbItemImageData::BbItemImageData(CoordMode mode):
     BbItemData(mode)
 {
     tooltype = BBTT_Image;
+    editable = true;
 }
 
 void BbItemImageData::writeStream(QDataStream &stream)

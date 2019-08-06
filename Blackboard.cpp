@@ -29,6 +29,7 @@ Blackboard::Blackboard(QWidget *parent):
 {
     setScene(new BbScene(this));
     setMouseTracking(true);
+
     setToolCursor(BBTT_Pen,Qt::CrossCursor);
     setToolCursor(BBTT_Rectangle,Qt::CrossCursor);
     setToolCursor(BBTT_Ellipse,Qt::CrossCursor);
@@ -36,6 +37,7 @@ Blackboard::Blackboard(QWidget *parent):
     setToolCursor(BBTT_Text,Qt::IBeamCursor);
     setToolCursor(BBTT_Picker,Qt::ArrowCursor);
     setToolCursor(BBTT_Pointer,Qt::BlankCursor);
+
     connect(horizontalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollXChanged);
     connect(verticalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollYChanged);
 }
