@@ -36,7 +36,6 @@ void BbItemText::init()
     setFont(_myData->font);
     setDefaultTextColor(_myData->color);
 }
-
 void BbItemText::focusOutEvent(QFocusEvent *event)
 {
     Q_UNUSED(event);
@@ -55,9 +54,13 @@ void BbItemText::focusOutEvent(QFocusEvent *event)
         setSelected(false);
 
         scene()->unsetCurrentItem(this);
+
         if(isEmpty())
         {
-            scene()->remove(this); // 空白的不要保留，移除本地的。
+            if(!isRemoved)
+            {
+                scene()->remove(this); // 空白的不要保留，移除本地的。
+            }
         }
         else if(_myData->prevText != _myData->text)
         {
@@ -322,6 +325,7 @@ void BbItemText::modifiersChanged(Qt::KeyboardModifiers modifiers)
 
 void BbItemText::removed()
 {
+    isRemoved = true;
 }
 
 void BbItemText::added()
