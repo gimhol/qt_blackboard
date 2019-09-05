@@ -413,9 +413,9 @@ void BbItemPen::repaint()
     _rect.setHeight(_rect.height()+halfPenW);
 
     setRect(_rect);
-    done();
     if(_myData->isPositionValid())
     {
+        _myData->updatePrevPostion();
         qreal x = _myData->x;
         qreal y = _myData->y;
         setPos(x,y);
