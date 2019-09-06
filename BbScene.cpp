@@ -594,9 +594,13 @@ void BbScene::setItemPicking(bool picking)
     {
         if(!isPrivateItem(item))
         {
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,picking);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,picking);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,picking);
+            auto idx = dynamic_cast<IItemIndex*>(item);
+            if(idx && !idx->isEditing())
+            {
+                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,picking);
+                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,picking);
+                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,picking);
+            }
         }
     }
 }
