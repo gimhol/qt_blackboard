@@ -79,10 +79,7 @@ public:
     qreal z() override;
     void setZ(const qreal &value) override;
     void toAbsoluteCoords() override;
-    bool isEditing() override
-    {
-        return _editing;
-    }
+    bool isEditing() override;
 };
 
 #endif // BBITEMSTRAIGHT_H
