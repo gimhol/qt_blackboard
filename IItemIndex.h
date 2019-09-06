@@ -146,6 +146,11 @@ public:
      */
     virtual void setZ(const qreal &value) = 0;
     /**
+     * @brief isEditing 是否正在被编辑。
+     * @return 正在被编辑的返回true，否则返回false;
+     */
+    virtual bool isEditing(){ return false; }
+    /**
      * @brief last 前一个item
      *      仅应该在BbScene的enumSelected与enumAll中被重置，
      *      用于快速的遍历一系列item
