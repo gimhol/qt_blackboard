@@ -1,0 +1,5 @@
+VERSION=1.0.0.0
+QMAKE_TARGET_COMPANY = "卓越牛师帮在线一对一"
+QMAKE_TARGET_PRODUCT = "牛师帮教师"
+QMAKE_TARGET_DESCRIPTION = "牛师帮教师程序"
+QMAKE_TARGET_COPYRIGHT = "版权所有 (C) 卓越牛师帮在线一对一"
