@@ -113,6 +113,7 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 }
 
 void BbItemPen::penDown(const QPointF &point){
+    _editing = true;
     setPos(point);
     _myData->empty = false;
     if(_path == nullptr)
@@ -160,6 +161,7 @@ void BbItemPen::penStraighting(const QPointF &point)
 
 void BbItemPen::done()
 {
+    _editing = false;
     _myData->updatePostion(this);
     _myData->updatePrevPostion();
 #ifdef SAVE_TO_PIXMAP_WHEN_DONE
@@ -383,11 +385,8 @@ void BbItemPen::repaint()
     if(_path){
         delete _path;
     }
+    _path = new QPainterPath();
     qreal halfPenW = 0.5 * _myData->pen.widthF();
-    if(_path == nullptr){
-        _path = new QPainterPath();
-    }
-
     for(int i = 0; i < _myData->coords.length(); i+=2)
     {
         qreal x = _myData->coords[i];
@@ -401,7 +400,6 @@ void BbItemPen::repaint()
         qreal oldTop = pos().y();
         qreal newLeft = std::min(point.x(), oldLeft);
         qreal newTop = std::min(point.y(), oldTop);
-
         _path->translate(oldLeft-newLeft,oldTop-newTop);
         _path->lineTo(point-QPointF(newLeft, newTop));
          setPos(newLeft, newTop);
@@ -411,7 +409,6 @@ void BbItemPen::repaint()
     _rect.setY(_rect.y()-halfPenW);
     _rect.setWidth(_rect.width()+halfPenW);
     _rect.setHeight(_rect.height()+halfPenW);
-
     setRect(_rect);
     if(_myData->isPositionValid())
     {
@@ -584,5 +581,10 @@ void BbItemPen::toAbsoluteCoords()
             _myData->coords[i] = _myData->coords[i] * ratio;
         }
     }
+}
+
+bool BbItemPen::isEditing()
+{
+    return _editing;
 }
 

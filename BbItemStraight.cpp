@@ -124,8 +124,14 @@ void BbItemStraight::toAbsoluteCoords()
     }
 }
 
+bool BbItemStraight::isEditing()
+{
+    return _editing;
+}
+
 void BbItemStraight::begin(const QPointF &point)
 {
+    _editing = true;
     setPos(point);
     _myData->a = point;
     _myData->b = point;
@@ -156,6 +162,7 @@ void BbItemStraight::done()
 {
     _myData->updatePostion(this);
     _myData->updatePrevPostion();
+    _editing = false;
 }
 
 void BbItemStraight::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -228,7 +235,6 @@ void BbItemStraight::setupRectWithAB()
     qreal y = -halfPenW+std::min(_myData->a.y(), _myData->b.y());
     qreal w = halfPenW+std::max(_myData->a.x(), _myData->b.x()) - x;
     qreal h = halfPenW+std::max(_myData->a.y(), _myData->b.y()) - y;
-
     setPos(x+halfPenW,y+halfPenW);
     setRect(-halfPenW,-halfPenW,w,h);
     _a = _myData->a - pos();
@@ -239,9 +245,10 @@ void BbItemStraight::setupRectWithAB()
 void BbItemStraight::repaint()
 {
     setupRectWithAB();
-    if( _myData->isPositionValid() )
+    if( _myData->isPositionValid())
     {
         setPos(_myData->x,_myData->y);
+        _myData->updatePrevPostion();
     }
     setZValue(_myData->z);
     update();
@@ -282,7 +289,7 @@ qreal BbItemStraight::penWidth()
 
 qreal BbItemStraight::weight()
 {
-    return (_myData->pen.widthF() - BbItemStraightData::getMinWidth())  / (BbItemStraightData::getMaxWidth() - BbItemStraightData::getMinWidth());
+    return _myData->weight();
 }
 
 void BbItemStraight::setWeight(qreal weight)

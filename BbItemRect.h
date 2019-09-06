@@ -18,6 +18,8 @@ protected:
     QPointF _mousePos;
 
     bool _square = false;
+
+    bool _editing = false;
 public:
     BbItemRect();
 
@@ -83,6 +85,7 @@ public:
     qreal z() override;
     void setZ(const qreal &value) override;
     void toAbsoluteCoords() override;
+    bool isEditing() override;
 };
 
 #endif // BBITEMRECT_H

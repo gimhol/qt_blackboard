@@ -123,8 +123,14 @@ void BbItemTriangle::toAbsoluteCoords()
     }
 }
 
+bool BbItemTriangle::isEditing()
+{
+    return _editing;
+}
+
 void BbItemTriangle::begin(const QPointF &point)
 {
+    _editing = true;
     _myData->points[0] = point;
     _myData->points[1] = point;
     _myData->points[2] = point;
@@ -139,7 +145,6 @@ void BbItemTriangle::begin(const QPointF &point)
 void BbItemTriangle::draw(const QPointF &point)
 {
     _mousePos = point;
-
     if(_step == 0)
     {
         _myData->points[1] = point;
@@ -158,6 +163,10 @@ void BbItemTriangle::done()
     ++_step;
     _myData->updatePostion(this);
     _myData->updatePrevPostion();
+    if(_step == 2)
+    {
+        _editing = false;
+    }
 }
 
 void BbItemTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)

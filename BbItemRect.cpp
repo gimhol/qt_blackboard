@@ -73,6 +73,7 @@ void BbItemRect::readStream(QDataStream &stream)
 
 void BbItemRect::begin(const QPointF &point)
 {
+    _editing = true;
     _mousePos = point;
     _beginX = point.x();
     _beginY = point.y();
@@ -106,6 +107,7 @@ void BbItemRect::done()
 {
     _myData->updatePostion(this);
     _myData->updatePrevPostion();
+    _editing = false;
 }
 
 void BbItemRect::setPenColor(const QColor &color)
@@ -210,6 +212,7 @@ void BbItemRect::toolDraw(const QPointF &pos)
 void BbItemRect::toolDone(const QPointF &pos)
 {
     Q_UNUSED(pos);
+    done();
     emit blackboard()->itemChanged(BBIET_rectDone,this);
     scene()->unsetCurrentItem(this);
 }
@@ -255,6 +258,11 @@ void BbItemRect::toAbsoluteCoords()
             _myData->size *= ratio;
         }
     }
+}
+
+bool BbItemRect::isEditing()
+{
+    return _editing;
 }
 
 bool BbItemRect::square()

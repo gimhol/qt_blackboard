@@ -35,6 +35,7 @@ protected:
     QPointF _straightLineFrom = QPointF(-999999,-999999);    // 直线的终点。
     QPointF _straightLineTo = QPointF(-999999,-999999);    // 直线的终点。
     QPointF _mousePos;
+    bool _editing = false;
 public:
     BbItemPen();
 
@@ -111,6 +112,7 @@ public:
     qreal z() override;
     void setZ(const qreal &value) override;
     void toAbsoluteCoords() override;
+    bool isEditing() override;
 };
 
 #endif // CANVASELEMENTPEN3_HPP

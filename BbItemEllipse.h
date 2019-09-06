@@ -19,6 +19,8 @@ protected:
     QPointF _mousePos;
 
     bool _circle = false;
+
+    bool _editing = false;
 public:
     BbItemEllipse();
 
@@ -85,6 +87,7 @@ public:
     qreal z() override;
     void setZ(const qreal &value) override;
     void toAbsoluteCoords() override;
+    bool isEditing() override;
 };
 
 #endif // BBITEMELLIPSE_H

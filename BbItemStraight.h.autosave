@@ -1,32 +1,30 @@
-﻿#ifndef BBITEMTRIANGLE_H
-#define BBITEMTRIANGLE_H
-
+﻿#ifndef BBITEMSTRAIGHT_H
+#define BBITEMSTRAIGHT_H
 
 #include <QGraphicsItem>
 #include "IStreamWR.h"
 #include "IItemIndex.h"
 
-class BbItemTriangleData;
-class NSB_BLACKBOARD_EXPORT BbItemTriangle: public QGraphicsRectItem, public IStreamWR, public IItemIndex
+class BbItemStraightData;
+class NSB_BLACKBOARD_EXPORT BbItemStraight: public QGraphicsRectItem, public IStreamWR, public IItemIndex
 {
 protected:
-    BbItemTriangleData * _myData;
+    BbItemStraightData * _myData;
 
     QRectF _rect;
 
+    bool _fortyFive = false;
+
     QPointF _mousePos;
-
-    unsigned char _step = 0;
-
-    QPointF _points[3];
-
+    QPointF _a;
+    QPointF _b;
     bool _editing = false;
 public:
-    BbItemTriangle();
+    BbItemStraight();
 
-    BbItemTriangle(BbItemData * data);
+    BbItemStraight(BbItemData *data);
 
-    virtual ~BbItemTriangle() override;
+    virtual ~BbItemStraight() override;
 
     void init();
 
@@ -34,18 +32,15 @@ public:
     void draw(const QPointF & point);
     void done();
     void repaint() override;
+    void setFortyFive(const bool & fortyFive);
 
-    unsigned char step();
+    QPointF a();
 
-    QPointF point(int index);
+    QPointF b();
 
-    QColor penColor();
+    QColor color();
 
-    void setPenColor(const QColor &penColor);
-
-    QColor brushColor();
-
-    void setBrushColor(const QColor &color);
+    void setColor(const QColor &color);
 
     qreal penWidth();
 
@@ -55,7 +50,9 @@ public:
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) override;
 
-    void setupRectWithABC();
+    QPointF toFortyFive(const QPointF & point);
+
+    void setupRectWithAB();
 
     // IStreamW interface
 public:
@@ -85,5 +82,4 @@ public:
     bool isEditing() override;
 };
 
-
-#endif // BBITEMTRIANGLE_H
+#endif // BBITEMSTRAIGHT_H

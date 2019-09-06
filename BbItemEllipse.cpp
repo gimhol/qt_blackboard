@@ -83,6 +83,11 @@ void BbItemEllipse::toAbsoluteCoords()
     }
 }
 
+bool BbItemEllipse::isEditing()
+{
+    return _editing;
+}
+
 void BbItemEllipse::repaint()
 {
     setPen(_myData->pen);
@@ -116,6 +121,7 @@ void BbItemEllipse::readStream(QDataStream &stream)
 
 void BbItemEllipse::begin(const QPointF &point)
 {
+    _editing = true;
     _mousePos = point;
     _beginX = point.x();
     _beginY = point.y();
@@ -148,6 +154,7 @@ void BbItemEllipse::done()
 {
     _myData->updatePostion(this);
     _myData->updatePrevPostion();
+    _editing = false;
 }
 
 void BbItemEllipse::setPenColor(const QColor &color)
