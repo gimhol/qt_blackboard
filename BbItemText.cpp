@@ -270,12 +270,19 @@ void BbItemText::toolDown(const QPointF &pos)
     {
         if(!boundingRect().contains(pos - this->pos()))
         {
-            setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
-            _myData->updatePostion(this);
-            _myData->updatePrevPostion();
             if(!isEmpty())
             {
-                emit blackboard()->itemChanged(BBIET_itemMoved,this);
+                done();
+            }
+            else
+            {
+                setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
+                _myData->updatePostion(this);
+                _myData->updatePrevPostion();
+                if(!isEmpty())
+                {
+                    emit blackboard()->itemChanged(BBIET_itemMoved,this);
+                }
             }
         }
     }
