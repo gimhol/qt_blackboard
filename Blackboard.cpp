@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <QScrollBar>
+#include <QApplication>
 
 class BlackboardPrivate
 {
@@ -21,12 +22,14 @@ public:
     QMap<BbToolType,BbItemData*> toolSettings;
     QMap<BbToolType,QCursor> cursors;
     QMap<QString, QPoint> lazerPenPositions;
+    bool tabletActive = false;
 };
 
 Blackboard::Blackboard(QWidget *parent):
     QGraphicsView(parent),
     dptr(new BlackboardPrivate)
 {
+    setAttribute(Qt::WA_TabletTracking);
     setScene(new BbScene(this));
     setMouseTracking(true);
 
@@ -40,6 +43,9 @@ Blackboard::Blackboard(QWidget *parent):
 
     connect(horizontalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollXChanged);
     connect(verticalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollYChanged);
+
+
+    qApp->installEventFilter(this);
 }
 
 Blackboard::~Blackboard()
@@ -268,79 +274,25 @@ void Blackboard::leaveEvent(QEvent *event)
 
 void Blackboard::mousePressEvent(QMouseEvent *event)
 {
-    dptr->mousePos = event->pos();
-    switch(scene()->toolType())
-    {
-        case BBTT_Pointer:
-        {
-            event->accept();
-            return;
-        }
-        case BBTT_Picker:
-        {
-            break;
-        }
-        default:
-        {
-            if(event->button() == Qt::MouseButton::LeftButton)
-            {
-                emit cursorHidden(dptr->mousePos);
-            }
-            break;
-        }
-    }
+    if(dptr->tabletActive)
+        return;
+    onMousePress(event->pos(),event->button());
     QGraphicsView::mousePressEvent(event);
 }
 
 void Blackboard::mouseMoveEvent(QMouseEvent *event)
 {
-    dptr->mousePos = event->pos();
-    switch(scene()->toolType())
-    {
-        case BBTT_Pointer:
-        {
-            emit pointerMoving(dptr->mousePos);
-            return;
-        }
-        case BBTT_Picker:
-        {
-            emit cursorMoving(dptr->mousePos);
-            break;
-        }
-        default:
-        {
-            if(!scene()->isMouseLeftButtonDown())
-            {
-                emit cursorMoving(dptr->mousePos);
-            }
-            break;
-        }
-    }
+    if(dptr->tabletActive)
+        return;
+    onMouseMove(event->pos());
     QGraphicsView::mouseMoveEvent(event);
 }
 
 void Blackboard::mouseReleaseEvent(QMouseEvent *event)
 {
-    dptr->mousePos = event->pos();
-    switch(scene()->toolType())
-    {
-        case BBTT_Pointer:
-        {
-            return;
-        }
-        case BBTT_Picker:
-        {
-            break;
-        }
-        default:
-        {
-            if(event->button() == Qt::MouseButton::LeftButton)
-            {
-                emit cursorShown(dptr->mousePos);
-            }
-            break;
-        }
-    }
+    if(dptr->tabletActive)
+        return;
+    onMouseRelease(event->pos(),event->button());
     QGraphicsView::mouseReleaseEvent(event);
 }
 
@@ -551,6 +503,134 @@ QSize Blackboard::canvasSize(){return dptr->canvasSize;}
 int Blackboard::canvasWidth(){return dptr->canvasSize.width();}
 
 int Blackboard::canvasHeight(){return dptr->canvasSize.height();}
+
+void Blackboard::onMousePress(const QPoint &pos, const Qt::MouseButton &button)
+{
+    dptr->mousePos = pos;
+    switch(scene()->toolType())
+    {
+        case BBTT_Pointer:
+        case BBTT_Picker:
+        {
+            break;
+        }
+        default:
+        {
+            if(button == Qt::LeftButton)
+            {
+                emit cursorHidden(dptr->mousePos);
+            }
+            break;
+        }
+    }
+}
+
+
+void Blackboard::onMouseMove(const QPoint &pos)
+{
+    dptr->mousePos = pos;
+    switch(scene()->toolType())
+    {
+        case BBTT_Pointer:
+        {
+            emit pointerMoving(dptr->mousePos);
+            return;
+        }
+        case BBTT_Picker:
+        {
+            emit cursorMoving(dptr->mousePos);
+            break;
+        }
+        default:
+        {
+            if(!scene()->isMouseLeftButtonDown())
+            {
+                emit cursorMoving(dptr->mousePos);
+            }
+            break;
+        }
+    }
+}
+
+void Blackboard::onMouseRelease(const QPoint &pos, const Qt::MouseButton &button)
+{
+    dptr->mousePos = pos;
+    switch(scene()->toolType())
+    {
+        case BBTT_Pointer:
+        case BBTT_Picker:
+            break;
+        default:
+        {
+            if(button == Qt::LeftButton)
+            {
+                emit cursorShown(dptr->mousePos);
+            }
+            break;
+        }
+    }
+}
+
+
+bool Blackboard::eventFilter(QObject *object, QEvent *event)
+{
+    if(object == qApp){
+        switch(event->type()){
+        case QEvent::TabletEnterProximity:
+            dptr->tabletActive = true;
+            break;
+        case QEvent::TabletLeaveProximity:
+            dptr->tabletActive = false;
+            break;
+        default:
+            break;
+        }
+    }
+    return false;
+}
+
+void Blackboard::tabletEvent(QTabletEvent *event)
+{
+    qInfo() << event->type();
+    switch(event->type())
+    {
+    case QEvent::TabletPress:
+    {
+        onMousePress(event->pos(),event->button());
+        QMouseEvent mouseEvent(QEvent::MouseMove,
+                    event->pos(),
+                    event->button(),
+                    event->buttons(),
+                    event->modifiers());
+        QGraphicsView::mousePressEvent(&mouseEvent);
+        break;
+    }
+    case QEvent::TabletMove:
+    {
+        onMouseMove(event->pos());
+        QMouseEvent mouseEvent(QEvent::MouseMove,
+                    event->pos(),
+                    event->button(),
+                    event->buttons(),
+                    event->modifiers());
+        QGraphicsView::mouseMoveEvent(&mouseEvent);
+        break;
+    }
+    case QEvent::TabletRelease:
+    {
+        onMouseRelease(event->pos(),event->button());
+        QMouseEvent mouseEvent(QEvent::MouseButtonRelease,
+                    event->pos(),
+                    event->button(),
+                    event->buttons(),
+                    event->modifiers());
+        QGraphicsView::mouseReleaseEvent(&mouseEvent);
+        break;
+    }
+    default:
+        break;
+    }
+}
 
 void Blackboard::moveEvent(QMoveEvent *event)
 {

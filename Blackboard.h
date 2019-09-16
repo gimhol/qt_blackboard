@@ -63,6 +63,16 @@ public:
 
     int canvasHeight();
 
+    void onMousePress(const QPoint &pos, const Qt::MouseButton &button);
+
+    void onMouseMove(const QPoint &pos);
+
+    void onMouseRelease(const QPoint &pos, const Qt::MouseButton &button);
+
+    bool eventFilter(QObject *object,QEvent *event) override;
+
+    void tabletEvent(QTabletEvent *event) override;
+
     void moveEvent(QMoveEvent *event) override;
 
     void resizeEvent(QResizeEvent * event) override;
