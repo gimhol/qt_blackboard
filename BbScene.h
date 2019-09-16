@@ -1,4 +1,4 @@
-﻿#ifndef CANVASSCENE3_H
+#ifndef CANVASSCENE3_H
 #define CANVASSCENE3_H
 
 #include <QGraphicsScene>
@@ -40,7 +40,7 @@ protected:
     IItemIndex * _editingItemIndex = nullptr;
     ItemIDGenerator _itemIdGenerator = nullptr;
     bool _controlEnable = true;
-    Qt::KeyboardModifiers _lastModifiers = Qt::NoModifier;
+    Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
     bool _onlyShiftDown = false;
     bool _onlyAltDown = false;
     bool _onlyCtrlDown = false;
@@ -139,6 +139,8 @@ public:
     void unsetEditingItem(IItemIndex *item);
 
     bool onlyShiftDown();
+
+    const Qt::KeyboardModifiers &modifiers();
 
     template<typename T>
     inline T *find(const std::string &lid)

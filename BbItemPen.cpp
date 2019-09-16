@@ -499,6 +499,10 @@ Blackboard *BbItemPen::blackboard()
 
 void BbItemPen::toolDown(const QPointF &pos)
 {
+    if(scene()->modifiers() & Qt::ShiftModifier)
+    {
+        setStraight(true);
+    }
     setZValue(QDateTime::currentMSecsSinceEpoch());
     auto settings = blackboard()->toolSettings<BbItemPenData>(BBTT_Pen);
     setWeight(settings->weight());

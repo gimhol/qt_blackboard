@@ -350,13 +350,13 @@ void BbScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
 void BbScene::keyPressEvent(QKeyEvent *e)
 {
-    if(_lastModifiers != e->modifiers())
+    if(_modifiers != e->modifiers())
     {
         if(_curItemIndex)
         {
             _curItemIndex->modifiersChanged(e->modifiers());
         }
-        _lastModifiers = e->modifiers();
+        _modifiers = e->modifiers();
     }
     _onlyShiftDown = e->modifiers() ==  Qt::ShiftModifier;
     _onlyAltDown = e->modifiers() ==  Qt::AltModifier;
@@ -366,13 +366,13 @@ void BbScene::keyPressEvent(QKeyEvent *e)
 
 void BbScene::keyReleaseEvent(QKeyEvent *e)
 {
-    if(_lastModifiers != e->modifiers())
+    if(_modifiers != e->modifiers())
     {
         if(_curItemIndex)
         {
             _curItemIndex->modifiersChanged(e->modifiers());
         }
-        _lastModifiers = e->modifiers();
+        _modifiers = e->modifiers();
     }
     switch(e->key())
     {
@@ -586,6 +586,11 @@ void BbScene::unsetEditingItem(IItemIndex *item)
 bool BbScene::onlyShiftDown()
 {
     return _onlyShiftDown;
+}
+
+const Qt::KeyboardModifiers &BbScene::modifiers()
+{
+    return _modifiers;
 }
 
 void BbScene::setItemPicking(bool picking)
