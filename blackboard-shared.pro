@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT += widgets
-CONFIG += debug_and_release
+CONFIG += debug_and_release skip_target_version_ext
 CONFIG(debug, debug|release) {
     TARGET = NsbBlackboardd
 } else {
