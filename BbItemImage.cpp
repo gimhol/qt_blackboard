@@ -4,6 +4,7 @@
 #include "Blackboard.h"
 #include <QPainter>
 #include <QDebug>
+#include <QStaticText>
 
 BbItemImage::BbItemImage():
     QGraphicsRectItem(),
@@ -45,6 +46,7 @@ void BbItemImage::init()
 void BbItemImage::setPixmap(const QPixmap &pixmap)
 {
     _myData->pixmap = pixmap;
+    update();
 }
 
 Blackboard *BbItemImage::blackboard()
@@ -56,10 +58,14 @@ bool BbItemImage::mouseDown(const QPointF &pos)
 {
     if(isUnderMouse())
     {
+        _mouseDown = true;
+        _mousePos = pos;
+        updateCursor(pos);
         _stretchDirection = stretchDirection(pos);
         _stretching = _stretchDirection != Invalid;
         if(_stretching)
         {
+            _stretchOffset = stretchOffset(pos);
             begin(pos);
         }
         return _stretching;
@@ -74,55 +80,83 @@ bool BbItemImage::mouseDown(const QPointF &pos)
 
 bool BbItemImage::mouseMove(const QPointF &pos)
 {
-    if(_stretching)
+    if(_mouseDown)
     {
-        if(draw(pos))
+        _mousePos = pos;
+        if(_stretching)
         {
-            emit blackboard()->itemChanged(BBIET_imageResizing,this);
-            _myData->prevWidth = _myData->width;
-            _myData->prevHeight = _myData->height;
+            if(draw(_mousePos))
+            {
+                emit blackboard()->itemChanged(BBIET_imageResizing,this);
+                _myData->prevWidth = _myData->width;
+                _myData->prevHeight = _myData->height;
+            }
+            return true;
         }
-        return true;
+        else
+        {
+            blackboard()->revertToolCursor();
+        }
     }
     else
     {
         updateCursor(pos);
-        return false;
     }
+    return false;
 }
 
 bool BbItemImage::mouseRelease(const QPointF &pos)
 {
     updateCursor(pos);
-    auto ret = _stretching;
-    if(ret)
+    if(_mouseDown)
     {
-        if(done())
+        auto ret = _stretching;
+        if(ret)
         {
-            emit blackboard()->itemChanged(BBIET_imageResized,this);
-            _myData->updatePrevPostion();
-            _myData->updatePrevSize();
+            if(done())
+            {
+                emit blackboard()->itemChanged(BBIET_imageResized,this);
+                _myData->updatePrevPostion();
+                _myData->updatePrevSize();
+            }
         }
+        _stretching = false;
+        _mouseDown = false;
+        return ret;
     }
-    _stretching = false;
-    return ret;
+}
+
+bool BbItemImage::clicked(const QPointF &pos)
+{
+    Q_UNUSED(pos)
+    if(_myData->editable)
+    {
+        scene()->setEditingItem(this);
+        return mouseDown(pos);
+    }
+    return false;
 }
 
 bool BbItemImage::doubleClicked(const QPointF &pos)
 {
-    Q_UNUSED(pos);
-    if(_myData->editable)
-    {
-        scene()->setEditingItem(this);
-        update();
-        return true;
-    }
+    Q_UNUSED(pos)
+//    if(_myData->editable)
+//    {
+//        scene()->setEditingItem(this);
+//        update();
+//        return true;
+//    }
     return false;
 }
 
 void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
-    Q_UNUSED(modifiers); // TODO: 提供一些快捷键来锁定尺寸比例
+    Q_UNUSED(modifiers)
+    if(_clampRatio != (modifiers == Qt::ShiftModifier))
+    {
+        setClampRatio(modifiers == Qt::ShiftModifier);
+        emit blackboard()->itemChanged(BBIET_imageResizing,this);
+    }
 }
 
 qreal BbItemImage::z()
@@ -157,21 +191,52 @@ void BbItemImage::toAbsoluteCoords()
     }
 }
 
+qreal BbItemImage::minWidth()
+{
+    return 3 * _controlDotSize;
+}
+
+qreal BbItemImage::minHeight()
+{
+    return 3 * _controlDotSize;
+}
+#include <QDebug>
+
+void BbItemImage::setClampRatio(bool clampRatio)
+{
+    if(_clampRatio == clampRatio)
+    {
+        return;
+    }
+    _clampRatio = clampRatio;
+    if(_mouseDown)
+    {
+        draw(_mousePos);
+    }
+}
+
 void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     if(!_myData->pixmap.isNull())
     {
+        painter->setPen(Qt::NoPen);
         painter->drawPixmap(rect().toRect(),_myData->pixmap);
+    }
+    else
+    {
+        painter->setBrush(QColor(0,0,0,100));
+        painter->drawRect(rect().toRect());
+        painter->setPen(QColor(255,255,255));
+        painter->drawStaticText(1,1,QStaticText("Picture"));
     }
     painter->setPen(Qt::NoPen);
     QGraphicsRectItem::paint(painter,option,widget);
-    qDebug() << isSelected() << (scene()->editingItem() == this);
     if(isSelected() && scene()->editingItem() == this)
     {
         painter->setPen(QColor(0,0,0));
         painter->setBrush(QColor(255,255,255));
-        auto w = 5;
-        auto h = 5;
+        auto w = int(_controlDotSize);
+        auto h = int(_controlDotSize);
         auto r = int(this->rect().right()-w);
         auto b = int(this->rect().bottom()-h);
         auto x = r/2;
@@ -215,6 +280,14 @@ void BbItemImage::readStream(QDataStream &stream)
 
 void BbItemImage::resize(qreal width, qreal height)
 {
+    if(width < minWidth())
+    {
+        width = minWidth();
+    }
+    if(height < minHeight())
+    {
+        height = minHeight();
+    }
     _myData->width = width;
     _myData->height = height;
     setRect(0,0,width,height);
@@ -227,7 +300,7 @@ void BbItemImage::updatePrevSize()
 
 void BbItemImage::begin(const QPointF &point)
 {
-    Q_UNUSED(point);
+    Q_UNUSED(point)
     _lastX = int(this->x());
     _lastY = int(this->y());
     _lastW = int(this->rect().width());
@@ -238,27 +311,56 @@ void BbItemImage::begin(const QPointF &point)
     _prevH = _lastH;
 }
 
-bool BbItemImage::draw(const QPointF &point)
+bool BbItemImage::draw(const QPointF &pos)
 {
-    int x = int(this->x());
-    int y = int(this->y());
-    int w = int(this->rect().width());
-    int h = int(this->rect().height());
+    auto point = pos - _stretchOffset;
+    auto x = this->x();
+    auto y = this->y();
+    auto w = this->rect().width();
+    auto h = this->rect().height();
     _prevX = x;
     _prevY = y;
     _prevW = w;
     _prevH = h;
+
+    auto ratio = 1;
+    if(!_myData->pixmap.isNull())
+    {
+        ratio = _myData->pixmap.width() / _myData->pixmap.height();
+    }
+    auto clampWidth = [&]()
+    {
+        if(_clampRatio)
+        {
+            w = h * ratio;
+        }
+    };
+    auto clampHeight = [&]()
+    {
+        if(_clampRatio)
+        {
+            h = w / ratio;
+        }
+    };
+    auto clampHeightNW = [&]()
+    {
+        if(_clampRatio)
+        {
+            clampHeight();
+            y = _prevY + _prevH - h;
+        }
+    };
     auto stretchN = [&]()
     {
         auto t = int(point.y());
         h = int(y + h - t);
-        if(h > 10)
+        if(h > minHeight())
         {
             y = t;
         }
         else
         {
-            h = 10;
+            h = minHeight();
         }
     };
     auto stretchS = [&]()
@@ -269,13 +371,13 @@ bool BbItemImage::draw(const QPointF &point)
     {
         auto l = int(point.x());
         w = int(x + w - l);
-        if(w > 10)
+        if(w > minWidth())
         {
             x = l;
         }
         else
         {
-            w = 10;
+            w = minWidth();
         }
     };
     auto stretchE = [&]()
@@ -283,21 +385,45 @@ bool BbItemImage::draw(const QPointF &point)
         w = int(point.x() - x);
     };
     switch(_stretchDirection){
-        case N: stretchN(); break;
-        case S: stretchS(); break;
-        case W: stretchW(); break;
-        case E: stretchE(); break;
-        case NE: stretchN(); stretchE();break;
-        case SE: stretchS(); stretchE();break;
-        case NW: stretchN(); stretchW();break;
-        case SW: stretchS(); stretchW();break;
+        case N: stretchN(); clampWidth(); break;
+        case S: stretchS(); clampWidth(); break;
+        case W: stretchW(); clampHeight(); break;
+        case E: stretchE(); clampHeight(); break;
+        case NE: stretchN(); if(_clampRatio){clampWidth();}else{stretchE();}break;
+        case SE: stretchS(); if(_clampRatio){clampWidth();}else{stretchE();}break;
+        case SW: stretchW(); if(_clampRatio){clampHeight();}else{stretchS();}break;
+        case NW: stretchW(); if(_clampRatio){clampHeightNW();}else{stretchN();}break;
         default:break;
     }
-    auto changed = _lastX != x || _lastY != y || _lastW != w || _lastH != h;
+
+    if(x > _lastX + _lastW - minWidth())
+    {
+        x = _lastX + _lastW - minWidth();
+    }
+    if(y > _lastY + _lastH - minHeight())
+    {
+        y = _lastY + _lastH - minHeight();
+    }
+    if(w < minWidth())
+    {
+        w = minWidth();
+    }
+    if(h < minHeight())
+    {
+        h = minHeight();
+    }
+    auto esp = 0.00001;
+    auto changed =
+            abs(_lastX-x) > esp ||
+            abs(_lastY-y) > esp ||
+            abs(_lastW-w) > esp ||
+            abs(_lastH-h) > esp;
+
+
     if(changed)
     {
-        resize(w,h);
         setPos(x,y);
+        resize(w,h);
         _myData->updatePostion(this);
     }
     return changed;
@@ -305,11 +431,16 @@ bool BbItemImage::draw(const QPointF &point)
 
 bool BbItemImage::done()
 {
-    auto x = int(this->x());
-    auto y = int(this->y());
-    auto w = int(this->rect().width());
-    auto h = int(this->rect().height());
-    auto changed = _lastX != x || _lastY != y || _lastW != w || _lastH != h;
+    auto x = (this->x());
+    auto y = (this->y());
+    auto w = (this->rect().width());
+    auto h = (this->rect().height());
+    auto esp = 0.00001;
+    auto changed =
+            abs(_lastX-x) > esp ||
+            abs(_lastY-y) > esp ||
+            abs(_lastW-w) > esp ||
+            abs(_lastH-h) > esp;
     _lastX = x;
     _lastY = y;
     _lastW = w;
@@ -344,29 +475,29 @@ BbItemData *BbItemImage::data()
     return _myData;
 }
 
-void BbItemImage::makeStretchControlDot(QRect *rects)
+void BbItemImage::makeStretchControlDot(QRectF *rects)
 {
-    auto w = 5;
-    auto h = 5;
-    auto l = int(x());
-    auto t = int(y());
-    auto r = l+int(this->rect().right()-w);
-    auto b = t+int(this->rect().bottom()-h);
-    auto x = l+int(this->rect().right()-w)/2;
-    auto y = t+int(this->rect().bottom()-h)/2;
-    rects [0] = QRect(l,t,w,h);
-    rects [1] = QRect(l,y,w,h);
-    rects [2] = QRect(l,b,w,h);
-    rects [3] = QRect(x,b,w,h);
-    rects [4] = QRect(r,b,w,h);
-    rects [5] = QRect(r,y,w,h);
-    rects [6] = QRect(r,t,w,h);
-    rects [7] = QRect(x,t,w,h);
+    auto w = _controlDotSize;
+    auto h = _controlDotSize;
+    auto l = (x());
+    auto t = (y());
+    auto r = l+(this->rect().right()-w);
+    auto b = t+(this->rect().bottom()-h);
+    auto x = l+(this->rect().right()-w)/2;
+    auto y = t+(this->rect().bottom()-h)/2;
+    rects [0] = QRectF(l,t,w,h);
+    rects [1] = QRectF(l,y,w,h);
+    rects [2] = QRectF(l,b,w,h);
+    rects [3] = QRectF(x,b,w,h);
+    rects [4] = QRectF(r,b,w,h);
+    rects [5] = QRectF(r,y,w,h);
+    rects [6] = QRectF(r,t,w,h);
+    rects [7] = QRectF(x,t,w,h);
 }
 
 BbItemImage::StretchDirection BbItemImage::stretchDirection(const QPointF &mousePos)
 {
-    QRect rects[8];
+    QRectF rects[8];
     makeStretchControlDot(rects);
     for(auto i = 0;i<8;++i)
     {
@@ -376,6 +507,48 @@ BbItemImage::StretchDirection BbItemImage::stretchDirection(const QPointF &mouse
         }
     }
     return Invalid;
+}
+
+QPointF BbItemImage::stretchOffset(const QPointF &mousePos)
+{
+    QPointF offset;
+    QRectF rects[8];
+    makeStretchControlDot(rects);
+    for(auto i = 0;i<8;++i)
+    {
+        if(rects[i].contains(mousePos))
+        {
+            auto handleN = [&]()
+            {
+                offset.setY(mousePos.y() - rects[i].top());
+            };
+            auto handleS = [&]()
+            {
+                offset.setY(mousePos.y() - rects[i].bottom());
+            };
+            auto handleW = [&]()
+            {
+                offset.setX(mousePos.x() - rects[i].left());
+            };
+            auto handleE = [&]()
+            {
+                offset.setX(mousePos.x() - rects[i].right());
+            };
+            switch(StretchDirection(i)){
+                case N: handleN(); break;
+                case S: handleS(); break;
+                case W: handleW(); break;
+                case E: handleE(); break;
+                case NE: handleN(); handleE();break;
+                case SE: handleS(); handleE();break;
+                case NW: handleN(); handleW();break;
+                case SW: handleS(); handleW();break;
+                default:break;
+            }
+            break;
+        }
+    }
+    return offset;
 }
 
 void BbItemImage::updateCursor(const QPointF &mousePos)

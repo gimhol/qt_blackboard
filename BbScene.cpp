@@ -352,6 +352,10 @@ void BbScene::keyPressEvent(QKeyEvent *e)
 {
     if(_modifiers != e->modifiers())
     {
+        if(_editingItemIndex)
+        {
+            _editingItemIndex->modifiersChanged(e->modifiers());
+        }
         if(_curItemIndex)
         {
             _curItemIndex->modifiersChanged(e->modifiers());
@@ -368,6 +372,10 @@ void BbScene::keyReleaseEvent(QKeyEvent *e)
 {
     if(_modifiers != e->modifiers())
     {
+        if(_editingItemIndex)
+        {
+            _editingItemIndex->modifiersChanged(e->modifiers());
+        }
         if(_curItemIndex)
         {
             _curItemIndex->modifiersChanged(e->modifiers());
