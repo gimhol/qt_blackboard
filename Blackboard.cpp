@@ -591,7 +591,6 @@ bool Blackboard::eventFilter(QObject *object, QEvent *event)
 
 void Blackboard::tabletEvent(QTabletEvent *event)
 {
-    qInfo() << event->type();
     switch(event->type())
     {
     case QEvent::TabletPress:
