@@ -431,7 +431,8 @@ BbItemData *Blackboard::toolSettings(const BbToolType &toolType)
     return settings;
 }
 
-BbItemImage *Blackboard::addImageItem(const qreal &width, const qreal &height)
+BbItemImage *Blackboard::addImageItem(
+        const qreal &width, const qreal &height)
 {
     return scene()->addImageItem(width, height);
 }
@@ -441,9 +442,35 @@ BbItemImage *Blackboard::addImageItem(const QPixmap &pixmap)
     return scene()->addImageItem(pixmap);
 }
 
-BbItemImage *Blackboard::addImageItem(const qreal &width, const qreal &height,const QPixmap &pixmap)
+BbItemImage *Blackboard::addImageItem(
+        const qreal &width,
+        const qreal &height,
+        const QPixmap &pixmap)
 {
-    return scene()->addImageItem(width, height, pixmap);
+    return scene()->addImageItem(
+                width, height, pixmap);
+}
+
+BbItemImage *Blackboard::addImageItemWithPath(
+        const QString &path)
+{
+    return scene()->addImageItemWithPath(path);
+}
+
+BbItemImage *Blackboard::addImageItemWithPath(
+        const qreal &width,
+        const qreal &height,
+        const QString &path)
+{
+    return scene()->addImageItemWithPath(width,height,path);
+}
+
+BbItemImage *Blackboard::addImageItemWithUrl(
+        const qreal &width,
+        const qreal &height,
+        const QString &url)
+{
+    return scene()->addImageItemWithUrl(width,height,url);
 }
 
 void Blackboard::selectedAll()

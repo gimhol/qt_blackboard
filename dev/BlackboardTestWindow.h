@@ -9,7 +9,6 @@ class Blackboard;
 class BlackboardTestWindow : public QWidget
 {
     Q_OBJECT
-    QPixmap image;
     BbItemPenData *penSettings;
     BbItemStraightData *straightSettings;
     BbItemTextData *textSettings;
@@ -22,12 +21,13 @@ class BlackboardTestWindow : public QWidget
     static void bindBlackboard(Blackboard * blackboard0,Blackboard *blackboard1);
 
     Blackboard * blackboard();
-
 public:
 
     ~BlackboardTestWindow();
 
     static void start();
+
+    static void loadImage(BbItemImage *item);
 
 private slots:
     void on_pointer_clicked();

@@ -15,6 +15,20 @@
 #include <QButtonGroup>
 #include <QMutex>
 #include <BbItemImageData.h>
+#include <QTimer>
+#include <QNetworkRequest>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+
+static QNetworkAccessManager *networkManager()
+{
+    static QNetworkAccessManager *ret = nullptr;
+    if(!ret)
+    {
+        ret = new QNetworkAccessManager();
+    }
+    return ret;
+};
 
 
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
@@ -254,7 +268,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         blackboard1->movePointer("remote_pointer", localPoint.x(),localPoint.y());
     });
     connect(blackboard0,&Blackboard::pointerHidden,[blackboard1](QPoint localPoint){
-        Q_UNUSED(localPoint);
+        Q_UNUSED(localPoint)
         blackboard1->hidePointer("remote_pointer");
     });
 
@@ -268,7 +282,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         blackboard1->movePointer("remote_pointer", localPoint.x(),localPoint.y());
     });
     connect(blackboard0,&Blackboard::cursorHidden,[blackboard1](QPoint localPoint){
-        Q_UNUSED(localPoint);
+        Q_UNUSED(localPoint)
         blackboard1->hidePointer("remote_pointer");
     });
     auto copyFullItem = [&](Blackboard *blackboard1, IStreamWR *itemWR,IItemIndex *itemIndex)
@@ -349,10 +363,13 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
                     copy->setPos(data->x,data->y);
                     copy->updatePrevPosition();
                 }
+                copy->setUrl(data->url);
+                copy->setPath(data->path);
                 copy->setPixmap(data->pixmap);
                 copy->setId(data->lid);
                 copy->updatePrevSize();
                 copy->update();
+                loadImage(copy);
             }
         }
     };
@@ -813,25 +830,72 @@ void BlackboardTestWindow::on_imagePick_clicked()
     QString fileName = QFileDialog::getOpenFileName(nullptr,QStringLiteral("选择图片"),".","*.png;*.jpg");
     if(!fileName.isEmpty())
     {
-        image = QPixmap(fileName);
-        ui->spinBoxImageWidth->setValue(image.width());
-        ui->spinBoxImageHeight->setValue(image.height());
+        blackboard()->addImageItemWithPath(fileName);
     }
+}
+void BlackboardTestWindow::loadImage(BbItemImage *item)
+{
+    if(!item)
+    {
+        return;
+    }
+    Blackboard *blackboard = item->blackboard();
+    if(!blackboard)
+    {
+        return;
+    }
+    QString url = item->url();
+    if(url.isEmpty() || url.isNull())
+    {
+        return;
+    }
+    QString itemId = item->id();
+    QNetworkRequest request(url);
+    QNetworkReply *reply = networkManager()->get(request);
+    auto onFinish = [blackboard,itemId,reply]()
+    {
+        BbItemImage *item = blackboard->find<BbItemImage>(itemId);
+        if(item)
+        {
+            switch(reply->error())
+            {
+                case QNetworkReply::NoError:
+                {
+                    QByteArray bytes = reply->readAll();
+                    QPixmap pixmap;
+                    pixmap.loadFromData(bytes);
+                    item->setPixmap(pixmap);
+                    item->setText("");
+                    item->setProgress(1);
+                    break;
+                }
+                default:
+                {
+                    item->setText(reply->errorString());
+                    item->setProgress(0);
+                    break;
+                }
+            }
+        }
+    };
+    auto onDownloadProgress = [blackboard,itemId](qint64 bytesReceived, qint64 bytesTotal)
+    {
+        BbItemImage *item = blackboard->find<BbItemImage>(itemId);
+        if(item)
+        {
+            item->setText("downloading");
+            item->setProgress(1.0*bytesReceived/bytesTotal);
+        }
+    };
+    connect(reply,&QNetworkReply::finished,blackboard,onFinish);
+    connect(reply,&QNetworkReply::downloadProgress,blackboard,onDownloadProgress);
 }
 
 void BlackboardTestWindow::on_imageInsert_clicked()
 {
-    if(!image.isNull())
-    {
-        blackboard()->addImageItem(
-                    ui->spinBoxImageWidth->value(),
-                    ui->spinBoxImageHeight->value(),
-                    image);
-    }
-    else
-    {
-        blackboard()->addImageItem(
-            ui->spinBoxImageWidth->value(),
-            ui->spinBoxImageHeight->value());
-    }
+    BbItemImage *item = blackboard()->addImageItemWithUrl(
+                ui->spinBoxImageWidth->value(),
+                ui->spinBoxImageHeight->value(),
+                ui->pictureUrl->text());
+    loadImage(item);
 }

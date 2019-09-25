@@ -126,6 +126,10 @@ public:
     BbItemImage *addImageItem(const qreal &width,const qreal &height);
     BbItemImage *addImageItem(const QPixmap & pixmap);
     BbItemImage *addImageItem(const qreal &width,const qreal &height,const QPixmap &pixmap);
+    BbItemImage *addImageItemWithPath(const QString &path);
+    BbItemImage *addImageItemWithPath(const qreal &width,const qreal &height,const QString &path);
+    BbItemImage *addImageItemWithUrl(const qreal &width,const qreal &height,const QString &url);
+
     void selectedAll();
     void deselectAll();
     void copyItems();

@@ -509,6 +509,20 @@
           <number>3</number>
          </property>
          <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>URL</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="pictureUrl"/>
+           </item>
+          </layout>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="imageSizeRow">
            <item>
             <widget class="QLabel" name="label">
@@ -580,6 +594,19 @@
           </layout>
          </item>
          <item>
+          <widget class="QPushButton" name="imageInsert">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>插入网络图片</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="imagebuttonrow">
            <property name="spacing">
             <number>0</number>
@@ -593,20 +620,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>选择</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="imageInsert">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>插入</string>
+              <string>选择本地图片</string>
              </property>
             </widget>
            </item>

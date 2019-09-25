@@ -1,6 +1,4 @@
 #include "BbHelper.h"
-#include "BbItemImage.h"
-#include "BbItemImageData.h"
 #include <QDebug>
 
 IItemIndex *BbHelper::createItem(BbToolType bbtt)

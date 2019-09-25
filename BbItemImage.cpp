@@ -140,12 +140,6 @@ bool BbItemImage::clicked(const QPointF &pos)
 bool BbItemImage::doubleClicked(const QPointF &pos)
 {
     Q_UNUSED(pos)
-//    if(_myData->editable)
-//    {
-//        scene()->setEditingItem(this);
-//        update();
-//        return true;
-//    }
     return false;
 }
 
@@ -215,40 +209,108 @@ void BbItemImage::setClampRatio(bool clampRatio)
     }
 }
 
+void BbItemImage::setProgress(qreal progress)
+{
+    _progress = progress;
+    update();
+}
+
+void BbItemImage::setText(QString text)
+{
+    _text = text;
+    update();
+}
+
+QString BbItemImage::url()
+{
+    return _myData->url;
+}
+
+QString BbItemImage::path()
+{
+    return _myData->path;
+}
+
+void BbItemImage::setUrl(QString url)
+{
+    _myData->url = url;
+}
+
+void BbItemImage::setPath(QString path)
+{
+    _myData->path = path;
+}
+
+bool BbItemImage::clampRatio()
+{
+    return _clampRatio || BbItemImageData::isRatioLocked();
+}
+
+BbItemData *BbItemImage::data()
+{
+    return _myData;
+}
+
 void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_UNUSED(option)
+    Q_UNUSED(widget)
+    painter->setRenderHint(QPainter::Antialiasing);
     if(!_myData->pixmap.isNull())
     {
+        painter->setRenderHint(QPainter::SmoothPixmapTransform);
         painter->setPen(Qt::NoPen);
         painter->drawPixmap(rect().toRect(),_myData->pixmap);
     }
     else
     {
-        painter->setBrush(QColor(0,0,0,100));
-        painter->drawRect(rect().toRect());
-        painter->setPen(QColor(255,255,255));
-        painter->drawStaticText(1,1,QStaticText("Picture"));
+        auto bg = rect();
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(QColor(0,0,0,50));
+        painter->drawRect(bg);
     }
-    painter->setPen(Qt::NoPen);
-    QGraphicsRectItem::paint(painter,option,widget);
-    if(isSelected() && scene()->editingItem() == this)
+    auto progress = int(_progress * 100);
+    auto showProgress = progress > 0 && progress < 99;
+    if(showProgress || !_text.isEmpty())
     {
-        painter->setPen(QColor(0,0,0));
+        painter->setRenderHint(QPainter::TextAntialiasing);
+        QString text = _text;
+        if(showProgress)
+        {
+            text = QString("%1 %2%").arg(_text).arg(int(_progress*100));
+            auto fg = rect();
+            fg.setWidth(fg.width() * _progress);
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(QColor(0,0,0,50));
+            painter->drawRect(fg);
+        }
+        painter->setPen(QColor(255,255,255));
         painter->setBrush(QColor(255,255,255));
-        auto w = int(_controlDotSize);
-        auto h = int(_controlDotSize);
-        auto r = int(this->rect().right()-w);
-        auto b = int(this->rect().bottom()-h);
-        auto x = r/2;
-        auto y = b/2;
-        painter->drawRect(0,0,w,h);
-        painter->drawRect(0,y,w,h);
-        painter->drawRect(0,b,w,h);
-        painter->drawRect(x,b,w,h);
-        painter->drawRect(r,b,w,h);
-        painter->drawRect(r,y,w,h);
-        painter->drawRect(r,0,w,h);
-        painter->drawRect(x,0,w,h);
+        painter->drawText(rect(),Qt::AlignTop|Qt::AlignLeft|Qt::TextWordWrap,text);
+    }
+    if(isSelected())
+    {
+        painter->setBrush(Qt::NoBrush);
+        painter->setPen(Qt::white);
+        painter->drawRect(rect());
+        painter->setPen(Qt::DashLine);
+        painter->drawRect(rect());
+        if(scene()->editingItem() == this)
+        {
+            painter->setPen(QColor(0,0,0));
+            painter->setBrush(QColor(255,255,255));
+
+            QRectF rect[8];
+            makeStretchControlDot(rect);
+
+            bool clameped = clampRatio();
+            for(auto i = 0;i<8;++i)
+            {
+                rect[i].translate(-x(),-y());
+                painter->drawRect(rect[i]);
+                i+=clameped;
+            }
+        }
     }
 }
 
@@ -323,28 +385,28 @@ bool BbItemImage::draw(const QPointF &pos)
     _prevW = w;
     _prevH = h;
 
-    auto ratio = 1;
+    auto ratio = 1.0;
     if(!_myData->pixmap.isNull())
     {
-        ratio = _myData->pixmap.width() / _myData->pixmap.height();
+        ratio = 1.0 * _myData->pixmap.width() / _myData->pixmap.height();
     }
     auto clampWidth = [&]()
     {
-        if(_clampRatio)
+        if(clampRatio())
         {
             w = h * ratio;
         }
     };
     auto clampHeight = [&]()
     {
-        if(_clampRatio)
+        if(clampRatio())
         {
             h = w / ratio;
         }
     };
     auto clampHeightNW = [&]()
     {
-        if(_clampRatio)
+        if(clampRatio())
         {
             clampHeight();
             y = _prevY + _prevH - h;
@@ -389,10 +451,10 @@ bool BbItemImage::draw(const QPointF &pos)
         case S: stretchS(); clampWidth(); break;
         case W: stretchW(); clampHeight(); break;
         case E: stretchE(); clampHeight(); break;
-        case NE: stretchN(); if(_clampRatio){clampWidth();}else{stretchE();}break;
-        case SE: stretchS(); if(_clampRatio){clampWidth();}else{stretchE();}break;
-        case SW: stretchW(); if(_clampRatio){clampHeight();}else{stretchS();}break;
-        case NW: stretchW(); if(_clampRatio){clampHeightNW();}else{stretchN();}break;
+        case NE: stretchN(); if(clampRatio()){clampWidth();}else{stretchE();}break;
+        case SE: stretchS(); if(clampRatio()){clampWidth();}else{stretchE();}break;
+        case SW: stretchW(); if(clampRatio()){clampHeight();}else{stretchS();}break;
+        case NW: stretchW(); if(clampRatio()){clampHeightNW();}else{stretchN();}break;
         default:break;
     }
 
@@ -470,11 +532,6 @@ BbScene *BbItemImage::scene()
     return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
 
-BbItemData *BbItemImage::data()
-{
-    return _myData;
-}
-
 void BbItemImage::makeStretchControlDot(QRectF *rects)
 {
     auto w = _controlDotSize;
@@ -499,12 +556,14 @@ BbItemImage::StretchDirection BbItemImage::stretchDirection(const QPointF &mouse
 {
     QRectF rects[8];
     makeStretchControlDot(rects);
-    for(auto i = 0;i<8;++i)
+    bool clameped = clampRatio();
+    for(int i=0;i<8;++i)
     {
         if(rects[i].contains(mousePos.toPoint()))
         {
             return StretchDirection(i);
         }
+        i += clameped;
     }
     return Invalid;
 }
@@ -514,6 +573,8 @@ QPointF BbItemImage::stretchOffset(const QPointF &mousePos)
     QPointF offset;
     QRectF rects[8];
     makeStretchControlDot(rects);
+
+    bool clameped = clampRatio();
     for(auto i = 0;i<8;++i)
     {
         if(rects[i].contains(mousePos))
@@ -547,6 +608,7 @@ QPointF BbItemImage::stretchOffset(const QPointF &mousePos)
             }
             break;
         }
+        i += clameped;
     }
     return offset;
 }

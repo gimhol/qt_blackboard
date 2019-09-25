@@ -25,10 +25,12 @@ protected:
     qreal _prevY; // 上一个Y坐标
     qreal _prevW; // 上一个宽度
     qreal _prevH; // 上一个高度
-    qreal _controlDotSize = 5;
+    qreal _controlDotSize = 10;
     bool _clampRatio = false; // 原比例缩放
     QPointF _mousePos; // 记录鼠标位置。
     bool _mouseDown = false;
+    qreal _progress = 100;
+    QString _text;
 public:
     BbItemImage();
 
@@ -66,7 +68,13 @@ public:
     qreal minWidth();
     qreal minHeight();
     void setClampRatio(bool clampRatio);
-
+    void setProgress(qreal progress);
+    void setText(QString text);
+    QString url();
+    QString path();
+    void setUrl(QString url);
+    void setPath(QString path);
+    bool clampRatio();
 protected:
     void makeStretchControlDot(QRectF *rects);
     StretchDirection stretchDirection(const QPointF &mousePos);

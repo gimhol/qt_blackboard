@@ -14,6 +14,8 @@
 #include "BbItemTextData.h"
 #include "BbItemTriangle.h"
 #include "BbItemTriangleData.h"
+#include "BbItemImage.h"
+#include "BbItemImageData.h"
 
 class NSB_BLACKBOARD_EXPORT BbHelper
 {

@@ -3,7 +3,7 @@ DEFINES += NSB_BLACKBOARD_DEV
 #DEFINES += NSB_BLACKBOARD_PEN_SAVE_TO_PIXMAP_WHEN_DONE
 #DEFINES += NSB_BLACKBOARD_PEN_SMOOTHING_UNIT 15 # 开启线条圆滑后，圆滑曲线中每一小段直线的长度
 #DEFINES += BLACKBOARD_ITEM_INDEX_SIGNAL
-QT += core gui
+QT += core gui network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 include(blackboard.pri)
 include(dev/dev.pri)

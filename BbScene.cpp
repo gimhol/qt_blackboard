@@ -856,6 +856,55 @@ BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height, cons
     return item;
 }
 
+BbItemImage *BbScene::addImageItemWithPath(const QString &path)
+{
+    QPixmap pixmap(path);
+    auto item = new BbItemImage();
+    add(item);
+    auto data = dynamic_cast<BbItemImageData*>(item->data());
+    data->path = path;
+    item->resize(pixmap.width(),pixmap.height());
+    item->updatePrevSize();
+    item->updatePrevPosition();
+    item->setZ(QDateTime::currentMSecsSinceEpoch());
+    item->setId(generatItemId());
+    item->setPixmap(pixmap);
+    emit blackboard()->itemChanged(BBIET_imageAdded,item);
+    return item;
+}
+
+BbItemImage *BbScene::addImageItemWithPath(const qreal &width, const qreal &height, const QString &path)
+{
+    QPixmap pixmap(path);
+    auto item = new BbItemImage();
+    add(item);
+    auto data = dynamic_cast<BbItemImageData*>(item->data());
+    data->path = path;
+    item->resize(width,height);
+    item->updatePrevSize();
+    item->updatePrevPosition();
+    item->setZ(QDateTime::currentMSecsSinceEpoch());
+    item->setId(generatItemId());
+    item->setPixmap(pixmap);
+    emit blackboard()->itemChanged(BBIET_imageAdded,item);
+    return item;
+}
+
+BbItemImage *BbScene::addImageItemWithUrl(const qreal &width, const qreal &height, const QString &url)
+{
+    auto item = new BbItemImage();
+    add(item);
+    auto data = dynamic_cast<BbItemImageData*>(item->data());
+    data->url = url;
+    item->resize(width,height);
+    item->updatePrevSize();
+    item->updatePrevPosition();
+    item->setZ(QDateTime::currentMSecsSinceEpoch());
+    item->setId(generatItemId());
+    emit blackboard()->itemChanged(BBIET_imageAdded,item);
+    return item;
+}
+
 IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)
 {
     static int time = 0;

@@ -7,6 +7,12 @@
 class NSB_BLACKBOARD_EXPORT BbItemImageData : public BbItemData
 {
 public:
+    static const bool &isRatioLocked();
+
+    static void setRatioLocked(const bool &value);
+    static void unlockRatio();
+    static void lockRatio();
+
     qreal width = 0;
 
     qreal height = 0;
@@ -14,6 +20,10 @@ public:
     qreal prevWidth = 0;
 
     qreal prevHeight = 0;
+
+    QString path; // 本地目录
+
+    QString url; // 图片地址
 
     QPixmap pixmap;
 
