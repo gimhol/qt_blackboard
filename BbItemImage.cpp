@@ -153,6 +153,14 @@ void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
     }
 }
 
+void BbItemImage::added()
+{
+    if(!_myData->url.isEmpty())
+    {
+        emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
+    }
+}
+
 qreal BbItemImage::z()
 {
     return zValue();
@@ -375,6 +383,7 @@ void BbItemImage::begin(const QPointF &point)
 
 bool BbItemImage::draw(const QPointF &pos)
 {
+    auto esp = 0.000001;
     auto point = pos - _stretchOffset;
     auto x = this->x();
     auto y = this->y();
@@ -385,7 +394,7 @@ bool BbItemImage::draw(const QPointF &pos)
     _prevW = w;
     _prevH = h;
 
-    auto ratio = 1.0;
+    auto ratio = abs(h) < esp ? 1 : w/h;
     if(!_myData->pixmap.isNull())
     {
         ratio = 1.0 * _myData->pixmap.width() / _myData->pixmap.height();
@@ -474,7 +483,6 @@ bool BbItemImage::draw(const QPointF &pos)
     {
         h = minHeight();
     }
-    auto esp = 0.00001;
     auto changed =
             abs(_lastX-x) > esp ||
             abs(_lastY-y) > esp ||

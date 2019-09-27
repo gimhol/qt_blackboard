@@ -118,7 +118,7 @@ public:
      * @brief readItemData 读取一个item的数据，画到黑板上
      * @param itemData  item数据
      */
-    void readItemData(BbItemData *itemData);
+    IItemIndex *readItemData(BbItemData *itemData);
 
     void onToolChanged(BbToolType previous);
     BbToolType toolType();

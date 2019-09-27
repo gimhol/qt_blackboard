@@ -375,9 +375,9 @@ void Blackboard::clearItems()
     scene()->clearItems();
 }
 
-void Blackboard::readItemData(BbItemData *itemData)
+IItemIndex *Blackboard::readItemData(BbItemData *itemData)
 {
-    scene()->readItemData(itemData);
+    return scene()->readItemData(itemData);
 }
 
 void Blackboard::onToolChanged(BbToolType previous)

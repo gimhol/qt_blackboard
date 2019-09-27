@@ -90,7 +90,7 @@ public:
 
     bool isPrivateItem(QGraphicsItem *item);
 
-    void readItemData(BbItemData *itemData);
+    IItemIndex *readItemData(BbItemData *itemData);
 
     bool isMouseLeftButtonDown();
 
@@ -105,7 +105,6 @@ public:
     BbItemImage *addImageItemWithPath(const qreal &width,const qreal &height,const QString &path);
 
     BbItemImage *addImageItemWithUrl(const qreal &width,const qreal &height,const QString &url);
-
 
     IItemIndex *copyItemFromStream(QDataStream &stream);
 

@@ -30,6 +30,8 @@ enum BBItemEventType
     BBIET_imageAdded,
     BBIET_imageResizing, // 八方向拉伸
     BBIET_imageResized, // 八方向拉伸
+    BBIET_imageHasUrl, // 图片有url。
+
     // TODO
     BBIET_straightChanged, // TODO: 支持对直线进行编辑，允许拖动两个顶点允许的任意一个
     BBIET_rectResizing, // TODO: 支持对矩形进行编辑，支持八方向拉伸

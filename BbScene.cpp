@@ -773,7 +773,7 @@ bool BbScene::isPrivateItem(QGraphicsItem *item)
     return item == _pickerRect || item == _backgroundItem;
 }
 
-void BbScene::readItemData(BbItemData *itemData)
+IItemIndex *BbScene::readItemData(BbItemData *itemData)
 {
     auto item = BbHelper::createItem(itemData);
     if(item)
@@ -781,6 +781,7 @@ void BbScene::readItemData(BbItemData *itemData)
         add(item);
         item->repaint();
     }
+    return item;
 }
 
 void BbScene::setItemIdGenerator(ItemIDGenerator itemIdGenerator)

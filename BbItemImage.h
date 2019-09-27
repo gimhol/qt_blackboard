@@ -60,7 +60,7 @@ public:
     bool clicked(const QPointF &pos) override;
     bool doubleClicked(const QPointF &pos) override;
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
-    void added() override {}
+    void added() override;
     void removed() override {}
     qreal z() override;
     void setZ(const qreal &value) override;
