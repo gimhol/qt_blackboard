@@ -1,6 +1,6 @@
 ﻿#include "BbItemImageData.h"
 
-static bool ratioLocked = true;
+static bool ratioLocked = false;
 
 const bool &BbItemImageData::isRatioLocked()
 {

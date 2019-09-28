@@ -10,7 +10,6 @@
 
 BbItemStraight::BbItemStraight():
     QGraphicsRectItem(),
-    IItemIndex (nullptr),
     _myData(new BbItemStraightData())
 {
     init();
@@ -18,7 +17,6 @@ BbItemStraight::BbItemStraight():
 
 BbItemStraight::BbItemStraight(BbItemData *data):
     QGraphicsRectItem(),
-    IItemIndex (data),
     _myData(dynamic_cast<BbItemStraightData*>(data))
 {
     init();
@@ -97,7 +95,7 @@ void BbItemStraight::setZ(const qreal &value)
     _myData->z = value;
 }
 
-void BbItemStraight::toAbsoluteCoords()
+void BbItemStraight::absolutize()
 {
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {
@@ -308,7 +306,7 @@ void BbItemStraight::writeStream(QDataStream &stream)
 void BbItemStraight::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    toAbsoluteCoords();
+    absolutize();
     repaint();
 }
 

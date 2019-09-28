@@ -89,7 +89,7 @@ public:
     void setPos(const QPointF &pos);
     void setPos(qreal x,qreal y);
     QPointF pos();
-    void toAbsoluteCoords() override;
+    void absolutize() override;
 };
 
 

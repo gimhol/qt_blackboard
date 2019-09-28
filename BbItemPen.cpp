@@ -23,25 +23,23 @@ float penSqrt(float number)
 
 BbItemPen::BbItemPen():
     QGraphicsRectItem(),
-    IItemIndex(nullptr),
-    _myData(new BbItemPenData())
+    _data(new BbItemPenData())
 {
     init();
 }
 
 BbItemPen::BbItemPen(BbItemData *data):
     QGraphicsRectItem(),
-    IItemIndex(data),
-    _myData(dynamic_cast<BbItemPenData *>(data))
+    _data(dynamic_cast<BbItemPenData *>(data))
 {
     init();
 }
 
 void BbItemPen::init()
 {
-    if(!_myData)
+    if(!_data)
     {
-        _myData = new BbItemPenData();
+        _data = new BbItemPenData();
     }
 #ifdef LINE_SMOOTHING
     _distances[0] = -1;
@@ -53,9 +51,9 @@ void BbItemPen::init()
 }
 BbItemPen::~BbItemPen()
 {
-    if(_myData){
-        delete _myData;
-        _myData = nullptr;
+    if(_data){
+        delete _data;
+        _data = nullptr;
     }
 
     if(_path){
@@ -73,7 +71,7 @@ BbItemPen::~BbItemPen()
 
 QList<QPointF> *BbItemPen::changed(){ return &_changed ;}
 
-bool BbItemPen::isEmpty() { return _myData->empty; }
+bool BbItemPen::isEmpty() { return _data->empty; }
 
 void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
 
@@ -81,16 +79,16 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
     if(_path != nullptr)
     {
-        if(_myData->coords.length() == 2)
+        if(_data->coords.length() == 2)
         {
-            qreal halfPenW = 0.5 * _myData->pen.widthF();
-            painter->drawEllipse(_myData->coords[0] - halfPenW,
-                                 _myData->coords[1] - halfPenW,
+            qreal halfPenW = 0.5 * _data->pen.widthF();
+            painter->drawEllipse(_data->coords[0] - halfPenW,
+                                 _data->coords[1] - halfPenW,
                                  2*halfPenW,
                                  2*halfPenW);
         }
 
-        painter->setPen(_myData->pen);
+        painter->setPen(_data->pen);
         painter->setBrush(Qt::NoBrush);
         if(_path->length() < 2000)
         {
@@ -115,7 +113,7 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 void BbItemPen::penDown(const QPointF &point){
     _editing = true;
     setPos(point);
-    _myData->empty = false;
+    _data->empty = false;
     if(_path == nullptr)
     {
         _path = new QPainterPath();
@@ -128,8 +126,8 @@ void BbItemPen::penDown(const QPointF &point){
         _straightLineFrom = QPointF(0,0);
     }
     update();
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
 }
 
 void BbItemPen::penDraw(const QPointF &point)
@@ -162,8 +160,8 @@ void BbItemPen::penStraighting(const QPointF &point)
 void BbItemPen::done()
 {
     _editing = false;
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
 #ifdef SAVE_TO_PIXMAP_WHEN_DONE
 
     do{
@@ -215,32 +213,32 @@ void BbItemPen::done()
 }
 
 QColor BbItemPen::color(){
-    return _myData->pen.color();
+    return _data->pen.color();
 }
 
 void BbItemPen::setColor(const QColor &color)
 {
-    _myData->pen.setColor(color);
+    _data->pen.setColor(color);
 }
 
 qreal BbItemPen::penWidth()
 {
-    return _myData->pen.widthF();
+    return _data->pen.widthF();
 }
 
 qreal BbItemPen::weight()
 {
-    return (_myData->pen.widthF() - BbItemPenData::getMinWidth())  / (BbItemPenData::getMaxWidth() - BbItemPenData::getMinWidth());
+    return (_data->pen.widthF() - BbItemPenData::getMinWidth())  / (BbItemPenData::getMaxWidth() - BbItemPenData::getMinWidth());
 }
 
 void BbItemPen::setPenWidth(qreal width)
 {
-    _myData->pen.setWidthF(width);
+    _data->pen.setWidthF(width);
 }
 
 void BbItemPen::setWeight(qreal weight)
 {
-    _myData->setWeight(weight);
+    _data->setWeight(weight);
 }
 
 void BbItemPen::straightLineDragging(const QPointF &point)
@@ -252,7 +250,7 @@ void BbItemPen::straightLineDragging(const QPointF &point)
         _straightLineFrom = _mousePos - pos();
     }
 
-    qreal halfPenW = 0.5 * _myData->pen.widthF();
+    qreal halfPenW = 0.5 * _data->pen.widthF();
     qreal oldLeft = pos().x();
     qreal oldTop = pos().y();
     qreal newLeft = std::min(point.x(), oldLeft);
@@ -277,8 +275,8 @@ void BbItemPen::straightLineDragging(const QPointF &point)
     _rect.setHeight(h + 2 * halfPenW);
 
     update();
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
 }
 
 void BbItemPen::addPointToPath(const QPointF &point)
@@ -288,9 +286,9 @@ void BbItemPen::addPointToPath(const QPointF &point)
         return;
     }
     _changed.append(point);
-    _myData->coords.append(point.x());
-    _myData->coords.append(point.y());
-    qreal halfPenW = 0.5 * _myData->pen.widthF();
+    _data->coords.append(point.x());
+    _data->coords.append(point.y());
+    qreal halfPenW = 0.5 * _data->pen.widthF();
     qreal oldLeft = pos().x();
     qreal oldTop = pos().y();
     qreal newLeft = std::min(point.x(), oldLeft);
@@ -306,8 +304,8 @@ void BbItemPen::addPointToPath(const QPointF &point)
     _rect.setY(_rect.y()-halfPenW);
     _rect.setWidth(_rect.width()+halfPenW);
     _rect.setHeight(_rect.height()+halfPenW);
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
 }
 
 #ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
@@ -386,11 +384,11 @@ void BbItemPen::repaint()
         delete _path;
     }
     _path = new QPainterPath();
-    qreal halfPenW = 0.5 * _myData->pen.widthF();
-    for(int i = 0; i < _myData->coords.length(); i+=2)
+    qreal halfPenW = 0.5 * _data->pen.widthF();
+    for(int i = 0; i < _data->coords.length(); i+=2)
     {
-        qreal x = _myData->coords[i];
-        qreal y = _myData->coords[i+1];
+        qreal x = _data->coords[i];
+        qreal y = _data->coords[i+1];
         QPointF point(x,y);
         if(i==0)
         {
@@ -410,14 +408,14 @@ void BbItemPen::repaint()
     _rect.setWidth(_rect.width()+halfPenW);
     _rect.setHeight(_rect.height()+halfPenW);
     setRect(_rect);
-    if(_myData->isPositionValid())
+    if(_data->isPositionValid())
     {
-        _myData->updatePrevPostion();
-        qreal x = _myData->x;
-        qreal y = _myData->y;
+        _data->updatePrevPostion();
+        qreal x = _data->x;
+        qreal y = _data->y;
         setPos(x,y);
     }
-    setZValue(_myData->z);
+    setZValue(_data->z);
     update();
 }
 
@@ -455,31 +453,31 @@ QPointF BbItemPen::straightTo()
 
 void BbItemPen::writeStream(QDataStream &stream)
 {
-    _myData->updatePostion(this);
-    _myData->z = zValue();
-    _myData->writeStream(stream);
+    _data->updatePostion(this);
+    _data->z = zValue();
+    _data->writeStream(stream);
 }
 
 void BbItemPen::readStream(QDataStream &stream)
 {
-    _myData->readStream(stream);
-    toAbsoluteCoords();
+    _data->readStream(stream);
+    absolutize();
     repaint();
 }
 
 QString BbItemPen::id() const
 {
-    return _myData->lid;
+    return _data->lid;
 }
 
 void BbItemPen::setId(const QString &id)
 {
-    _myData->lid = id;
+    _data->lid = id;
 }
 
 BbToolType BbItemPen::toolType() const
 {
-    return _myData->tooltype;
+    return _data->tooltype;
 }
 
 BbScene *BbItemPen::scene()
@@ -489,7 +487,7 @@ BbScene *BbItemPen::scene()
 
 BbItemData *BbItemPen::data()
 {
-    return _myData;
+    return _data;
 }
 
 Blackboard *BbItemPen::blackboard()
@@ -561,28 +559,28 @@ qreal BbItemPen::z()
 void BbItemPen::setZ(const qreal &value)
 {
     setZValue(value);
-    _myData->z = value;
+    _data->z = value;
 }
 
-void BbItemPen::toAbsoluteCoords()
+void BbItemPen::absolutize()
 {
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    if(_data->mode == BbItemData::CM_PERCENTAGE)
     {
-        _myData->mode = BbItemData::CM_ABSOLUTE;
+        _data->mode = BbItemData::CM_ABSOLUTE;
         qreal ratio = scene()->width() / 100;
-        if(_myData->isPositionValid())
+        if(_data->isPositionValid())
         {
-            _myData->x *= ratio;
-            _myData->y *= ratio;
+            _data->x *= ratio;
+            _data->y *= ratio;
         }
-        if(_myData->isPrevPositionValid())
+        if(_data->isPrevPositionValid())
         {
-            _myData->prevX *= ratio;
-            _myData->prevY *= ratio;
+            _data->prevX *= ratio;
+            _data->prevY *= ratio;
         }
-        for(int i=0;i<_myData->coords.length();++i)
+        for(int i=0;i<_data->coords.length();++i)
         {
-            _myData->coords[i] = _myData->coords[i] * ratio;
+            _data->coords[i] = _data->coords[i] * ratio;
         }
     }
 }

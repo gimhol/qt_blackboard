@@ -10,7 +10,6 @@
 
 BbItemTriangle::BbItemTriangle():
     QGraphicsRectItem(),
-    IItemIndex (nullptr),
     _myData(new BbItemTriangleData)
 {
     init();
@@ -18,7 +17,6 @@ BbItemTriangle::BbItemTriangle():
 
 BbItemTriangle::BbItemTriangle(BbItemData *data):
     QGraphicsRectItem(),
-    IItemIndex (data),
     _myData(dynamic_cast<BbItemTriangleData*>(data))
 {
     init();
@@ -97,7 +95,7 @@ void BbItemTriangle::setZ(const qreal &value)
     setZValue(value);
 }
 
-void BbItemTriangle::toAbsoluteCoords()
+void BbItemTriangle::absolutize()
 {
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {
@@ -311,7 +309,7 @@ void BbItemTriangle::writeStream(QDataStream &stream)
 void BbItemTriangle::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    toAbsoluteCoords();
+    absolutize();
     repaint();
 }
 

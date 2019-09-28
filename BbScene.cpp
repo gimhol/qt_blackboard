@@ -738,7 +738,7 @@ void BbScene::add(IItemIndex *index)
             item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,_toolType == BBTT_Picker);
             item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,_toolType == BBTT_Picker);
             QGraphicsScene::addItem(item);
-            index->toAbsoluteCoords();
+            index->absolutize();
         }
         else
         {
@@ -821,7 +821,6 @@ BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height)
     auto item = new BbItemImage();
     add(item);
     item->resize(width,height);
-    item->updatePrevSize();
     item->updatePrevPosition();
     item->setZ(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());
@@ -834,7 +833,6 @@ BbItemImage *BbScene::addImageItem(const QPixmap &pixmap)
     auto item = new BbItemImage();
     add(item);
     item->resize(pixmap.width(),pixmap.height());
-    item->updatePrevSize();
     item->updatePrevPosition();
     item->setZ(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());
@@ -848,7 +846,6 @@ BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height, cons
     auto item = new BbItemImage();
     add(item);
     item->resize(width,height);
-    item->updatePrevSize();
     item->updatePrevPosition();
     item->setZ(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());
@@ -865,7 +862,6 @@ BbItemImage *BbScene::addImageItemWithPath(const QString &path)
     auto data = dynamic_cast<BbItemImageData*>(item->data());
     data->path = path;
     item->resize(pixmap.width(),pixmap.height());
-    item->updatePrevSize();
     item->updatePrevPosition();
     item->setZ(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());
@@ -882,7 +878,6 @@ BbItemImage *BbScene::addImageItemWithPath(const qreal &width, const qreal &heig
     auto data = dynamic_cast<BbItemImageData*>(item->data());
     data->path = path;
     item->resize(width,height);
-    item->updatePrevSize();
     item->updatePrevPosition();
     item->setZ(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());
@@ -898,7 +893,7 @@ BbItemImage *BbScene::addImageItemWithUrl(const qreal &width, const qreal &heigh
     auto data = dynamic_cast<BbItemImageData*>(item->data());
     data->url = url;
     item->resize(width,height);
-    item->updatePrevSize();
+
     item->updatePrevPosition();
     item->setZ(QDateTime::currentMSecsSinceEpoch());
     item->setId(generatItemId());

@@ -6,47 +6,406 @@
 #include <QDebug>
 #include <QStaticText>
 
+static auto esp = 0.000001;
+static bool equal(const qreal &a,const qreal &b)
+{
+    return abs(a-b) < esp;
+}
+
 BbItemImage::BbItemImage():
     QGraphicsRectItem(),
-    IItemIndex (nullptr),
-    _myData(new BbItemImageData())
-{
-    init();
-}
+    _data(new BbItemImageData()){}
 
 BbItemImage::BbItemImage(BbItemData *data):
     QGraphicsRectItem(),
-    IItemIndex (data),
-    _myData(dynamic_cast<BbItemImageData*>(data))
+    _data(dynamic_cast<BbItemImageData*>(data))
 {
-    init();
+    if(!_data)
+    {
+        new BbItemImageData();
+    }
 }
 
 BbItemImage::~BbItemImage()
 {
-    if(_myData)
+    if(_data)
     {
-        delete _myData;
-        _myData = nullptr;
+        delete _data;
+        _data = nullptr;
     }
 }
 
-void BbItemImage::init()
+qreal BbItemImage::minWidth()
 {
-    if(!_myData)
+    if(_data->height > 0 && _data->height > _data->width && ratioLock())
     {
-        _myData = new BbItemImageData();
+        return 3 * _dotSize * _data->width / _data->height;
     }
-    if(!_myData->pixmap.isNull())
+    return 3 * _dotSize;
+}
+
+qreal BbItemImage::minHeight()
+{
+    if(_data->width > 0 && _data->width > _data->height && ratioLock())
     {
-        setPixmap(_myData->pixmap);
+        return 3 * _dotSize * _data->height / _data->width;
+    }
+    return 3 * _dotSize;
+}
+
+bool BbItemImage::ratioLock()
+{
+    return _ratioLock || BbItemImageData::isRatioLocked();
+}
+
+void BbItemImage::setRatioLock(bool ratioLock)
+{
+    if(_ratioLock == ratioLock)
+    {
+        return;
+    }
+    _ratioLock = ratioLock;
+    if(_mouseDown)
+    {
+        draw(_mousePos);
     }
 }
 
 void BbItemImage::setPixmap(const QPixmap &pixmap)
 {
-    _myData->pixmap = pixmap;
+    _data->pixmap = pixmap;
     update();
+}
+
+void BbItemImage::setProgress(qreal progress)
+{
+    if(abs(_progress - progress) < 0.00001)
+    {
+        _progress = progress;
+        update();
+    }
+}
+
+void BbItemImage::setText(QString text)
+{
+    if(_text != text)
+    {
+        _text = text;
+        update();
+    }
+}
+
+QString BbItemImage::url()
+{
+    return _data->url;
+}
+
+QString BbItemImage::path()
+{
+    return _data->path;
+}
+
+void BbItemImage::setUrl(QString url)
+{
+    _data->url = url;
+}
+
+void BbItemImage::setPath(QString path)
+{
+    _data->path = path;
+}
+
+BbItemImage::Direction BbItemImage::stretchDirection(const QPointF &mousePos)
+{
+    QRectF rects[8];
+    updateDots(rects);
+    for(int i=0;i<8;++i)
+    {
+        if(rects[i].contains(mousePos.toPoint()))
+        {
+            return Direction(i);
+        }
+    }
+    return Invalid;
+}
+
+QPointF BbItemImage::stretchOffset(const QPointF &mousePos)
+{
+    QPointF offset;
+    QRectF rects[8];
+    updateDots(rects);
+
+    for(auto i = 0;i<8;++i)
+    {
+        if(rects[i].contains(mousePos))
+        {
+            auto handleN = [&]()
+            {
+                offset.setY(mousePos.y() - rects[i].top());
+            };
+            auto handleS = [&]()
+            {
+                offset.setY(mousePos.y() - rects[i].bottom());
+            };
+            auto handleW = [&]()
+            {
+                offset.setX(mousePos.x() - rects[i].left());
+            };
+            auto handleE = [&]()
+            {
+                offset.setX(mousePos.x() - rects[i].right());
+            };
+            switch(Direction(i)){
+                case N: handleN(); break;
+                case S: handleS(); break;
+                case W: handleW(); break;
+                case E: handleE(); break;
+                case NE: handleN(); handleE();break;
+                case SE: handleS(); handleE();break;
+                case NW: handleN(); handleW();break;
+                case SW: handleS(); handleW();break;
+                default:break;
+            }
+            break;
+        }
+    }
+    return offset;
+}
+
+void BbItemImage::updateDots(QRectF *rects)
+{
+    auto w = _dotSize;
+    auto h = _dotSize;
+    auto l = (x());
+    auto t = (y());
+    auto r = l+(this->rect().right()-w);
+    auto b = t+(this->rect().bottom()-h);
+    auto x = l+(this->rect().right()-w)/2;
+    auto y = t+(this->rect().bottom()-h)/2;
+    rects [0] = QRectF(l,t,w,h);
+    rects [1] = QRectF(l,y,w,h);
+    rects [2] = QRectF(l,b,w,h);
+    rects [3] = QRectF(x,b,w,h);
+    rects [4] = QRectF(r,b,w,h);
+    rects [5] = QRectF(r,y,w,h);
+    rects [6] = QRectF(r,t,w,h);
+    rects [7] = QRectF(x,t,w,h);
+}
+
+void BbItemImage::updateCursor(const QPointF &mousePos)
+{
+    updateCursor(stretchDirection(mousePos));
+}
+
+void BbItemImage::updateCursor(Direction direction)
+{
+    if(W == direction || E == direction)
+    {
+        blackboard()->setCursor(Qt::SizeHorCursor);
+    }
+    else if(N == direction || S == direction)
+    {
+        blackboard()->setCursor(Qt::SizeVerCursor);
+    }
+    else if(NW == direction || SE == direction)
+    {
+        blackboard()->setCursor(Qt::SizeFDiagCursor);
+    }
+    else if(NE == direction || SW == direction)
+    {
+        blackboard()->setCursor(Qt::SizeBDiagCursor);
+    }
+    else
+    {
+        blackboard()->revertToolCursor();
+    }
+}
+
+void BbItemImage::resize(qreal width, qreal height)
+{
+    if(width < minWidth())
+    {
+        width = minWidth();
+    }
+    if(height < minHeight())
+    {
+        height = minHeight();
+    }
+    _data->width = width;
+    _data->height = height;
+    setRect(0,0,width,height);
+}
+
+void BbItemImage::updatePrevSize()
+{
+    _data->updatePrevSize();
+}
+
+void BbItemImage::begin(const QPointF &point)
+{
+    Q_UNUSED(point)
+    _lastX = int(this->x());
+    _lastY = int(this->y());
+    _lastW = int(this->rect().width());
+    _lastH = int(this->rect().height());
+}
+
+bool BbItemImage::draw(const QPointF &mousePos)
+{
+    auto x = this->x();
+    auto y = this->y();
+    auto width = this->rect().width();
+    auto height = this->rect().height();
+
+    auto right = x + width;     // 图片下侧X坐标
+    auto bottom = y + height;    // 图片右侧Y坐标
+    auto centerX = x + width/2; // 图片中心X坐标
+    auto centerY = y + height/2; // 图片中心Y坐标
+
+    auto ratio = equal(0,_data->height)?1:(_data->width/_data->height);
+    if(!_data->pixmap.isNull())
+    {
+        ratio = 1.0 * _data->pixmap.width() / _data->pixmap.height();
+    }
+
+    auto point = mousePos - _stretchOffset;
+    auto clampWidthFromMiddle = [&]()
+    {
+        if(ratioLock())
+        {
+            width = height * ratio;
+            x = centerX - width / 2;
+        }
+    };
+    auto clampHeightFromMiddle = [&]()
+    {
+        if( ratioLock() )
+        {
+            height = width / ratio;
+            y = centerY - height / 2;
+        }
+    };
+    auto stretchN = [&]()
+    {
+        if(bottom - point.y() < minHeight())
+        {
+            height = minHeight();
+            y = bottom - height;
+        }
+        else
+        {
+            y = point.y();
+            height = bottom - y;
+        }
+    };
+    auto stretchS = [&]()
+    {
+        height = std::max(point.y()-y, minHeight());
+    };
+    auto stretchW = [&]()
+    {
+        if(right - point.x() < minWidth())
+        {
+            width = minWidth();
+            x = right - width;
+        }
+        else
+        {
+            x = point.x();
+            width = right - x;
+        }
+    };
+    auto stretchE = [&]()
+    {
+        width = std::max(point.x()-x, minWidth());
+    };
+    auto clampSize = [&]()
+    {
+        if(width/height > ratio)
+        {
+            height = width / ratio;
+        }
+        else
+        {
+            width = height * ratio;
+        }
+    };
+    auto clampFromTopLeft = [&]()
+    {
+        if(ratioLock())
+        {
+            clampSize();
+        }
+    };
+    auto clampFromTopRight = [&]()
+    {
+        if(ratioLock())
+        {
+            clampSize();
+            x = right - width;
+        }
+    };
+    auto clampFromBottomLeft = [&]()
+    {
+        if(ratioLock())
+        {
+            clampSize();
+            y = bottom - height;
+        }
+    };
+    auto clampFromBottomRight = [&]()
+    {
+        if(ratioLock())
+        {
+            clampSize();
+            y = bottom - height;
+            x = right - width;
+        }
+    };
+    switch(_direction)
+    {
+    case N: {stretchN(); clampWidthFromMiddle(); break;}
+    case S: {stretchS(); clampWidthFromMiddle(); break;}
+    case W: {stretchW(); clampHeightFromMiddle(); break;}
+    case E: {stretchE(); clampHeightFromMiddle(); break;}
+    case NE:{stretchN(); stretchE(); clampFromBottomLeft(); break;}
+    case SE:{stretchS(); stretchE(); clampFromTopLeft(); break;}
+    case SW:{stretchW(); stretchS(); clampFromTopRight(); break;}
+    case NW:{stretchW(); stretchN(); clampFromBottomRight(); break;}
+    default:{break;}
+    }
+
+    auto changed =
+            !equal(_lastX,x) || !equal(_lastY,y) ||
+            !equal(_lastW,width) || !equal(_lastH,height);
+
+    if(changed)
+    {
+        setPos(x,y);
+        resize(width,height);
+        _data->updatePostion(this);
+    }
+    return changed;
+}
+
+bool BbItemImage::done()
+{
+    auto x = (this->x());
+    auto y = (this->y());
+    auto w = (this->rect().width());
+    auto h = (this->rect().height());
+    auto changed =
+            !equal(_lastX,x) ||
+            !equal(_lastY,y) ||
+            !equal(_lastW,w) ||
+            !equal(_lastH,h);
+    _lastX = x;
+    _lastY = y;
+    _lastW = w;
+    _lastH = h;
+    _data->width = w;
+    _data->height = h;
+    return changed;
 }
 
 Blackboard *BbItemImage::blackboard()
@@ -61,8 +420,8 @@ bool BbItemImage::mouseDown(const QPointF &pos)
         _mouseDown = true;
         _mousePos = pos;
         updateCursor(pos);
-        _stretchDirection = stretchDirection(pos);
-        _stretching = _stretchDirection != Invalid;
+        _direction = stretchDirection(pos);
+        _stretching = _direction != Invalid;
         if(_stretching)
         {
             _stretchOffset = stretchOffset(pos);
@@ -88,8 +447,8 @@ bool BbItemImage::mouseMove(const QPointF &pos)
             if(draw(_mousePos))
             {
                 emit blackboard()->itemChanged(BBIET_imageResizing,this);
-                _myData->prevWidth = _myData->width;
-                _myData->prevHeight = _myData->height;
+                _data->prevWidth = _data->width;
+                _data->prevHeight = _data->height;
             }
             return true;
         }
@@ -116,20 +475,21 @@ bool BbItemImage::mouseRelease(const QPointF &pos)
             if(done())
             {
                 emit blackboard()->itemChanged(BBIET_imageResized,this);
-                _myData->updatePrevPostion();
-                _myData->updatePrevSize();
+                _data->updatePrevPostion();
+                _data->updatePrevSize();
             }
         }
         _stretching = false;
         _mouseDown = false;
         return ret;
     }
+    return false;
 }
 
 bool BbItemImage::clicked(const QPointF &pos)
 {
     Q_UNUSED(pos)
-    if(_myData->editable)
+    if(_data->editable)
     {
         scene()->setEditingItem(this);
         return mouseDown(pos);
@@ -137,25 +497,19 @@ bool BbItemImage::clicked(const QPointF &pos)
     return false;
 }
 
-bool BbItemImage::doubleClicked(const QPointF &pos)
-{
-    Q_UNUSED(pos)
-    return false;
-}
-
 void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
     Q_UNUSED(modifiers)
-    if(_clampRatio != (modifiers == Qt::ShiftModifier))
+    if(_ratioLock != (modifiers == Qt::ShiftModifier))
     {
-        setClampRatio(modifiers == Qt::ShiftModifier);
+        setRatioLock(modifiers == Qt::ShiftModifier);
         emit blackboard()->itemChanged(BBIET_imageResizing,this);
     }
 }
 
 void BbItemImage::added()
 {
-    if(!_myData->url.isEmpty())
+    if(!_data->url.isEmpty())
     {
         emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
     }
@@ -169,94 +523,34 @@ qreal BbItemImage::z()
 void BbItemImage::setZ(const qreal &value)
 {
     setZValue(value);
-    _myData->z = value;
+    _data->z = value;
 }
 
-void BbItemImage::toAbsoluteCoords()
+void BbItemImage::absolutize()
 {
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    if(_data->mode == BbItemData::CM_PERCENTAGE)
     {
-        _myData->mode = BbItemData::CM_ABSOLUTE;
+        _data->mode = BbItemData::CM_ABSOLUTE;
         qreal ratio = scene()->width() / 100;
-        if(_myData->isPositionValid())
+        if(_data->isPositionValid())
         {
-            _myData->x *= ratio;
-            _myData->y *= ratio;
+            _data->x *= ratio;
+            _data->y *= ratio;
         }
-        if(_myData->isPrevPositionValid())
+        if(_data->isPrevPositionValid())
         {
-            _myData->prevX *= ratio;
-            _myData->prevY *= ratio;
+            _data->prevX *= ratio;
+            _data->prevY *= ratio;
         }
-        _myData->width *= ratio;
-        _myData->height *= ratio;
+        _data->width *= ratio;
+        _data->height *= ratio;
+        resize(_data->width,_data->height);
     }
-}
-
-qreal BbItemImage::minWidth()
-{
-    return 3 * _controlDotSize;
-}
-
-qreal BbItemImage::minHeight()
-{
-    return 3 * _controlDotSize;
-}
-#include <QDebug>
-
-void BbItemImage::setClampRatio(bool clampRatio)
-{
-    if(_clampRatio == clampRatio)
-    {
-        return;
-    }
-    _clampRatio = clampRatio;
-    if(_mouseDown)
-    {
-        draw(_mousePos);
-    }
-}
-
-void BbItemImage::setProgress(qreal progress)
-{
-    _progress = progress;
-    update();
-}
-
-void BbItemImage::setText(QString text)
-{
-    _text = text;
-    update();
-}
-
-QString BbItemImage::url()
-{
-    return _myData->url;
-}
-
-QString BbItemImage::path()
-{
-    return _myData->path;
-}
-
-void BbItemImage::setUrl(QString url)
-{
-    _myData->url = url;
-}
-
-void BbItemImage::setPath(QString path)
-{
-    _myData->path = path;
-}
-
-bool BbItemImage::clampRatio()
-{
-    return _clampRatio || BbItemImageData::isRatioLocked();
 }
 
 BbItemData *BbItemImage::data()
 {
-    return _myData;
+    return _data;
 }
 
 void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -264,11 +558,11 @@ void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
     Q_UNUSED(option)
     Q_UNUSED(widget)
     painter->setRenderHint(QPainter::Antialiasing);
-    if(!_myData->pixmap.isNull())
+    if(!_data->pixmap.isNull())
     {
         painter->setRenderHint(QPainter::SmoothPixmapTransform);
         painter->setPen(Qt::NoPen);
-        painter->drawPixmap(rect().toRect(),_myData->pixmap);
+        painter->drawPixmap(rect().toRect(),_data->pixmap);
     }
     else
     {
@@ -309,14 +603,12 @@ void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
             painter->setBrush(QColor(255,255,255));
 
             QRectF rect[8];
-            makeStretchControlDot(rect);
+            updateDots(rect);
 
-            bool clameped = clampRatio();
             for(auto i = 0;i<8;++i)
             {
                 rect[i].translate(-x(),-y());
                 painter->drawRect(rect[i]);
-                i+=clameped;
             }
         }
     }
@@ -324,327 +616,46 @@ void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 
 void BbItemImage::repaint()
 {
-    setRect(QRectF(0,0,_myData->width,_myData->height));
-    setPos(_myData->x,_myData->y);
-    setZValue(_myData->z);
-    setPixmap(_myData->pixmap);
+    setRect(QRectF(0,0,_data->width,_data->height));
+    setPos(_data->x,_data->y);
+    setZValue(_data->z);
+    setPixmap(_data->pixmap);
     update();
 }
 
 void BbItemImage::writeStream(QDataStream &stream)
 {
-    _myData->x = x();
-    _myData->y = y();
-    _myData->width = rect().width();
-    _myData->height = rect().height();
-    _myData->z = zValue();
-    _myData->writeStream(stream);
+    _data->x = x();
+    _data->y = y();
+    _data->width = rect().width();
+    _data->height = rect().height();
+    _data->z = zValue();
+    _data->writeStream(stream);
 }
 
 void BbItemImage::readStream(QDataStream &stream)
 {
-    _myData->readStream(stream);
-    toAbsoluteCoords();
+    _data->readStream(stream);
+    absolutize();
     repaint();
-}
-
-void BbItemImage::resize(qreal width, qreal height)
-{
-    if(width < minWidth())
-    {
-        width = minWidth();
-    }
-    if(height < minHeight())
-    {
-        height = minHeight();
-    }
-    _myData->width = width;
-    _myData->height = height;
-    setRect(0,0,width,height);
-}
-
-void BbItemImage::updatePrevSize()
-{
-    _myData->updatePrevSize();
-}
-
-void BbItemImage::begin(const QPointF &point)
-{
-    Q_UNUSED(point)
-    _lastX = int(this->x());
-    _lastY = int(this->y());
-    _lastW = int(this->rect().width());
-    _lastH = int(this->rect().height());
-    _prevX = _lastX;
-    _prevY = _lastY;
-    _prevW = _lastW;
-    _prevH = _lastH;
-}
-
-bool BbItemImage::draw(const QPointF &pos)
-{
-    auto esp = 0.000001;
-    auto point = pos - _stretchOffset;
-    auto x = this->x();
-    auto y = this->y();
-    auto w = this->rect().width();
-    auto h = this->rect().height();
-    _prevX = x;
-    _prevY = y;
-    _prevW = w;
-    _prevH = h;
-
-    auto ratio = abs(h) < esp ? 1 : w/h;
-    if(!_myData->pixmap.isNull())
-    {
-        ratio = 1.0 * _myData->pixmap.width() / _myData->pixmap.height();
-    }
-    auto clampWidth = [&]()
-    {
-        if(clampRatio())
-        {
-            w = h * ratio;
-        }
-    };
-    auto clampHeight = [&]()
-    {
-        if(clampRatio())
-        {
-            h = w / ratio;
-        }
-    };
-    auto clampHeightNW = [&]()
-    {
-        if(clampRatio())
-        {
-            clampHeight();
-            y = _prevY + _prevH - h;
-        }
-    };
-    auto stretchN = [&]()
-    {
-        auto t = int(point.y());
-        h = int(y + h - t);
-        if(h > minHeight())
-        {
-            y = t;
-        }
-        else
-        {
-            h = minHeight();
-        }
-    };
-    auto stretchS = [&]()
-    {
-        h = int(point.y() - y);
-    };
-    auto stretchW = [&]()
-    {
-        auto l = int(point.x());
-        w = int(x + w - l);
-        if(w > minWidth())
-        {
-            x = l;
-        }
-        else
-        {
-            w = minWidth();
-        }
-    };
-    auto stretchE = [&]()
-    {
-        w = int(point.x() - x);
-    };
-    switch(_stretchDirection){
-        case N: stretchN(); clampWidth(); break;
-        case S: stretchS(); clampWidth(); break;
-        case W: stretchW(); clampHeight(); break;
-        case E: stretchE(); clampHeight(); break;
-        case NE: stretchN(); if(clampRatio()){clampWidth();}else{stretchE();}break;
-        case SE: stretchS(); if(clampRatio()){clampWidth();}else{stretchE();}break;
-        case SW: stretchW(); if(clampRatio()){clampHeight();}else{stretchS();}break;
-        case NW: stretchW(); if(clampRatio()){clampHeightNW();}else{stretchN();}break;
-        default:break;
-    }
-
-    if(x > _lastX + _lastW - minWidth())
-    {
-        x = _lastX + _lastW - minWidth();
-    }
-    if(y > _lastY + _lastH - minHeight())
-    {
-        y = _lastY + _lastH - minHeight();
-    }
-    if(w < minWidth())
-    {
-        w = minWidth();
-    }
-    if(h < minHeight())
-    {
-        h = minHeight();
-    }
-    auto changed =
-            abs(_lastX-x) > esp ||
-            abs(_lastY-y) > esp ||
-            abs(_lastW-w) > esp ||
-            abs(_lastH-h) > esp;
-
-
-    if(changed)
-    {
-        setPos(x,y);
-        resize(w,h);
-        _myData->updatePostion(this);
-    }
-    return changed;
-}
-
-bool BbItemImage::done()
-{
-    auto x = (this->x());
-    auto y = (this->y());
-    auto w = (this->rect().width());
-    auto h = (this->rect().height());
-    auto esp = 0.00001;
-    auto changed =
-            abs(_lastX-x) > esp ||
-            abs(_lastY-y) > esp ||
-            abs(_lastW-w) > esp ||
-            abs(_lastH-h) > esp;
-    _lastX = x;
-    _lastY = y;
-    _lastW = w;
-    _lastH = h;
-    _myData->width = w;
-    _myData->height = h;
-    return changed;
 }
 
 QString BbItemImage::id() const
 {
-    return _myData->lid;
+    return _data->lid;
 }
 
 void BbItemImage::setId(const QString &id)
 {
-    _myData->lid = id;
+    _data->lid = id;
 }
 
 BbToolType BbItemImage::toolType() const
 {
-    return _myData->tooltype;
+    return _data->tooltype;
 }
 
 BbScene *BbItemImage::scene()
 {
     return dynamic_cast<BbScene *>(QGraphicsItem::scene());
-}
-
-void BbItemImage::makeStretchControlDot(QRectF *rects)
-{
-    auto w = _controlDotSize;
-    auto h = _controlDotSize;
-    auto l = (x());
-    auto t = (y());
-    auto r = l+(this->rect().right()-w);
-    auto b = t+(this->rect().bottom()-h);
-    auto x = l+(this->rect().right()-w)/2;
-    auto y = t+(this->rect().bottom()-h)/2;
-    rects [0] = QRectF(l,t,w,h);
-    rects [1] = QRectF(l,y,w,h);
-    rects [2] = QRectF(l,b,w,h);
-    rects [3] = QRectF(x,b,w,h);
-    rects [4] = QRectF(r,b,w,h);
-    rects [5] = QRectF(r,y,w,h);
-    rects [6] = QRectF(r,t,w,h);
-    rects [7] = QRectF(x,t,w,h);
-}
-
-BbItemImage::StretchDirection BbItemImage::stretchDirection(const QPointF &mousePos)
-{
-    QRectF rects[8];
-    makeStretchControlDot(rects);
-    bool clameped = clampRatio();
-    for(int i=0;i<8;++i)
-    {
-        if(rects[i].contains(mousePos.toPoint()))
-        {
-            return StretchDirection(i);
-        }
-        i += clameped;
-    }
-    return Invalid;
-}
-
-QPointF BbItemImage::stretchOffset(const QPointF &mousePos)
-{
-    QPointF offset;
-    QRectF rects[8];
-    makeStretchControlDot(rects);
-
-    bool clameped = clampRatio();
-    for(auto i = 0;i<8;++i)
-    {
-        if(rects[i].contains(mousePos))
-        {
-            auto handleN = [&]()
-            {
-                offset.setY(mousePos.y() - rects[i].top());
-            };
-            auto handleS = [&]()
-            {
-                offset.setY(mousePos.y() - rects[i].bottom());
-            };
-            auto handleW = [&]()
-            {
-                offset.setX(mousePos.x() - rects[i].left());
-            };
-            auto handleE = [&]()
-            {
-                offset.setX(mousePos.x() - rects[i].right());
-            };
-            switch(StretchDirection(i)){
-                case N: handleN(); break;
-                case S: handleS(); break;
-                case W: handleW(); break;
-                case E: handleE(); break;
-                case NE: handleN(); handleE();break;
-                case SE: handleS(); handleE();break;
-                case NW: handleN(); handleW();break;
-                case SW: handleS(); handleW();break;
-                default:break;
-            }
-            break;
-        }
-        i += clameped;
-    }
-    return offset;
-}
-
-void BbItemImage::updateCursor(const QPointF &mousePos)
-{
-    updateCursor(stretchDirection(mousePos));
-}
-void BbItemImage::updateCursor(StretchDirection direction)
-{
-    if(W == direction || E == direction)
-    {
-        blackboard()->setCursor(Qt::SizeHorCursor);
-    }
-    else if(N == direction || S == direction)
-    {
-        blackboard()->setCursor(Qt::SizeVerCursor);
-    }
-    else if(NW == direction || SE == direction)
-    {
-        blackboard()->setCursor(Qt::SizeFDiagCursor);
-    }
-    else if(NE == direction || SW == direction)
-    {
-        blackboard()->setCursor(Qt::SizeBDiagCursor);
-    }
-    else
-    {
-        blackboard()->revertToolCursor();
-    }
 }

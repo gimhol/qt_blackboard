@@ -8,7 +8,6 @@
 
 BbItemRect::BbItemRect():
     QGraphicsRectItem(),
-    IItemIndex(nullptr),
     _myData(new BbItemRectData())
 {
    init();
@@ -16,7 +15,6 @@ BbItemRect::BbItemRect():
 
 BbItemRect::BbItemRect(BbItemData *data):
     QGraphicsRectItem(),
-    IItemIndex(data),
     _myData(dynamic_cast<BbItemRectData*>(data))
 {
     init();
@@ -67,7 +65,7 @@ void BbItemRect::writeStream(QDataStream &stream)
 void BbItemRect::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    toAbsoluteCoords();
+    absolutize();
     repaint();
 }
 
@@ -237,7 +235,7 @@ void BbItemRect::setZ(const qreal &value)
     _myData->z = value;
 }
 
-void BbItemRect::toAbsoluteCoords()
+void BbItemRect::absolutize()
 {
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {

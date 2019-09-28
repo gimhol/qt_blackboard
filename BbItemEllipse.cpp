@@ -8,36 +8,36 @@
 
 BbItemEllipse::BbItemEllipse():
     QGraphicsEllipseItem(),
-    IItemIndex(nullptr),
-    _myData(new BbItemEllipseData())
+    _data(new BbItemEllipseData())
 {
    init();
 }
 
 BbItemEllipse::BbItemEllipse(BbItemData *data):
     QGraphicsEllipseItem(),
-    IItemIndex(data),
-    _myData(dynamic_cast<BbItemEllipseData*>(data))
+    _data(dynamic_cast<BbItemEllipseData*>(data))
 {
     init();
 }
 
 BbItemEllipse::~BbItemEllipse()
 {
-    if(_myData){
-        delete _myData;
-        _myData = nullptr;
+    if(_data)
+    {
+        delete _data;
+        _data = nullptr;
     }
 }
 
 void BbItemEllipse::init()
 {
-    if(!_myData)
+    Q_ASSERT(nullptr != _data);
+    if(!_data)
     {
-        _myData = new BbItemEllipseData();
+        _data = new BbItemEllipseData();
     }
-    setPen(_myData->pen);
-    setBrush(_myData->brush);
+    setPen(_data->pen);
+    setBrush(_data->brush);
 }
 
 void BbItemEllipse::modifiersChanged(Qt::KeyboardModifiers modifiers)
@@ -57,28 +57,28 @@ qreal BbItemEllipse::z()
 void BbItemEllipse::setZ(const qreal &value)
 {
     setZValue(value);
-    _myData->z = value;
+    _data->z = value;
 }
 
-void BbItemEllipse::toAbsoluteCoords()
+void BbItemEllipse::absolutize()
 {
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    if(_data->mode == BbItemData::CM_PERCENTAGE)
     {
-        _myData->mode = BbItemData::CM_ABSOLUTE;
+        _data->mode = BbItemData::CM_ABSOLUTE;
         qreal ratio = scene()->width() / 100;
-        if(_myData->isPositionValid())
+        if(_data->isPositionValid())
         {
-            _myData->x *= ratio;
-            _myData->y *= ratio;
+            _data->x *= ratio;
+            _data->y *= ratio;
         }
-        if(_myData->isPrevPositionValid())
+        if(_data->isPrevPositionValid())
         {
-            _myData->prevX *= ratio;
-            _myData->prevY *= ratio;
+            _data->prevX *= ratio;
+            _data->prevY *= ratio;
         }
-        if(_myData->size.isValid())
+        if(_data->size.isValid())
         {
-            _myData->size *= ratio;
+            _data->size *= ratio;
         }
     }
 }
@@ -90,32 +90,32 @@ bool BbItemEllipse::isEditing()
 
 void BbItemEllipse::repaint()
 {
-    setPen(_myData->pen);
-    setBrush(_myData->brush);
-    qreal x = _myData->x;
-    qreal y = _myData->y;
-    QSizeF size = _myData->size;
+    setPen(_data->pen);
+    setBrush(_data->brush);
+    qreal x = _data->x;
+    qreal y = _data->y;
+    QSizeF size = _data->size;
     setPos(x,y);
     setRect(0,0,size.width(),size.height());
     setSelected(false);
     setEnabled(true);
-    setZValue(_myData->z);
+    setZValue(_data->z);
     update();
 }
 
 void BbItemEllipse::writeStream(QDataStream &stream)
 {
-    _myData->x = x();
-    _myData->y = y();
-    _myData->z = zValue();
-    _myData->size = rect().size();
-    _myData->writeStream(stream);
+    _data->x = x();
+    _data->y = y();
+    _data->z = zValue();
+    _data->size = rect().size();
+    _data->writeStream(stream);
 }
 
 void BbItemEllipse::readStream(QDataStream &stream)
 {
-    _myData->readStream(stream);
-    toAbsoluteCoords();
+    _data->readStream(stream);
+    absolutize();
     repaint();
 }
 
@@ -126,8 +126,8 @@ void BbItemEllipse::begin(const QPointF &point)
     _beginX = point.x();
     _beginY = point.y();
     setPos(point);
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
 }
 void BbItemEllipse::draw(const QPointF &point)
 {
@@ -145,34 +145,34 @@ void BbItemEllipse::draw(const QPointF &point)
     qreal t = std::min(_dragY,_beginY);
     setPos(l,t);
     setRect(0,0,std::abs(_dragX-_beginX),std::abs(_dragY-_beginY));
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
-    _myData->empty = !size().isEmpty();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
+    _data->empty = !size().isEmpty();
 }
 
 void BbItemEllipse::done()
 {
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
     _editing = false;
 }
 
 void BbItemEllipse::setPenColor(const QColor &color)
 {
-    _myData->pen.setColor(color);
-    setPen(_myData->pen);
+    _data->pen.setColor(color);
+    setPen(_data->pen);
 }
 
 void BbItemEllipse::setWeight(const qreal &weight)
 {
-    _myData->setWeight(weight);
-    setPen(_myData->pen);
+    _data->setWeight(weight);
+    setPen(_data->pen);
 }
 
 void BbItemEllipse::setBrushColor(const QColor &color)
 {
-    _myData->brush.setColor(color);
-    setBrush(_myData->brush);
+    _data->brush.setColor(color);
+    setBrush(_data->brush);
 }
 
 QSizeF BbItemEllipse::size()
@@ -182,17 +182,17 @@ QSizeF BbItemEllipse::size()
 
 QColor BbItemEllipse::penColor()
 {
-    return _myData->pen.color();
+    return _data->pen.color();
 }
 
 QColor BbItemEllipse::brushColor()
 {
-    return _myData->brush.color();
+    return _data->brush.color();
 }
 
 qreal BbItemEllipse::weight()
 {
-    return _myData->weight();
+    return _data->weight();
 }
 
 QPointF BbItemEllipse::beginPos()
@@ -207,17 +207,17 @@ QPointF BbItemEllipse::dragPos()
 
 QString BbItemEllipse::id() const
 {
-    return _myData->lid;
+    return _data->lid;
 }
 
 void BbItemEllipse::setId(const QString &id)
 {
-    _myData->lid = id;
+    _data->lid = id;
 }
 
 BbToolType BbItemEllipse::toolType() const
 {
-    return _myData->tooltype;
+    return _data->tooltype;
 }
 
 Blackboard *BbItemEllipse::blackboard()
@@ -232,7 +232,7 @@ BbScene *BbItemEllipse::scene()
 
 BbItemData *BbItemEllipse::data()
 {
-    return _myData;
+    return _data;
 }
 
 void BbItemEllipse::toolDown(const QPointF &pos)

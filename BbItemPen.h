@@ -27,7 +27,7 @@ protected:
 
     QRectF _rect;
 
-    BbItemPenData * _myData;
+    BbItemPenData * _data;
 
     /*直线相关的变量*/
     bool _straight = false;     // 是否开启了直线模式。
@@ -111,7 +111,7 @@ public:
     void added() override { }
     qreal z() override;
     void setZ(const qreal &value) override;
-    void toAbsoluteCoords() override;
+    void absolutize() override;
     bool isEditing() override;
 };
 

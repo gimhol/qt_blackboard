@@ -8,7 +8,6 @@
 
 BbItemText::BbItemText():
     QGraphicsTextItem(),
-    IItemIndex(nullptr),
     _myData(new BbItemTextData())
 {
     init();
@@ -16,7 +15,6 @@ BbItemText::BbItemText():
 
 BbItemText::BbItemText(BbItemData *data):
     QGraphicsTextItem(),
-    IItemIndex (data),
     _myData(dynamic_cast<BbItemTextData*>(data))
 {
     init();
@@ -219,7 +217,7 @@ void BbItemText::writeStream(QDataStream &stream)
 void BbItemText::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
-    toAbsoluteCoords();
+    absolutize();
     repaint();
 }
 
@@ -369,7 +367,7 @@ QPointF BbItemText::pos()
     return QGraphicsItem::pos();
 }
 
-void BbItemText::toAbsoluteCoords()
+void BbItemText::absolutize()
 {
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {

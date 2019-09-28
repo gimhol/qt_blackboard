@@ -10,7 +10,7 @@ class BbItemEllipseData;
 class NSB_BLACKBOARD_EXPORT BbItemEllipse: public QGraphicsEllipseItem, public IStreamWR, public IItemIndex
 {
 protected:
-    BbItemEllipseData *_myData;
+    BbItemEllipseData *_data;
 
     qreal _beginX, _beginY;
 
@@ -86,7 +86,7 @@ public:
     void added() override { }
     qreal z() override;
     void setZ(const qreal &value) override;
-    void toAbsoluteCoords() override;
+    void absolutize() override;
     bool isEditing() override;
 };
 
