@@ -24,6 +24,10 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QMimeData>
+#ifdef WIN32
+#include <Windows.h>
+#pragma comment(lib, "user32")
+#endif
 
 BbScene::BbScene(Blackboard *parent):
     QGraphicsScene(parent)
@@ -525,10 +529,10 @@ void BbScene::clearBackground()
 void BbScene::pickingItems(const QPointF &mousePos)
 {
     _pickerRect->setRect(
-                std::min(mousePos.x(),_mouseBeginPos.x()),
-                std::min(mousePos.y(),_mouseBeginPos.y()),
-                std::abs(mousePos.x()-_mouseBeginPos.x()),
-                std::abs(mousePos.y()-_mouseBeginPos.y())
+                (std::min)(mousePos.x(),_mouseBeginPos.x()),
+                (std::min)(mousePos.y(),_mouseBeginPos.y()),
+                (std::abs)(mousePos.x()-_mouseBeginPos.x()),
+                (std::abs)(mousePos.y()-_mouseBeginPos.y())
                 );
     _pickerRect->show();
     for(auto item: items())
@@ -596,9 +600,36 @@ bool BbScene::onlyShiftDown()
     return _onlyShiftDown;
 }
 
-const Qt::KeyboardModifiers &BbScene::modifiers()
+Qt::KeyboardModifiers BbScene::modifiers()
 {
+#ifdef WIN32
+    /*
+    Note: 未获得焦点时，收不到keyPressEvent与keyReleaseEvent。
+    导致首次绘图，图形响应不了功能键。
+    所以这里直接使用win32的api来获取功能键状态。
+    - Gim
+    */
+    if(GetKeyState(VK_SHIFT) < 0 ||
+            GetKeyState(VK_LSHIFT) < 0 ||
+            GetKeyState(VK_RSHIFT) < 0)
+    {
+        _modifiers |= Qt::ShiftModifier;
+    }
+    if(GetKeyState(VK_CONTROL) < 0 ||
+            GetKeyState(VK_LCONTROL) < 0 ||
+            GetKeyState(VK_RCONTROL) < 0)
+    {
+        _modifiers |= Qt::ControlModifier;
+    }
+    if(GetKeyState(VK_MENU) < 0 ||
+            GetKeyState(VK_LMENU) < 0 ||
+            GetKeyState(VK_RMENU) < 0)
+    {
+        _modifiers |= Qt::AltModifier;
+    }
+#endif
     return _modifiers;
+
 }
 
 void BbScene::setItemPicking(bool picking)

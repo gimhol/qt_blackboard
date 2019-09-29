@@ -497,23 +497,20 @@ Blackboard *BbItemPen::blackboard()
 
 void BbItemPen::toolDown(const QPointF &pos)
 {
-    if(scene()->modifiers() & Qt::ShiftModifier)
-    {
-        setStraight(true);
-    }
+    setStraight(scene()->modifiers() & Qt::ShiftModifier);
     setZValue(QDateTime::currentMSecsSinceEpoch());
     auto settings = blackboard()->toolSettings<BbItemPenData>(BBTT_Pen);
     setWeight(settings->weight());
     setColor(settings->pen.color());
     penDown(pos);
     setId(scene()->generatItemId());
-    setStraight(scene()->onlyShiftDown());
     scene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_penDown,this);
 }
 
 void BbItemPen::toolDraw(const QPointF &pos)
 {
+    setStraight(scene()->modifiers()==Qt::ShiftModifier);
     if(!straight())
     {
         penDraw(pos);
@@ -528,7 +525,7 @@ void BbItemPen::toolDraw(const QPointF &pos)
 
 void BbItemPen::toolDone(const QPointF &pos)
 {
-    Q_UNUSED(pos);
+    Q_UNUSED(pos)
     if(straight())
     {
         setStraight(false);

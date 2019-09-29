@@ -29,10 +29,9 @@ Blackboard::Blackboard(QWidget *parent):
     QGraphicsView(parent),
     dptr(new BlackboardPrivate)
 {
-    setAttribute(Qt::WA_TabletTracking);
     setScene(new BbScene(this));
     setMouseTracking(true);
-
+    setTabletTracking(true);
     setToolCursor(BBTT_Pen,Qt::CrossCursor);
     setToolCursor(BBTT_Rectangle,Qt::CrossCursor);
     setToolCursor(BBTT_Ellipse,Qt::CrossCursor);
@@ -43,8 +42,6 @@ Blackboard::Blackboard(QWidget *parent):
 
     connect(horizontalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollXChanged);
     connect(verticalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollYChanged);
-
-
     qApp->installEventFilter(this);
 }
 
@@ -226,7 +223,7 @@ void Blackboard::resizeEvent(QResizeEvent *event)
 
 void Blackboard::enterEvent(QEvent *event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
     switch(scene()->toolType())
     {
         case BBTT_Pointer:
@@ -250,7 +247,7 @@ void Blackboard::enterEvent(QEvent *event)
 
 void Blackboard::leaveEvent(QEvent *event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
     switch(scene()->toolType())
     {
         case BBTT_Pointer:

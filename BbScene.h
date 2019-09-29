@@ -146,7 +146,7 @@ public:
 
     bool onlyShiftDown();
 
-    const Qt::KeyboardModifiers &modifiers();
+    Qt::KeyboardModifiers modifiers();
 
     template<typename T>
     inline T *find(const std::string &lid)

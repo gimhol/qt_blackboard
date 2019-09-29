@@ -245,7 +245,7 @@ void BbItemEllipse::toolDown(const QPointF &pos)
 
     begin(pos);
     setId(scene()->generatItemId());
-    setCircle(scene()->onlyShiftDown());
+    setCircle(scene()->modifiers() & Qt::ShiftModifier);
     scene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_ellipseDown,this);
 }

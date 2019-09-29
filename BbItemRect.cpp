@@ -197,7 +197,7 @@ void BbItemRect::toolDown(const QPointF &pos)
 
     scene()->setCurrentItem(this);
     begin(pos);
-    setSquare(scene()->onlyShiftDown());
+    setSquare(scene()->modifiers() & Qt::ShiftModifier);
     emit blackboard()->itemChanged(BBIET_rectDown,this);
 }
 
