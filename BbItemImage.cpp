@@ -95,6 +95,25 @@ void BbItemImage::setText(QString text)
     }
 }
 
+qreal BbItemImage::ratio()
+{
+    if(_data->pixmap.isNull())
+    {
+        if(equal(0,_data->height))
+        {
+            return 1;
+        }
+        else
+        {
+            return _data->width / _data->height;
+        }
+    }
+    else
+    {
+        return 1.0 * _data->pixmap.width() / _data->pixmap.height();
+    }
+}
+
 QString BbItemImage::url()
 {
     return _data->url;
@@ -244,6 +263,7 @@ void BbItemImage::updatePrevSize()
 void BbItemImage::begin(const QPointF &point)
 {
     Q_UNUSED(point)
+    modifiersChanged(scene()->modifiers());
     _lastX = int(this->x());
     _lastY = int(this->y());
     _lastW = int(this->rect().width());
@@ -262,12 +282,7 @@ bool BbItemImage::draw(const QPointF &mousePos)
     auto centerX = x + width/2; // 图片中心X坐标
     auto centerY = y + height/2; // 图片中心Y坐标
 
-    auto ratio = equal(0,_data->height)?1:(_data->width/_data->height);
-    if(!_data->pixmap.isNull())
-    {
-        ratio = 1.0 * _data->pixmap.width() / _data->pixmap.height();
-    }
-
+    auto ratio = this->ratio();
     auto point = mousePos - _stretchOffset;
     auto clampWidthFromMiddle = [&]()
     {
@@ -374,7 +389,11 @@ bool BbItemImage::draw(const QPointF &mousePos)
     case NW:{stretchW(); stretchN(); clampFromBottomRight(); break;}
     default:{break;}
     }
-
+    if(_centerLock)
+    {
+        y = centerY - height/2;
+        x = centerX - width/2;
+    }
     auto changed =
             !equal(_lastX,x) || !equal(_lastY,y) ||
             !equal(_lastW,width) || !equal(_lastH,height);
@@ -500,11 +519,26 @@ bool BbItemImage::clicked(const QPointF &pos)
 void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
     Q_UNUSED(modifiers)
-    if(_ratioLock != (modifiers == Qt::ShiftModifier))
+    auto ratioLock = modifiers & Qt::ShiftModifier;
+    auto centerLock = modifiers & Qt::AltModifier;
+    bool changed = _ratioLock != ratioLock || _centerLock != centerLock;
+    if(_ratioLock != ratioLock)
     {
-        setRatioLock(modifiers == Qt::ShiftModifier);
+        _ratioLock = ratioLock;
+    }
+    if(_centerLock != centerLock)
+    {
+        _centerLock = centerLock;
+    }
+    if(changed)
+    {
+        if(_mouseDown)
+        {
+            draw(_mousePos);
+        }
         emit blackboard()->itemChanged(BBIET_imageResizing,this);
     }
+
 }
 
 void BbItemImage::added()
