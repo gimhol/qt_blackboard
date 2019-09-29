@@ -519,8 +519,8 @@ bool BbItemImage::clicked(const QPointF &pos)
 void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
     Q_UNUSED(modifiers)
-    auto ratioLock = modifiers & Qt::ShiftModifier;
-    auto centerLock = modifiers & Qt::AltModifier;
+    auto ratioLock = bool(modifiers & Qt::ShiftModifier);
+    auto centerLock = bool(modifiers & Qt::AltModifier);
     bool changed = _ratioLock != ratioLock || _centerLock != centerLock;
     if(_ratioLock != ratioLock)
     {
