@@ -521,13 +521,14 @@ void BbScene::addBackground(const QPixmap &pixmap)
 
 void BbScene::clearBackground()
 {
-    if(hasBackground())
+    if(!_backgrounds.isEmpty())
     {
         for(auto background: _backgrounds)
         {
             QGraphicsScene::removeItem(background);
             delete background;
         }
+        _backgrounds.clear();
     }
     _backgroundHeight = 0;
 }
