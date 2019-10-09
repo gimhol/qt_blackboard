@@ -42,6 +42,22 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="title">
+         <string>画板高度</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_12">
+         <item>
+          <widget class="QSpinBox" name="blackboardHeight">
+           <property name="maximum">
+            <number>999999999</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
        <widget class="QGroupBox" name="groupBoxTool">
         <property name="title">
          <string>工具</string>
@@ -732,6 +748,13 @@
         </property>
         <property name="text">
          <string>设置背景</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_3">
+        <property name="text">
+         <string>添加背景</string>
         </property>
        </widget>
       </item>

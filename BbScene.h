@@ -44,8 +44,9 @@ protected:
     bool _onlyShiftDown = false;
     bool _onlyAltDown = false;
     bool _onlyCtrlDown = false;
-    QSize _backgroundSize = QSize(-1,-1);
-    QGraphicsItem * _backgroundItem = nullptr;
+
+    qreal _backgroundHeight = 0;
+    QList<QGraphicsItem*> _backgrounds;
 public:
     BbScene(Blackboard *parent = Q_NULLPTR);
 
@@ -123,6 +124,8 @@ public:
     bool hasBackground() const;
 
     void setBackground(const QPixmap &pixmap);
+
+    void addBackground(const QPixmap &pixmap);
 
     void clearBackground();
 

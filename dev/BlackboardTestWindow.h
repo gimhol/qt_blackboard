@@ -80,6 +80,10 @@ private slots:
 
     void on_imageInsert_clicked();
 
+    void on_pushButton_3_clicked();
+
+    void on_blackboardHeight_editingFinished();
+
 private:
     Ui::BlackboardTestWindow *ui;
 };

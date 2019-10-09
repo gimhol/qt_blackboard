@@ -505,6 +505,11 @@ void Blackboard::setBackground(const QPixmap &pixmap)
     scene()->setBackground(pixmap);
 }
 
+void Blackboard::addBackground(const QPixmap &pixmap)
+{
+    scene()->addBackground(pixmap);
+}
+
 void Blackboard::clearBackground()
 {
     scene()->clearBackground();

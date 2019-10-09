@@ -239,6 +239,8 @@ void BlackboardTestWindow::start()
     win1.move(win0.width(),0);
     bindBlackboard(win0.blackboard(),win1.blackboard());
     bindBlackboard(win1.blackboard(),win0.blackboard());
+    win0.ui->blackboardHeight->setValue(win0.blackboard()->width());
+    win1.ui->blackboardHeight->setValue(win1.blackboard()->width());
 }
 
 void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *blackboard1)
@@ -250,9 +252,10 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         pm->fill("red");
     }
 
-    blackboard0->setCanvasSize(blackboard0->width(),blackboard0->width()*10);
+    blackboard0->setCanvasSize(blackboard0->width(),blackboard0->width());
     blackboard0->setPointerPixmap(*pm);
-
+    blackboard0->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    blackboard0->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 #define TOINT(_NUM_) static_cast<int>(_NUM_)
 
     connect(blackboard0,&Blackboard::scrolled,[blackboard1](float x, float y){
@@ -898,4 +901,24 @@ void BlackboardTestWindow::on_imageInsert_clicked()
                 ui->spinBoxImageHeight->value(),
                 ui->pictureUrl->text());
     loadImage(item);
+}
+
+void BlackboardTestWindow::on_pushButton_3_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(nullptr,QStringLiteral("选择图片"),".","*.png;*.jpg");
+    if(fileName.isEmpty())
+    {
+        return;
+    }
+    QPixmap pm(fileName);
+    blackboard()->addBackground(pm);
+    auto bgsize = blackboard()->backgroundSize();
+    blackboard()->setCanvasSize(bgsize.width(),bgsize.height());
+}
+
+void BlackboardTestWindow::on_blackboardHeight_editingFinished()
+{
+    auto width = blackboard()->canvasSize().width();
+    blackboard()->setCanvasSize(width,ui->blackboardHeight->value());
+
 }

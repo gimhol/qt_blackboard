@@ -490,40 +490,46 @@ void BbScene::pasteItems()
 
 QSizeF BbScene::backgroundSize() const
 {
-    return _backgroundSize;
+    return QSizeF(width(),_backgroundHeight);
 }
 
 bool BbScene::hasBackground() const
 {
-    return _backgroundItem != nullptr;
+    return !_backgrounds.empty();
 }
 
 void BbScene::setBackground(const QPixmap &pixmap)
 {
     clearBackground();
+    addBackground(pixmap);
+}
 
-    QGraphicsPixmapItem * pixmapItem = new QGraphicsPixmapItem();
+void BbScene::addBackground(const QPixmap &pixmap)
+{
+    QGraphicsPixmapItem *pixmapItem = new QGraphicsPixmapItem();
     pixmapItem->setZValue(INT_MIN);
     qreal ratio = width() / pixmap.width();
     pixmapItem->setPixmap(pixmap);
     pixmapItem->setScale(ratio);
     pixmapItem->setTransformationMode(Qt::SmoothTransformation);
+    pixmapItem->setPos(0,_backgroundHeight);
     addItem(pixmapItem);
 
-    _backgroundSize = pixmap.size();
-    _backgroundItem = pixmapItem;
+    _backgroundHeight += pixmap.height()*ratio;
+    _backgrounds.push_back(pixmapItem);
 }
 
 void BbScene::clearBackground()
 {
-    if(_backgroundItem)
+    if(hasBackground())
     {
-        QGraphicsScene::removeItem(_backgroundItem);
-        delete _backgroundItem;
-        _backgroundItem = nullptr;
-        _backgroundSize.setWidth(-1);
-        _backgroundSize.setHeight(-1);
+        for(auto background: _backgrounds)
+        {
+            QGraphicsScene::removeItem(background);
+            delete background;
+        }
     }
+    _backgroundHeight = 0;
 }
 
 void BbScene::pickingItems(const QPointF &mousePos)
@@ -801,7 +807,7 @@ void BbScene::clearItems()
 
 bool BbScene::isPrivateItem(QGraphicsItem *item)
 {
-    return item == _pickerRect || item == _backgroundItem;
+    return item == _pickerRect || _backgrounds.contains(item);
 }
 
 IItemIndex *BbScene::readItemData(BbItemData *itemData)

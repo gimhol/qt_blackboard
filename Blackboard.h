@@ -137,6 +137,7 @@ public:
     QSizeF backgroundSize() const;
     bool hasBackground() const;
     void setBackground(const QPixmap &pixmap);
+    void addBackground(const QPixmap &pixmap);
     void clearBackground();
     template<class T> inline T *toolSettings(const BbToolType &toolType)
     {
