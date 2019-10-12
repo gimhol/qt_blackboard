@@ -135,22 +135,19 @@ public:
     void copyItems();
     void pasteItems();
     QSizeF backgroundSize() const;
+    void setBackgroundSize(QSizeF size);
     bool hasBackground() const;
     void setBackground(const QPixmap &pixmap);
     void addBackground(const QPixmap &pixmap);
+    void addBackground(QGraphicsItem *graphicsItem);
     void clearBackground();
-    template<class T> inline T *toolSettings(const BbToolType &toolType)
-    {
-        return dynamic_cast<T*>(toolSettings(toolType));
-    }
-    template<typename T> inline T *find(const std::string &lid)
-    {
-        return find<T>(QString::fromStdString(lid));
-    }
-    template<typename T> inline T *find(const QString &lid)
-    {
-        return scene()->find<T>(lid);
-    }
+    int backgroundCount();
+    void removeBackground(int index);
+    QGraphicsItem *background(int index);
+
+    template<class Cls> Cls* toolSettings(const BbToolType &toolType);
+    template<class Cls> Cls* find(const std::string &lid);
+    template<class Cls> Cls* find(const QString &lid);
 signals:
     void moved();
     void resized(float scale);
@@ -179,8 +176,21 @@ private:
     BlackboardPrivate *dptr;
 };
 
+template<class Cls>
+Cls* Blackboard::toolSettings(const BbToolType &toolType)
+{
+    return dynamic_cast<Cls*>(toolSettings(toolType));
+}
+template<class Cls>
+Cls* Blackboard::find(const std::string &lid)
+{
+    return find<Cls>(QString::fromStdString(lid));
+}
 
-
-
+template<class Cls>
+Cls* Blackboard::find(const QString &lid)
+{
+    return scene()->find<Cls>(lid);
+}
 
 #endif // CANVASVIEW3_H

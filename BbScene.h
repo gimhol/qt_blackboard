@@ -45,7 +45,7 @@ protected:
     bool _onlyAltDown = false;
     bool _onlyCtrlDown = false;
 
-    qreal _backgroundHeight = 0;
+    QSizeF _backgroundSize;
     QList<QGraphicsItem*> _backgrounds;
 public:
     BbScene(Blackboard *parent = Q_NULLPTR);
@@ -121,13 +121,24 @@ public:
 
     QSizeF backgroundSize() const;
 
+    void setBackgroundSize(QSizeF size);
+
     bool hasBackground() const;
 
+    // use "clearBackground & addBackground" instand of "setBackground"
     void setBackground(const QPixmap &pixmap);
 
     void addBackground(const QPixmap &pixmap);
 
+    void addBackground(QGraphicsItem *graphicsItem);
+
     void clearBackground();
+
+    int backgroundCount();
+
+    void removeBackground(int index);
+
+    QGraphicsItem *background(int index);
 
     /**
      * @brief generatItemId 生成itemid

@@ -495,6 +495,11 @@ QSizeF Blackboard::backgroundSize() const
     return scene()->backgroundSize();
 }
 
+void Blackboard::setBackgroundSize(QSizeF size)
+{
+    scene()->setBackgroundSize(size);
+}
+
 bool Blackboard::hasBackground() const
 {
     return scene()->hasBackground();
@@ -510,9 +515,29 @@ void Blackboard::addBackground(const QPixmap &pixmap)
     scene()->addBackground(pixmap);
 }
 
+void Blackboard::addBackground(QGraphicsItem *graphicsItem)
+{
+    scene()->addBackground(graphicsItem);
+}
+
 void Blackboard::clearBackground()
 {
     scene()->clearBackground();
+}
+
+int Blackboard::backgroundCount()
+{
+    return scene()->backgroundCount();
+}
+
+void Blackboard::removeBackground(int index)
+{
+    scene()->removeBackground(index);
+}
+
+QGraphicsItem *Blackboard::background(int index)
+{
+    return scene()->background(index);
 }
 
 void Blackboard::writeStream(QDataStream &stream)

@@ -30,7 +30,8 @@
 #endif
 
 BbScene::BbScene(Blackboard *parent):
-    QGraphicsScene(parent)
+    QGraphicsScene(parent),
+    _backgroundSize(0,0)
 {
     _pickerRect = new QGraphicsRectItem();
     _pickerRect->hide();
@@ -490,7 +491,12 @@ void BbScene::pasteItems()
 
 QSizeF BbScene::backgroundSize() const
 {
-    return QSizeF(width(),_backgroundHeight);
+    return _backgroundSize;
+}
+
+void BbScene::setBackgroundSize(QSizeF size)
+{
+    _backgroundSize = size;
 }
 
 bool BbScene::hasBackground() const
@@ -512,11 +518,26 @@ void BbScene::addBackground(const QPixmap &pixmap)
     pixmapItem->setPixmap(pixmap);
     pixmapItem->setScale(ratio);
     pixmapItem->setTransformationMode(Qt::SmoothTransformation);
-    pixmapItem->setPos(0,_backgroundHeight);
-    addItem(pixmapItem);
+    pixmapItem->setPos(0,_backgroundSize.height());
 
-    _backgroundHeight += pixmap.height()*ratio;
-    _backgrounds.push_back(pixmapItem);
+    addBackground(pixmapItem);
+
+    auto rect = pixmapItem->sceneBoundingRect();
+    auto width = (std::max)(_backgroundSize.width(),rect.width());
+    auto height = _backgroundSize.height()+rect.height();
+    _backgroundSize.setWidth(width);
+    _backgroundSize.setHeight(height);
+}
+
+void BbScene::addBackground(QGraphicsItem *graphicsItem)
+{
+    Q_ASSERT(nullptr != graphicsItem);
+    Q_ASSERT(this != graphicsItem->scene());
+    if(graphicsItem && graphicsItem->scene() != this)
+    {
+        addItem(graphicsItem);
+        _backgrounds.push_back(graphicsItem);
+    }
 }
 
 void BbScene::clearBackground()
@@ -530,7 +551,30 @@ void BbScene::clearBackground()
         }
         _backgrounds.clear();
     }
-    _backgroundHeight = 0;
+    _backgroundSize.setWidth(0);
+    _backgroundSize.setHeight(0);
+}
+
+int BbScene::backgroundCount()
+{
+    return _backgrounds.count();
+}
+
+void BbScene::removeBackground(int index)
+{
+    if(index < _backgrounds.count())
+    {
+        delete _backgrounds.takeAt(index);
+    }
+}
+
+QGraphicsItem *BbScene::background(int index)
+{
+    if(index < _backgrounds.count())
+    {
+        return _backgrounds.at(index);
+    }
+    return nullptr;
 }
 
 void BbScene::pickingItems(const QPointF &mousePos)
