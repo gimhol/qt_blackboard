@@ -807,22 +807,6 @@ void BlackboardTestWindow::on_selectedAll_clicked()
     blackboard()->selectedAll();
 }
 
-void BlackboardTestWindow::on_pushButton_clicked()
-{
-    QString fileName = QFileDialog::getOpenFileName(nullptr,QStringLiteral("选择图片"),".","*.png;*.jpg");
-    if(fileName.isEmpty())
-    {
-        return;
-    }
-    QPixmap pm(fileName);
-    blackboard()->setBackground(pm);
-}
-
-void BlackboardTestWindow::on_pushButton_2_clicked()
-{
-    blackboard()->clearBackground();
-}
-
 void BlackboardTestWindow::on_rectWeight_valueChanged(int arg1)
 {
     rectSettings->setWeight(arg1 * 0.01);
@@ -903,22 +887,73 @@ void BlackboardTestWindow::on_imageInsert_clicked()
     loadImage(item);
 }
 
-void BlackboardTestWindow::on_pushButton_3_clicked()
-{
-    QString fileName = QFileDialog::getOpenFileName(nullptr,QStringLiteral("选择图片"),".","*.png;*.jpg");
-    if(fileName.isEmpty())
-    {
-        return;
-    }
-    QPixmap pm(fileName);
-    blackboard()->addBackground(pm);
-    auto bgsize = blackboard()->backgroundSize();
-    blackboard()->setCanvasSize(bgsize.width(),bgsize.height());
-}
-
 void BlackboardTestWindow::on_blackboardHeight_editingFinished()
 {
     auto width = blackboard()->canvasSize().width();
     blackboard()->setCanvasSize(width,ui->blackboardHeight->value());
+
+}
+
+
+
+void BlackboardTestWindow::on_btn_set_background_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(nullptr,u8"选择图片",".","PNG(*.png);;JPEG(*.jpg)");
+    if(!fileName.isEmpty())
+    {
+        QPixmap pm(fileName);
+        blackboard()->setBackground(pm);
+    }
+}
+
+void BlackboardTestWindow::on_btn_add_background_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(nullptr,u8"选择图片",".","PNG(*.png);;JPEG(*.jpg)");
+    if(!fileName.isEmpty())
+    {
+        QPixmap pm(fileName);
+        blackboard()->addBackground(pm);
+    }
+}
+
+void BlackboardTestWindow::on_btn_lay_backgrounds_clicked()
+{
+    blackboard()->layBackgrounds();
+}
+
+void BlackboardTestWindow::on_btn_clear_background_clicked()
+{
+    blackboard()->clearBackground();
+}
+
+void BlackboardTestWindow::on_btn_make_sure_show_all_backgrouns_clicked()
+{
+    auto bb = blackboard();
+    auto canvasW = bb->canvasWidth();
+    auto canvasH = bb->canvasHeight();
+    auto bgRect = bb->backgroundRect();
+    bb->setCanvasSize(
+                (std::max)(canvasW,int(bgRect.right())),
+                (std::max)(canvasH,int(bgRect.bottom()))
+                );
+}
+#include <QMenu>
+#include <QAction>
+void BlackboardTestWindow::on_btn_remove_one_background_clicked()
+{
+    auto menu = new QMenu(ui->btn_remove_one_background);
+    ui->btn_remove_one_background->setMenu(menu);
+    auto bb = blackboard();
+    for(auto pair: bb->backgrounds())
+    {
+        menu->addAction(pair.first);
+    }
+    connect(menu,&QMenu::triggered,this,[bb](QAction *action){
+        bb->removeBackground(action->text());
+    });
+    connect(menu,&QMenu::aboutToHide,menu,&QObject::deleteLater);
+
+    menu->move(ui->btn_remove_one_background->mapTo(this,QPoint(0,0)));
+    menu->show();
 
 }

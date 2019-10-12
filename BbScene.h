@@ -8,7 +8,7 @@
 #include "IStreamWR.h"
 #include "IItemIndex.h"
 
-typedef std::function<QString()> ItemIDGenerator;
+typedef std::function<QString()> IDGenerator;
 class BbItemPen;
 class BbItemPenData;
 class BbItemText;
@@ -38,15 +38,16 @@ protected:
     QGraphicsRectItem * _pickerRect = nullptr;
     IItemIndex * _curItemIndex = nullptr;
     IItemIndex * _editingItemIndex = nullptr;
-    ItemIDGenerator _itemIdGenerator = nullptr;
+    IDGenerator _itemIdGenerator = nullptr;
+    IDGenerator _backgroundIdGenerator = nullptr;
     bool _controlEnable = true;
     Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
     bool _onlyShiftDown = false;
     bool _onlyAltDown = false;
     bool _onlyCtrlDown = false;
 
-    QSizeF _backgroundSize;
-    QList<QGraphicsItem*> _backgrounds;
+    QRectF _backgroundRect;
+    QList<QPair<QString,QGraphicsItem*>> _backgrounds;
 public:
     BbScene(Blackboard *parent = Q_NULLPTR);
 
@@ -79,7 +80,13 @@ public:
      * @brief setItemIdGenerator 设置id生成器
      * @param itemIDGenerator id生成器, 一个返回字符串类型的匿名函数
      */
-    void setItemIdGenerator(ItemIDGenerator itemIDGenerator);
+    void setItemIdGenerator(IDGenerator itemIDGenerator);
+
+    /**
+     * @brief setBackgroundIdGenerator 设置背景id生成器
+     * @param backgroundIdGenerator 背景id生成器, 一个返回字符串类型的匿名函数
+     */
+    void setBackgroundIdGenerator(IDGenerator backgroundIdGenerator);
 
     /**
      * @brief setControlEnable 设置能否进行画板操作
@@ -88,8 +95,6 @@ public:
     void setControlEnable(bool enable);
 
     void clearItems();
-
-    bool isPrivateItem(QGraphicsItem *item);
 
     IItemIndex *readItemData(BbItemData *itemData);
 
@@ -121,16 +126,20 @@ public:
 
     QSizeF backgroundSize() const;
 
-    void setBackgroundSize(QSizeF size);
-
     bool hasBackground() const;
 
-    // use "clearBackground & addBackground" instand of "setBackground"
+    /*
+     * use "clearBackground, addBackground, layBackgrounds"
+     */
     void setBackground(const QPixmap &pixmap);
 
-    void addBackground(const QPixmap &pixmap);
+    QString addBackground(const QPixmap &pixmap);
 
-    void addBackground(QGraphicsItem *graphicsItem);
+    QString addBackground(QGraphicsItem *graphicsItem);
+
+    void addBackground(QString backgroundId, const QPixmap &pixmap);
+
+    void addBackground(QString backgroundId, QGraphicsItem *graphicsItem);
 
     void clearBackground();
 
@@ -138,13 +147,29 @@ public:
 
     void removeBackground(int index);
 
+    void removeBackground(QString id);
+
     QGraphicsItem *background(int index);
 
-    /**
+    QGraphicsItem *background(QString id);
+
+    void layBackgrounds();
+
+    QRectF backgroundRect();
+
+    QList<QPair<QString,QGraphicsItem *>> backgrounds();
+
+    /*
      * @brief generatItemId 生成itemid
      * @return itemId
      */
     QString generatItemId() const;
+
+    /**
+     * @brief generateBackgroundId 生成一个backgroundId
+     * @return backgroundId
+     */
+    QString generateBackgroundId() const;
 
     IItemIndex *currentItem();
 

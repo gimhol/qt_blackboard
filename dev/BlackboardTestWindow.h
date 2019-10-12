@@ -70,19 +70,26 @@ private slots:
 
     void on_selectedAll_clicked();
 
-    void on_pushButton_clicked();
-
-    void on_pushButton_2_clicked();
-
     void on_rectWeight_valueChanged(int arg1);
 
     void on_imagePick_clicked();
 
     void on_imageInsert_clicked();
 
-    void on_pushButton_3_clicked();
-
     void on_blackboardHeight_editingFinished();
+
+    void on_btn_set_background_clicked();
+
+    void on_btn_add_background_clicked();
+
+    void on_btn_lay_backgrounds_clicked();
+
+    void on_btn_clear_background_clicked();
+
+
+    void on_btn_make_sure_show_all_backgrouns_clicked();
+
+    void on_btn_remove_one_background_clicked();
 
 private:
     Ui::BlackboardTestWindow *ui;

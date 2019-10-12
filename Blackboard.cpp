@@ -495,11 +495,6 @@ QSizeF Blackboard::backgroundSize() const
     return scene()->backgroundSize();
 }
 
-void Blackboard::setBackgroundSize(QSizeF size)
-{
-    scene()->setBackgroundSize(size);
-}
-
 bool Blackboard::hasBackground() const
 {
     return scene()->hasBackground();
@@ -510,14 +505,24 @@ void Blackboard::setBackground(const QPixmap &pixmap)
     scene()->setBackground(pixmap);
 }
 
-void Blackboard::addBackground(const QPixmap &pixmap)
+void Blackboard::addBackground(QString id, const QPixmap &pixmap)
 {
-    scene()->addBackground(pixmap);
+    scene()->addBackground(id,pixmap);
 }
 
-void Blackboard::addBackground(QGraphicsItem *graphicsItem)
+void Blackboard::addBackground(QString id, QGraphicsItem *graphicsItem)
 {
-    scene()->addBackground(graphicsItem);
+    scene()->addBackground(id,graphicsItem);
+}
+
+QString Blackboard::addBackground(const QPixmap &pixmap)
+{
+    return scene()->addBackground(pixmap);
+}
+
+QString Blackboard::addBackground(QGraphicsItem *graphicsItem)
+{
+    return scene()->addBackground(graphicsItem);
 }
 
 void Blackboard::clearBackground()
@@ -535,9 +540,39 @@ void Blackboard::removeBackground(int index)
     scene()->removeBackground(index);
 }
 
+void Blackboard::removeBackground(QString id)
+{
+    scene()->removeBackground(id);
+}
+
 QGraphicsItem *Blackboard::background(int index)
 {
     return scene()->background(index);
+}
+
+QGraphicsItem *Blackboard::background(QString id)
+{
+    return scene()->background(id);
+}
+
+void Blackboard::layBackgrounds()
+{
+    return scene()->layBackgrounds();
+}
+
+QRectF Blackboard::backgroundRect()
+{
+    return scene()->backgroundRect();
+}
+
+QSizeF Blackboard::backgroundSize()
+{
+    return backgroundRect().size();
+}
+
+QList<QPair<QString, QGraphicsItem *> > Blackboard::backgrounds()
+{
+    return scene()->backgrounds();
 }
 
 void Blackboard::writeStream(QDataStream &stream)

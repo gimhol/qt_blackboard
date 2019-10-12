@@ -31,7 +31,7 @@
 
 BbScene::BbScene(Blackboard *parent):
     QGraphicsScene(parent),
-    _backgroundSize(0,0)
+    _backgroundRect(0,0,0,0)
 {
     _pickerRect = new QGraphicsRectItem();
     _pickerRect->hide();
@@ -491,12 +491,7 @@ void BbScene::pasteItems()
 
 QSizeF BbScene::backgroundSize() const
 {
-    return _backgroundSize;
-}
-
-void BbScene::setBackgroundSize(QSizeF size)
-{
-    _backgroundSize = size;
+    return _backgroundRect.size();
 }
 
 bool BbScene::hasBackground() const
@@ -508,9 +503,24 @@ void BbScene::setBackground(const QPixmap &pixmap)
 {
     clearBackground();
     addBackground(pixmap);
+    layBackgrounds();
 }
 
-void BbScene::addBackground(const QPixmap &pixmap)
+QString BbScene::addBackground(const QPixmap &pixmap)
+{
+    auto backgroundId = generateBackgroundId();
+    addBackground(backgroundId,pixmap);
+    return backgroundId;
+}
+
+QString BbScene::addBackground(QGraphicsItem *graphicsItem)
+{
+    auto backgroundId = generateBackgroundId();
+    addBackground(backgroundId,graphicsItem);
+    return backgroundId;
+}
+
+void BbScene::addBackground(QString backgroundId, const QPixmap &pixmap)
 {
     QGraphicsPixmapItem *pixmapItem = new QGraphicsPixmapItem();
     pixmapItem->setZValue(INT_MIN);
@@ -518,25 +528,18 @@ void BbScene::addBackground(const QPixmap &pixmap)
     pixmapItem->setPixmap(pixmap);
     pixmapItem->setScale(ratio);
     pixmapItem->setTransformationMode(Qt::SmoothTransformation);
-    pixmapItem->setPos(0,_backgroundSize.height());
-
-    addBackground(pixmapItem);
-
-    auto rect = pixmapItem->sceneBoundingRect();
-    auto width = (std::max)(_backgroundSize.width(),rect.width());
-    auto height = _backgroundSize.height()+rect.height();
-    _backgroundSize.setWidth(width);
-    _backgroundSize.setHeight(height);
+    addBackground(backgroundId, pixmapItem);
 }
 
-void BbScene::addBackground(QGraphicsItem *graphicsItem)
+void BbScene::addBackground(QString backgroundId, QGraphicsItem *graphicsItem)
 {
     Q_ASSERT(nullptr != graphicsItem);
     Q_ASSERT(this != graphicsItem->scene());
     if(graphicsItem && graphicsItem->scene() != this)
     {
         addItem(graphicsItem);
-        _backgrounds.push_back(graphicsItem);
+        QPair<QString,QGraphicsItem*> pair(backgroundId,graphicsItem);
+        _backgrounds.push_back(pair);
     }
 }
 
@@ -544,15 +547,14 @@ void BbScene::clearBackground()
 {
     if(!_backgrounds.isEmpty())
     {
-        for(auto background: _backgrounds)
+        for(auto pair: _backgrounds)
         {
-            QGraphicsScene::removeItem(background);
-            delete background;
+            QGraphicsScene::removeItem(pair.second);
+            delete pair.second;
         }
         _backgrounds.clear();
     }
-    _backgroundSize.setWidth(0);
-    _backgroundSize.setHeight(0);
+    _backgroundRect.setRect(0,0,0,0);
 }
 
 int BbScene::backgroundCount()
@@ -564,7 +566,20 @@ void BbScene::removeBackground(int index)
 {
     if(index < _backgrounds.count())
     {
-        delete _backgrounds.takeAt(index);
+        delete _backgrounds.takeAt(index).second;
+    }
+}
+
+void BbScene::removeBackground(QString id)
+{
+    for(auto pair : _backgrounds)
+    {
+        if(id == pair.first)
+        {
+            _backgrounds.removeOne(pair);
+            delete pair.second;
+            break;
+        }
     }
 }
 
@@ -572,9 +587,62 @@ QGraphicsItem *BbScene::background(int index)
 {
     if(index < _backgrounds.count())
     {
-        return _backgrounds.at(index);
+        return _backgrounds.at(index).second;
     }
     return nullptr;
+}
+
+QGraphicsItem *BbScene::background(QString id)
+{
+    for(auto pair : _backgrounds)
+    {
+        if(id == pair.first)
+        {
+            return pair.second;
+        }
+    }
+    return nullptr;
+}
+
+void BbScene::layBackgrounds()
+{
+    auto width = 0.0;
+    auto height = 0.0;
+    for(auto pair: _backgrounds)
+    {
+        auto rect = pair.second->sceneBoundingRect();
+        width = (std::max)(_backgroundRect.width(),rect.width());
+        pair.second->setPos(0,height);
+        height += rect.height();
+    }
+    _backgroundRect.setWidth(width);
+    _backgroundRect.setHeight(height);
+}
+
+QRectF BbScene::backgroundRect()
+{
+    for(auto itr = _backgrounds.begin(); itr != _backgrounds.end(); ++itr)
+    {
+        if(itr == _backgrounds.begin())
+        {
+            _backgroundRect = itr->second->sceneBoundingRect();
+        }
+        else
+        {
+            auto itemRect = itr->second->sceneBoundingRect();
+            auto left = ((std::min)(_backgroundRect.left(),itemRect.left()));
+            auto right = ((std::max)(_backgroundRect.right(),itemRect.right()));
+            auto top = ((std::min)(_backgroundRect.top(),itemRect.top()));
+            auto bottom = ((std::max)(_backgroundRect.bottom(),itemRect.bottom()));
+            _backgroundRect.setRect(left,top,right-left,bottom-top);
+        }
+    }
+    return _backgroundRect;
+}
+
+QList<QPair<QString, QGraphicsItem *> > BbScene::backgrounds()
+{
+    return _backgrounds;
 }
 
 void BbScene::pickingItems(const QPointF &mousePos)
@@ -606,6 +674,15 @@ QString BbScene::generatItemId() const
     if(_itemIdGenerator != nullptr)
     {
         return _itemIdGenerator();
+    }
+    return QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch());
+}
+
+QString BbScene::generateBackgroundId() const
+{
+    if(_backgroundIdGenerator != nullptr)
+    {
+        return _backgroundIdGenerator();
     }
     return QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch());
 }
@@ -687,15 +764,12 @@ void BbScene::setItemPicking(bool picking)
 {
     for(auto item: items())
     {
-        if(!isPrivateItem(item))
+        auto idx = dynamic_cast<IItemIndex*>(item);
+        if(idx && !idx->isEditing())
         {
-            auto idx = dynamic_cast<IItemIndex*>(item);
-            if(idx && !idx->isEditing())
-            {
-                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,picking);
-                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,picking);
-                item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,picking);
-            }
+            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,picking);
+            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,picking);
+            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,picking);
         }
     }
 }
@@ -850,11 +924,6 @@ void BbScene::clearItems()
     }
 }
 
-bool BbScene::isPrivateItem(QGraphicsItem *item)
-{
-    return item == _pickerRect || _backgrounds.contains(item);
-}
-
 IItemIndex *BbScene::readItemData(BbItemData *itemData)
 {
     auto item = BbHelper::createItem(itemData);
@@ -866,9 +935,14 @@ IItemIndex *BbScene::readItemData(BbItemData *itemData)
     return item;
 }
 
-void BbScene::setItemIdGenerator(ItemIDGenerator itemIdGenerator)
+void BbScene::setItemIdGenerator(IDGenerator itemIdGenerator)
 {
     _itemIdGenerator = itemIdGenerator;
+}
+
+void BbScene::setBackgroundIdGenerator(IDGenerator backgroundIdGenerator)
+{
+    _backgroundIdGenerator = backgroundIdGenerator;
 }
 
 void BbScene::writeStream(QDataStream &stream)

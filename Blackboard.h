@@ -134,16 +134,111 @@ public:
     void deselectAll();
     void copyItems();
     void pasteItems();
+
     QSizeF backgroundSize() const;
-    void setBackgroundSize(QSizeF size);
+
+    /**
+     * @brief hasBackground 是否存在背景
+     * @return
+     */
     bool hasBackground() const;
+
+    /**
+     * @brief setBackground 设置一个背景，就是按顺序调用了：
+     *                             clearBackground();
+     *                             addBackground(pixmap);
+     *                             layBackgrounds();
+     * @param pixmap 背景图
+     */
     void setBackground(const QPixmap &pixmap);
-    void addBackground(const QPixmap &pixmap);
-    void addBackground(QGraphicsItem *graphicsItem);
+
+    /**
+     * @brief addBackground 添加一个背景
+     * @param pixmap 背景图
+     * @return 内部生成的背景ID
+     */
+    QString addBackground(const QPixmap &pixmap);
+
+    /**
+     * @brief addBackground 添加一个背景Item
+     * @param graphicsItem 背景Item
+     * @return 内部生成的背景ID
+     */
+    QString addBackground(QGraphicsItem *graphicsItem);
+
+    /**
+     * @brief addBackground 添加一个背景
+     * @param id 背景的ID
+     * @param pixmap 背景的图片
+     */
+    void addBackground(QString id,const QPixmap &pixmap);
+
+    /**
+     * @brief addBackground 添加一个背景Item
+     * @param id 背景的ID
+     * @param graphicsItem 背景Item
+     */
+    void addBackground(QString id,QGraphicsItem *graphicsItem);
+
+    /**
+     * @brief clearBackground 移除所有的背景
+     */
     void clearBackground();
+    /**
+     * @brief backgroundCount 获取背景总数
+     * @return 有几个背景
+     */
     int backgroundCount();
+
+    /**
+     * @brief removeBackground 根据索引移除背景
+     * @param id 第几个背景
+     */
     void removeBackground(int index);
+
+    /**
+     * @brief removeBackground 根据ID移除背景
+     * @param id 背景ID
+     */
+    void removeBackground(QString id);
+
+    /**
+     * @brief background 根据索引获取对应背景item
+     * @param index 第几个背景
+     * @return 背景item
+     */
     QGraphicsItem *background(int index);
+
+    /**
+     * @brief background 根据ID获取对应背景
+     * @param id 背景ID
+     * @return 背景item
+     */
+    QGraphicsItem *background(QString id);
+
+    /**
+     * @brief layBackgrounds 自上而下的排列所有背景
+     */
+    void layBackgrounds();
+
+    /**
+     * @brief backgroundRect 计算并返回全部背景图的外接矩形，
+     * @return 全部背景图的外接矩形
+     */
+    QRectF backgroundRect();
+
+    /**
+     * @brief backgroundRect 计算并返回全部背景图的外接矩形的尺寸，
+     * @return 全部背景图的外接矩形的尺寸
+     */
+    QSizeF backgroundSize();
+
+    /**
+     * @brief backgrounds 获取所有背景图
+     * @return 所有背景图列表
+     */
+    QList<QPair<QString,QGraphicsItem *>> backgrounds();
+
 
     template<class Cls> Cls* toolSettings(const BbToolType &toolType);
     template<class Cls> Cls* find(const std::string &lid);
