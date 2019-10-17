@@ -670,12 +670,12 @@ void BbItemImage::writeStream(QDataStream &stream)
 void BbItemImage::readStream(QDataStream &stream)
 {
     _data->readStream(stream);
+    absolutize();
+    repaint();
     if(!_data->url.isEmpty() && _data->pixmap.isNull())
     {
         emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
     }
-    absolutize();
-    repaint();
 }
 
 QString BbItemImage::id() const

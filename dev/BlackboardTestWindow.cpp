@@ -410,6 +410,9 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
+    auto imageHasUrl = [blackboard1](BbItemImage *item){
+        qInfo() << "imageHasUrl: " << item->url();
+    };
     auto triangleDown = [blackboard1](BbItemTriangle *item)
     {
         if(item)
@@ -683,6 +686,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             HANDLE_ITEM_EVENT(imageAdded,BbItemImage);
             HANDLE_ITEM_EVENT(imageResizing,BbItemImage);
             HANDLE_ITEM_EVENT(imageResized,BbItemImage);
+            HANDLE_ITEM_EVENT(imageHasUrl,BbItemImage);
             case BBIET_none:
             default:
                 break;
