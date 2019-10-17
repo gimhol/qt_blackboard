@@ -543,7 +543,7 @@ void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
 
 void BbItemImage::added()
 {
-    if(!_data->url.isEmpty())
+    if(!_data->url.isEmpty() && _data->pixmap.isNull())
     {
         emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
     }
@@ -670,6 +670,10 @@ void BbItemImage::writeStream(QDataStream &stream)
 void BbItemImage::readStream(QDataStream &stream)
 {
     _data->readStream(stream);
+    if(!_data->url.isEmpty() && _data->pixmap.isNull())
+    {
+        emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
+    }
     absolutize();
     repaint();
 }
