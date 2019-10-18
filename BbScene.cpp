@@ -1064,16 +1064,13 @@ IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)
     if(index)
     {
         // maybe we need a better rule to make the 'copy' id.
-        index->setId(QString("%1_%2").arg(index->id()).arg(time));
-        auto item = dynamic_cast<QGraphicsItem*>(index);
-        if(item)
-        {
-            item->setZValue(QDateTime::currentMSecsSinceEpoch());
-            item->setPos(item->pos() + QPointF(10,10));
-            index->data()->updatePostion(index);
-            index->data()->prevX = index->data()->x;
-            index->data()->prevY = index->data()->y;
-        }
+        auto copyId = QString("%1_%2").arg(index->id()).arg(time);
+        auto z = QDateTime::currentMSecsSinceEpoch();
+        index->setId(copyId);
+        index->setZ(z);
+        index->updatePrevZ();
+        index->moveByVector2(10,10);
+        index->updatePrevPosition();
     }
     ++time;
     return index;
@@ -1108,8 +1105,7 @@ void BbScene::emitItemMovedSignals()
             auto data = index->data();
             data->updatePostion(index);
             emit blackboard()->itemChanged(BBIET_itemMoved,index);
-            data->prevX = data->x;
-            data->prevY = data->y;
+            data->updatePrevPostion();
             index = next;
         }
     }

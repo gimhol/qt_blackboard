@@ -8,6 +8,7 @@
 class BbItemImageData;
 class NSB_BLACKBOARD_EXPORT BbItemImage :public QGraphicsRectItem, public IStreamWR, public IItemIndex
 {
+    BB_HIDE_POS_SETTER
 public:
     // N = north, W = west, S = south, E = east
     enum Direction

@@ -78,12 +78,84 @@ void IItemIndex::setZ(const qreal &value) {
         d->z = value;
 }
 
-void IItemIndex::updatePrevZ()
-{
+void IItemIndex::updatePrevZ(){
     auto d = data();
     if(d){
         d->prevZ = d->z;
     }
+}
+
+void IItemIndex::moveByVector2(const QPointF &offset)
+{
+    moveToPosition(position()+offset);
+}
+
+void IItemIndex::moveByVector2(qreal x, qreal y)
+{
+    moveToPosition(position()+QPointF(x,y));
+}
+
+void IItemIndex::moveToPosition(const QPointF &pos){
+    auto i = item();
+    if(i)
+        i->setPos(pos);
+    auto d = data();
+    if(d){
+        d->x = pos.x();
+        d->y = pos.y();
+    }
+}
+
+void IItemIndex::moveToPosition(qreal x, qreal y){
+    auto i = item();
+    if(i)
+        i->setPos(x,y);
+    auto d = data();
+    if(d){
+        d->x = x;
+        d->y = y;
+    }
+}
+
+void IItemIndex::moveToX(qreal x){
+    auto i = item();
+     if(i)
+         i->setX(x);
+     auto d = data();
+     if(d){
+         d->x = x;
+     }
+}
+
+void IItemIndex::moveToY(qreal y){
+    auto i = item();
+     if(i)
+         i->setY(y);
+     auto d = data();
+     if(d){
+         d->y = y;
+     }
+}
+
+QPointF IItemIndex::position(){
+    auto i = item();
+    if(i)
+        return i->pos();
+    auto d = data();
+    if(d){
+        return QPointF(d->x,d->y);
+    }
+    return QPointF(0,0);
+}
+
+qreal IItemIndex::positionX()
+{
+    return position().x();
+}
+
+qreal IItemIndex::positionY()
+{
+    return position().y();
 }
 
 void IItemIndex::updatePrevPosition(){

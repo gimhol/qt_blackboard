@@ -9,6 +9,7 @@
 class BbItemEllipseData;
 class NSB_BLACKBOARD_EXPORT BbItemEllipse: public QGraphicsEllipseItem, public IStreamWR, public IItemIndex
 {
+    BB_HIDE_POS_SETTER
 protected:
     BbItemEllipseData *_data;
 

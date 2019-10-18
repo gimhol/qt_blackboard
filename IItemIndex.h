@@ -1,6 +1,15 @@
 ﻿#ifndef IITEMINDEX_H
 #define IITEMINDEX_H
 
+// 为了保证本地调用移动时会将坐标记录下来，用IItemIndex提供的设置位置的函数代替下面这些QGraphicsItem的函数。
+#define BB_HIDE_POS_SETTER \
+void setX(qreal x) { QGraphicsItem::setX(x); } \
+void setY(qreal y) { QGraphicsItem::setY(y); } \
+void setPos(const QPointF &pos){ return QGraphicsItem::setPos(pos); } \
+void setPos(qreal x, qreal y){ return QGraphicsItem::setPos(x,y); } \
+void moveBy(qreal dx, qreal dy) { QGraphicsItem::moveBy(dx,dy); } \
+
+
 #include "BbHeader.h"
 #include <QPointF>
 #include <QString>
@@ -156,6 +165,17 @@ public:
      * @return 正在被编辑的返回true，否则返回false;
      */
     virtual bool isEditing(){ return false; }
+
+    virtual void moveByVector2(const QPointF &offset);
+    virtual void moveByVector2(qreal x, qreal y);
+    virtual void moveToPosition(const QPointF &pos);
+    virtual void moveToPosition(qreal x, qreal y);
+    virtual void moveToX(qreal x);
+    virtual void moveToY(qreal y);
+    virtual QPointF position();
+    virtual qreal positionX();
+    virtual qreal positionY();
+
     /**
      * @brief last 前一个item
      *      仅应该在BbScene的enumSelected与enumAll中被重置，

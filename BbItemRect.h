@@ -8,6 +8,7 @@
 class BbItemRectData;
 class NSB_BLACKBOARD_EXPORT BbItemRect: public QGraphicsRectItem, public IStreamWR, public IItemIndex
 {
+    BB_HIDE_POS_SETTER
 protected:
     BbItemRectData *_myData;
 

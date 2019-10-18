@@ -9,7 +9,7 @@
 
 class BbItemPenData;
 class NSB_BLACKBOARD_EXPORT BbItemPen : public QGraphicsRectItem, public IStreamWR, public IItemIndex{
-
+    BB_HIDE_POS_SETTER
 protected:
 #ifdef SAVE_TO_PIXMAP_WHEN_DONE
     QPixmap *_pixmap = nullptr;

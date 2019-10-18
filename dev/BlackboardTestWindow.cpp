@@ -307,10 +307,10 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             auto index = dynamic_cast<IItemIndex*>(item);
             if(index)
             {
-                auto copy = blackboard1->find<QGraphicsItem>(index->id());
+                auto copy = blackboard1->find<IItemIndex>(index->id());
                 if(copy)
                 {
-                    copy->setPos(item->pos());
+                    copy->moveToPosition(item->pos());
                 }
             }
         }
@@ -363,7 +363,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
                 copy->setZ(data->z);
                 copy->resize(data->width,data->height);
                 if(data->isPositionValid()){
-                    copy->setPos(data->x,data->y);
+                    copy->moveToPosition(data->x,data->y);
                     copy->updatePrevPosition();
                 }
                 copy->setUrl(data->url);
@@ -385,7 +385,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             {
                 copy->resize(data->width,data->height);
                 if(data->isPositionValid()){
-                    copy->setPos(data->x,data->y);
+                    copy->moveToPosition(data->x,data->y);
                     copy->updatePrevPosition();
                 }
                 copy->updatePrevSize();
@@ -402,7 +402,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             {
                 copy->resize(data->width,data->height);
                 if(data->isPositionValid()){
-                    copy->setPos(data->x,data->y);
+                    copy->moveToPosition(data->x,data->y);
                     copy->updatePrevPosition();
                 }
                 copy->updatePrevSize();
@@ -532,7 +532,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
                 blackboard1->scene()->add(copy);
                 copy->setFont(item->font());
                 copy->setColor(item->color());
-                copy->setPos(item->pos());
+                copy->moveToPosition(item->pos());
                 copy->setId(item->id());
             }
         }

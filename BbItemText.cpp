@@ -308,29 +308,6 @@ void BbItemText::removed()
     isRemoved = true;
 }
 
-void BbItemText::added()
-{
-}
-
-void BbItemText::setPos(const QPointF &pos)
-{
-    QGraphicsItem::setPos(pos);
-    _myData->x = pos.x();
-    _myData->y = pos.y();
-}
-
-void BbItemText::setPos(qreal x, qreal y)
-{
-    QGraphicsItem::setPos(x,y);
-    _myData->x = x;
-    _myData->y = y;
-}
-
-QPointF BbItemText::pos()
-{
-    return QGraphicsItem::pos();
-}
-
 void BbItemText::absolutize()
 {
     if(_myData->mode == BbItemData::CM_PERCENTAGE)

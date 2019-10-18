@@ -9,6 +9,7 @@
 class BbItemTriangleData;
 class NSB_BLACKBOARD_EXPORT BbItemTriangle: public QGraphicsRectItem, public IStreamWR, public IItemIndex
 {
+    BB_HIDE_POS_SETTER
 protected:
     BbItemTriangleData * _myData;
 

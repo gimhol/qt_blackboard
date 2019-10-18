@@ -15,12 +15,7 @@ typedef std::function<void()> onTextChangedCallback;
 class BbItemTextData;
 class NSB_BLACKBOARD_EXPORT BbItemText : public QGraphicsTextItem, public IStreamWR, public IItemIndex
 {
-
-    BbItemTextData *_myData;
-
-    QString _lastContent;
-
-    bool isRemoved = false;
+    BB_HIDE_POS_SETTER
 public:
     BbItemText();
 
@@ -78,11 +73,11 @@ public:
     void toolDone(const QPointF &pos) override;
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void removed() override;
-    void added() override;
-    void setPos(const QPointF &pos);
-    void setPos(qreal x,qreal y);
-    QPointF pos();
     void absolutize() override;
+
+    BbItemTextData *_myData;
+    QString _lastContent;
+    bool isRemoved = false;
 };
 
 

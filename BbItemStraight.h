@@ -8,6 +8,7 @@
 class BbItemStraightData;
 class NSB_BLACKBOARD_EXPORT BbItemStraight: public QGraphicsRectItem, public IStreamWR, public IItemIndex
 {
+    BB_HIDE_POS_SETTER
 protected:
     BbItemStraightData * _myData;
 
