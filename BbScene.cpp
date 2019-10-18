@@ -142,7 +142,7 @@ void BbScene::removeSelected()
 {
     auto enumJob = [&](IItemIndex *index,int i)
     {
-        Q_UNUSED(i);
+        Q_UNUSED(i)
         emit blackboard()->itemChanged(BBIET_itemDelete,index);
         return false;
     };
@@ -207,7 +207,7 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             {
                 if(!_curItemIndex)
                 {
-                    auto item = BbHelper::createItem(_toolType);
+                    auto item = BbHelper::createItemWhenToolDown(_toolType);
                     if(item)
                     {
                         add(item);
@@ -228,7 +228,7 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void BbScene::emitItemMovingSignals()
 {
     auto enumJob = [&](IItemIndex *index,int i){
-        Q_UNUSED(i);
+        Q_UNUSED(i)
         index->data()->updatePostion(index);
         emit blackboard()->itemChanged(BBIET_itemMoving,index);
         return false;

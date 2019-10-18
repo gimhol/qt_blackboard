@@ -20,6 +20,12 @@
 class NSB_BLACKBOARD_EXPORT BbHelper
 {
 public:
+    /**
+     * @brief createItemWhenToolDown 黑板选择了某工具，并在黑板上点击时，创建对应的ITEM
+     * @param bbtt 工具类型
+     * @return 若工具类型支持创建item，返回对应类型的item的index指针。
+     */
+    static IItemIndex *createItemWhenToolDown(BbToolType bbtt);
     static IItemIndex *createItem(BbToolType bbtt);
     static IItemIndex *createItem(BbItemData *data);
     static BbItemData *createToolSettings(BbToolType bbtt);

@@ -1,6 +1,25 @@
 #include "BbHelper.h"
 #include <QDebug>
 
+IItemIndex *BbHelper::createItemWhenToolDown(BbToolType bbtt)
+{
+    switch(bbtt)
+    {
+        case BBTT_Triangle: return new BbItemTriangle();
+        case BBTT_Ellipse: return new BbItemEllipse();
+        case BBTT_Rectangle: return new BbItemRect();
+        case BBTT_Pen: return new BbItemPen();
+        case BBTT_Text: return new BbItemText();
+        case BBTT_Straight: return new BbItemStraight();
+        case BBTT_Image: return new BbItemImage();
+        default:
+        {
+            qWarning() << "can not create item, not handling tool type: " << bbtt << " !";
+            return nullptr;
+        }
+    }
+}
+
 IItemIndex *BbHelper::createItem(BbToolType bbtt)
 {
     switch(bbtt)
