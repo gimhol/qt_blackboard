@@ -205,7 +205,7 @@ QPointF BbItemEllipse::dragPos()
     return QPointF(_dragX,_dragY);
 }
 
-QString BbItemEllipse::id() const
+QString BbItemEllipse::id()
 {
     return _data->lid;
 }
@@ -215,7 +215,7 @@ void BbItemEllipse::setId(const QString &id)
     _data->lid = id;
 }
 
-BbToolType BbItemEllipse::toolType() const
+BbToolType BbItemEllipse::toolType()
 {
     return _data->tooltype;
 }

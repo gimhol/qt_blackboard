@@ -70,9 +70,9 @@ protected:
 
     // IItemIndex interface
 public:
-    QString id() const override;
+    QString id() override;
     void setId(const QString &id) override;
-    BbToolType toolType() const override;
+    BbToolType toolType() override;
     Blackboard *blackboard() override;
     BbScene *bbScene() override;
     BbItemData *data() override;

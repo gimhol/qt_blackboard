@@ -313,7 +313,7 @@ void BbItemTriangle::readStream(QDataStream &stream)
     repaint();
 }
 
-QString BbItemTriangle::id() const
+QString BbItemTriangle::id()
 {
     return _myData->lid;
 }
@@ -323,7 +323,7 @@ void BbItemTriangle::setId(const QString &id)
     _myData->lid = id;
 }
 
-BbToolType BbItemTriangle::toolType() const
+BbToolType BbItemTriangle::toolType()
 {
     return _myData->tooltype;
 }

@@ -465,7 +465,7 @@ void BbItemPen::readStream(QDataStream &stream)
     repaint();
 }
 
-QString BbItemPen::id() const
+QString BbItemPen::id()
 {
     return _data->lid;
 }
@@ -475,7 +475,7 @@ void BbItemPen::setId(const QString &id)
     _data->lid = id;
 }
 
-BbToolType BbItemPen::toolType() const
+BbToolType BbItemPen::toolType()
 {
     return _data->tooltype;
 }

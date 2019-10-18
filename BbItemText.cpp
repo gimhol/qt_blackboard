@@ -221,7 +221,7 @@ void BbItemText::readStream(QDataStream &stream)
     repaint();
 }
 
-QString BbItemText::id() const
+QString BbItemText::id()
 {
     return _myData->lid;
 }
@@ -231,7 +231,7 @@ void BbItemText::setId(const QString &id)
     _myData->lid = id;
 }
 
-BbToolType BbItemText::toolType() const
+BbToolType BbItemText::toolType()
 {
     return _myData->tooltype;
 }

@@ -45,6 +45,7 @@ SOURCES += \
     $$PWD/BbItemTriangle.cpp \
     $$PWD/BbItemImageData.cpp \
     $$PWD/BbItemImage.cpp \
-    $$PWD/BbPointer.cpp
+    $$PWD/BbPointer.cpp \
+    $$PWD/IItemIndex.cpp
 
 FORMS +=

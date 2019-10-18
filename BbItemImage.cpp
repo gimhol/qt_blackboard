@@ -678,7 +678,7 @@ void BbItemImage::readStream(QDataStream &stream)
     }
 }
 
-QString BbItemImage::id() const
+QString BbItemImage::id()
 {
     return _data->lid;
 }
@@ -688,7 +688,7 @@ void BbItemImage::setId(const QString &id)
     _data->lid = id;
 }
 
-BbToolType BbItemImage::toolType() const
+BbToolType BbItemImage::toolType()
 {
     return _data->tooltype;
 }

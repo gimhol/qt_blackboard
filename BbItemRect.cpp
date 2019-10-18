@@ -156,7 +156,7 @@ QPointF BbItemRect::dragPos()
     return QPointF(_dragX,_dragY);
 }
 
-QString BbItemRect::id() const
+QString BbItemRect::id()
 {
     return _myData->lid;
 }
@@ -166,7 +166,7 @@ void BbItemRect::setId(const QString &id)
     _myData->lid = id;
 }
 
-BbToolType BbItemRect::toolType() const
+BbToolType BbItemRect::toolType()
 {
     return _myData->tooltype;
 }

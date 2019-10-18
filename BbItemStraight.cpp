@@ -310,7 +310,7 @@ void BbItemStraight::readStream(QDataStream &stream)
     repaint();
 }
 
-QString BbItemStraight::id() const
+QString BbItemStraight::id()
 {
     return _myData->lid;
 }
@@ -320,7 +320,7 @@ void BbItemStraight::setId(const QString &id)
     _myData->lid = id;
 }
 
-BbToolType BbItemStraight::toolType() const
+BbToolType BbItemStraight::toolType()
 {
     return _myData->tooltype;
 }

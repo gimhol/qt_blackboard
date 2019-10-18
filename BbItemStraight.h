@@ -64,9 +64,9 @@ public:
 
     // IItemIndex interface
 public:
-    QString id() const override;
+    QString id() override;
     void setId(const QString &id) override;
-    BbToolType toolType() const override;
+    BbToolType toolType() override;
     BbScene *bbScene() override;
     BbItemData *data() override;
     Blackboard *blackboard() override;

@@ -6,56 +6,57 @@
 #include <QString>
 #include "BbItemData.h"
 #include "BbToolType.h"
+class QGraphicsItem;
 class Blackboard;
 class BbScene;
 class NSB_BLACKBOARD_EXPORT IItemIndex
 {
 public:
-    virtual ~IItemIndex()
-    {
-        if(last)
-        {
-            last->next = next;
-        }
-        if(next)
-        {
-            next->last = last;
-        }
-    }
+    virtual ~IItemIndex();
+
     /**
      * @brief id 唯一标识符
      * @return 唯一标识符
      */
-    virtual QString id() const = 0;
+    virtual QString id();
+
     /**
      * @brief setId 设置唯一标识符
      * @param id 唯一标识符
      */
-    virtual void setId(const QString &id) = 0;
+    virtual void setId(const QString &id);
+
     /**
      * @brief toolType 工具类型。
      * @return 工具类型。
      */
-    virtual BbToolType toolType() const = 0;
+    virtual BbToolType toolType();
+
+    virtual QGraphicsItem *item();
+
     /**
      * @brief blackboard 本item的所处的Blackboard
      * @return 本item的所处的Blackboard
      */
-    virtual Blackboard *blackboard() = 0;
+    virtual Blackboard *blackboard();
+
     /**
      * @brief scene 本item的所处的 BbScene
      * @return 本item的所处的 BbScene
      */
-    virtual BbScene *bbScene() = 0;
+    virtual BbScene *bbScene();
+
     /**
      * @brief data 本item的数据基类指针
      * @return 本item的数据基类指针
      */
     virtual BbItemData *data() = 0;
+
     /**
      * @brief repaint 根据data重绘item的逻辑。
      */
     virtual void repaint() = 0;
+
     /**
      * @brief mouseDown 当本item就是编辑中item，鼠标左键在黑板按下时会被调用
      * @param pos 鼠标位置
@@ -64,6 +65,7 @@ public:
      *      返回false时，将会继续分发。
      */
     virtual bool mouseDown(const QPointF &pos){Q_UNUSED(pos) return false; }
+
     /**
      * @brief mouseMove 当本item就是编辑中item时，鼠标在黑板中移动时会被调用（即使不点击也会）
      *      如：返回false时，move事件将不能移动此item。
@@ -73,6 +75,7 @@ public:
      *      返回false时，将会继续分发。
      */
     virtual bool mouseMove(const QPointF &pos){Q_UNUSED(pos) return false; }
+
     /**
      * @brief mouseRelease 当本item就是编辑中item，鼠标左键在黑板抬起时会被调用
      * @param pos 鼠标位置
@@ -134,17 +137,20 @@ public:
     /**
      * @brief updatePrevPosition 更新前一个位置记录。
      */
-    virtual void updatePrevPosition(){data()->updatePrevPostion();}
+    virtual void updatePrevPosition();
     /**
      * @brief z值，越大越在上方
      * @return z值
      */
-    virtual qreal z() { return data()->z; }
+    virtual qreal z();
     /**
      * @brief setZ 设置Z值
      * @param value z值，越大越在上方。
      */
-    virtual void setZ(const qreal &value) { data()->z = value; }
+    virtual void setZ(const qreal &value);
+
+    virtual void updatePrevZ();
+
     /**
      * @brief isEditing 是否正在被编辑。
      * @return 正在被编辑的返回true，否则返回false;
@@ -163,5 +169,7 @@ public:
      */
     IItemIndex *next = nullptr;
 };
+
+
 
 #endif // IITEMINDEX_H
