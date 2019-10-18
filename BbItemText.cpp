@@ -221,31 +221,6 @@ void BbItemText::readStream(QDataStream &stream)
     repaint();
 }
 
-QString BbItemText::id()
-{
-    return _myData->lid;
-}
-
-void BbItemText::setId(const QString &id)
-{
-    _myData->lid = id;
-}
-
-BbToolType BbItemText::toolType()
-{
-    return _myData->tooltype;
-}
-
-Blackboard *BbItemText::blackboard()
-{
-    return bbScene()->blackboard();
-}
-
-BbScene *BbItemText::bbScene()
-{
-    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
-}
-
 BbItemData *BbItemText::data()
 {
     return _myData;
@@ -253,7 +228,7 @@ BbItemData *BbItemText::data()
 
 bool BbItemText::doubleClicked(const QPointF &pos)
 {
-    Q_UNUSED(pos);
+    Q_UNUSED(pos)
     // NOTE: 通过Picker工具双击文本来编辑时，外部的鼠标样式极可能不是“文本光标”，所以需要这里修改一下
     bbScene()->setEditingItem(this);
     blackboard()->toToolCursor(BBTT_Text);
@@ -308,13 +283,13 @@ void BbItemText::toolDown(const QPointF &pos)
 
 void BbItemText::toolDraw(const QPointF &pos)
 {
-    Q_UNUSED(pos);
+    Q_UNUSED(pos)
     // do nothing.
 }
 
 void BbItemText::toolDone(const QPointF &pos)
 {
-    Q_UNUSED(pos);
+    Q_UNUSED(pos)
     // do nothing.
     if(bbScene()->toolType() != BBTT_Text)
     {
@@ -324,7 +299,7 @@ void BbItemText::toolDone(const QPointF &pos)
 
 void BbItemText::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
-    Q_UNUSED(modifiers);
+    Q_UNUSED(modifiers)
     // do nothing.
 }
 
@@ -335,17 +310,6 @@ void BbItemText::removed()
 
 void BbItemText::added()
 {
-}
-
-qreal BbItemText::z()
-{
-    return zValue();
-}
-
-void BbItemText::setZ(const qreal &value)
-{
-    setZValue(value);
-    _myData->z = value;
 }
 
 void BbItemText::setPos(const QPointF &pos)

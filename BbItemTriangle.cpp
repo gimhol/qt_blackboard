@@ -41,11 +41,6 @@ void BbItemTriangle::init()
     setBrush(Qt::NoBrush);
 }
 
-Blackboard *BbItemTriangle::blackboard()
-{
-    return bbScene()->blackboard();
-}
-
 void BbItemTriangle::toolDown(const QPointF &pos)
 {
     if(step() == 0)
@@ -70,29 +65,13 @@ void BbItemTriangle::toolDraw(const QPointF &pos)
 
 void BbItemTriangle::toolDone(const QPointF &pos)
 {
-    Q_UNUSED(pos);
+    Q_UNUSED(pos)
     done();
     emit blackboard()->itemChanged(BBIET_triangleDone,this);
     if(step() > 1)
     {
         bbScene()->unsetCurrentItem(this);
     }
-}
-
-void BbItemTriangle::modifiersChanged(Qt::KeyboardModifiers modifiers)
-{
-    Q_UNUSED(modifiers);
-    // do nothing
-}
-
-qreal BbItemTriangle::z()
-{
-    return zValue();
-}
-
-void BbItemTriangle::setZ(const qreal &value)
-{
-    setZValue(value);
 }
 
 void BbItemTriangle::absolutize()
@@ -311,26 +290,6 @@ void BbItemTriangle::readStream(QDataStream &stream)
     _myData->readStream(stream);
     absolutize();
     repaint();
-}
-
-QString BbItemTriangle::id()
-{
-    return _myData->lid;
-}
-
-void BbItemTriangle::setId(const QString &id)
-{
-    _myData->lid = id;
-}
-
-BbToolType BbItemTriangle::toolType()
-{
-    return _myData->tooltype;
-}
-
-BbScene *BbItemTriangle::bbScene()
-{
-    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
 
 BbItemData *BbItemTriangle::data()

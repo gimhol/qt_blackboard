@@ -465,34 +465,9 @@ void BbItemPen::readStream(QDataStream &stream)
     repaint();
 }
 
-QString BbItemPen::id()
-{
-    return _data->lid;
-}
-
-void BbItemPen::setId(const QString &id)
-{
-    _data->lid = id;
-}
-
-BbToolType BbItemPen::toolType()
-{
-    return _data->tooltype;
-}
-
-BbScene *BbItemPen::bbScene()
-{
-    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
-}
-
 BbItemData *BbItemPen::data()
 {
     return _data;
-}
-
-Blackboard *BbItemPen::blackboard()
-{
-    return bbScene()->blackboard();
 }
 
 void BbItemPen::toolDown(const QPointF &pos)
@@ -546,17 +521,6 @@ void BbItemPen::modifiersChanged(Qt::KeyboardModifiers modifiers)
             emit blackboard()->itemChanged(BBIET_penDraw,this);
         }
     }
-}
-
-qreal BbItemPen::z()
-{
-    return zValue();
-}
-
-void BbItemPen::setZ(const qreal &value)
-{
-    setZValue(value);
-    _data->z = value;
 }
 
 void BbItemPen::absolutize()

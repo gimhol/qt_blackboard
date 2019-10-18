@@ -41,11 +41,6 @@ void BbItemStraight::init()
     setBrush(Qt::NoBrush);
 }
 
-Blackboard *BbItemStraight::blackboard()
-{
-    return bbScene()->blackboard();
-}
-
 void BbItemStraight::toolDown(const QPointF &pos)
 {
     setZValue(QDateTime::currentMSecsSinceEpoch());
@@ -69,7 +64,7 @@ void BbItemStraight::toolDraw(const QPointF &pos)
 
 void BbItemStraight::toolDone(const QPointF &pos)
 {
-    Q_UNUSED(pos);
+    Q_UNUSED(pos)
     done();
     emit blackboard()->itemChanged(BBIET_straightDone,this);
     bbScene()->unsetCurrentItem(this);
@@ -82,17 +77,6 @@ void BbItemStraight::modifiersChanged(Qt::KeyboardModifiers modifiers)
         setFortyFive(modifiers == Qt::ShiftModifier);
         emit blackboard()->itemChanged(BBIET_straightDraw,this);
     }
-}
-
-qreal BbItemStraight::z()
-{
-    return zValue();
-}
-
-void BbItemStraight::setZ(const qreal &value)
-{
-    setZValue(value);
-    _myData->z = value;
 }
 
 void BbItemStraight::absolutize()
@@ -308,26 +292,6 @@ void BbItemStraight::readStream(QDataStream &stream)
     _myData->readStream(stream);
     absolutize();
     repaint();
-}
-
-QString BbItemStraight::id()
-{
-    return _myData->lid;
-}
-
-void BbItemStraight::setId(const QString &id)
-{
-    _myData->lid = id;
-}
-
-BbToolType BbItemStraight::toolType()
-{
-    return _myData->tooltype;
-}
-
-BbScene *BbItemStraight::bbScene()
-{
-    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
 
 BbItemData *BbItemStraight::data()

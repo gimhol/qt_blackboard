@@ -67,20 +67,10 @@ public:
 
     // IItemIndex interface
 public:
-    QString id() override;
-    void setId(const QString &id) override;
-    BbToolType toolType() override;
-    BbScene *bbScene() override;
     BbItemData *data() override;
-    Blackboard *blackboard() override;
     void toolDown(const QPointF &pos) override;
     void toolDraw(const QPointF &pos) override;
     void toolDone(const QPointF &pos) override;
-    void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
-    void removed() override { }
-    void added() override { }
-    qreal z() override;
-    void setZ(const qreal &value) override;
     void absolutize() override;
     bool isEditing() override;
 };
