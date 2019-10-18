@@ -156,31 +156,6 @@ QPointF BbItemRect::dragPos()
     return QPointF(_dragX,_dragY);
 }
 
-QString BbItemRect::id()
-{
-    return _myData->lid;
-}
-
-void BbItemRect::setId(const QString &id)
-{
-    _myData->lid = id;
-}
-
-BbToolType BbItemRect::toolType()
-{
-    return _myData->tooltype;
-}
-
-Blackboard *BbItemRect::blackboard()
-{
-    return bbScene()->blackboard();
-}
-
-BbScene *BbItemRect::bbScene()
-{
-    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
-}
-
 BbItemData *BbItemRect::data()
 {
     return _myData;
@@ -209,7 +184,7 @@ void BbItemRect::toolDraw(const QPointF &pos)
 
 void BbItemRect::toolDone(const QPointF &pos)
 {
-    Q_UNUSED(pos);
+    Q_UNUSED(pos)
     done();
     emit blackboard()->itemChanged(BBIET_rectDone,this);
     bbScene()->unsetCurrentItem(this);
@@ -222,17 +197,6 @@ void BbItemRect::modifiersChanged(Qt::KeyboardModifiers modifiers)
         setSquare(modifiers == Qt::ShiftModifier);
         emit blackboard()->itemChanged(BBIET_rectDraw,this);
     }
-}
-
-qreal BbItemRect::z()
-{
-    return zValue();
-}
-
-void BbItemRect::setZ(const qreal &value)
-{
-    setZValue(value);
-    _myData->z = value;
 }
 
 void BbItemRect::absolutize()

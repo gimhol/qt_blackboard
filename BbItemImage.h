@@ -49,11 +49,6 @@ public: // IStreamWR
     void readStream(QDataStream &stream) override;
 
 public: //IItemIndex
-    QString id() override;
-    void setId(const QString &id) override;
-    BbToolType toolType() override;
-    Blackboard *blackboard() override;
-    BbScene *bbScene() override;
     BbItemData *data() override;
     void repaint() override;
     bool mouseDown(const QPointF &pos) override;
@@ -63,8 +58,6 @@ public: //IItemIndex
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void added() override;
     void absolutize() override;
-    qreal z() override;
-    void setZ(const qreal &value) override;
 
 private:
     BbItemImageData * _data;

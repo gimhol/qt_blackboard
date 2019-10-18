@@ -49,17 +49,6 @@ void BbItemEllipse::modifiersChanged(Qt::KeyboardModifiers modifiers)
     }
 }
 
-qreal BbItemEllipse::z()
-{
-    return zValue();
-}
-
-void BbItemEllipse::setZ(const qreal &value)
-{
-    setZValue(value);
-    _data->z = value;
-}
-
 void BbItemEllipse::absolutize()
 {
     if(_data->mode == BbItemData::CM_PERCENTAGE)
@@ -205,31 +194,6 @@ QPointF BbItemEllipse::dragPos()
     return QPointF(_dragX,_dragY);
 }
 
-QString BbItemEllipse::id()
-{
-    return _data->lid;
-}
-
-void BbItemEllipse::setId(const QString &id)
-{
-    _data->lid = id;
-}
-
-BbToolType BbItemEllipse::toolType()
-{
-    return _data->tooltype;
-}
-
-Blackboard *BbItemEllipse::blackboard()
-{
-    return bbScene()->blackboard();
-}
-
-BbScene *BbItemEllipse::bbScene()
-{
-    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
-}
-
 BbItemData *BbItemEllipse::data()
 {
     return _data;
@@ -258,7 +222,7 @@ void BbItemEllipse::toolDraw(const QPointF &pos)
 
 void BbItemEllipse::toolDone(const QPointF &pos)
 {
-    Q_UNUSED(pos);
+    Q_UNUSED(pos)
     done();
     emit blackboard()->itemChanged(BBIET_ellipseDone,this);
     bbScene()->unsetCurrentItem(this);

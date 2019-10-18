@@ -427,11 +427,6 @@ bool BbItemImage::done()
     return changed;
 }
 
-Blackboard *BbItemImage::blackboard()
-{
-    return bbScene()->blackboard();
-}
-
 bool BbItemImage::mouseDown(const QPointF &pos)
 {
     if(isUnderMouse())
@@ -547,17 +542,6 @@ void BbItemImage::added()
     {
         emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
     }
-}
-
-qreal BbItemImage::z()
-{
-    return zValue();
-}
-
-void BbItemImage::setZ(const qreal &value)
-{
-    setZValue(value);
-    _data->z = value;
 }
 
 void BbItemImage::absolutize()
@@ -676,24 +660,4 @@ void BbItemImage::readStream(QDataStream &stream)
     {
         emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
     }
-}
-
-QString BbItemImage::id()
-{
-    return _data->lid;
-}
-
-void BbItemImage::setId(const QString &id)
-{
-    _data->lid = id;
-}
-
-BbToolType BbItemImage::toolType()
-{
-    return _data->tooltype;
-}
-
-BbScene *BbItemImage::bbScene()
-{
-    return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
