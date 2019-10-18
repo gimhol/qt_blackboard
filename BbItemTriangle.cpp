@@ -43,7 +43,7 @@ void BbItemTriangle::init()
 
 Blackboard *BbItemTriangle::blackboard()
 {
-    return scene()->blackboard();
+    return bbScene()->blackboard();
 }
 
 void BbItemTriangle::toolDown(const QPointF &pos)
@@ -56,8 +56,8 @@ void BbItemTriangle::toolDown(const QPointF &pos)
         setBrushColor(settings->brush.color());
         setWeight(settings->weight());
         begin(pos);
-        setId(scene()->generatItemId());
-        scene()->setCurrentItem(this);
+        setId(bbScene()->generatItemId());
+        bbScene()->setCurrentItem(this);
         emit blackboard()->itemChanged(BBIET_triangleDown,this);
     }
 }
@@ -75,7 +75,7 @@ void BbItemTriangle::toolDone(const QPointF &pos)
     emit blackboard()->itemChanged(BBIET_triangleDone,this);
     if(step() > 1)
     {
-        scene()->unsetCurrentItem(this);
+        bbScene()->unsetCurrentItem(this);
     }
 }
 
@@ -100,7 +100,7 @@ void BbItemTriangle::absolutize()
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {
         _myData->mode = BbItemData::CM_ABSOLUTE;
-        qreal ratio = scene()->width() / 100;
+        qreal ratio = bbScene()->width() / 100;
         if(_myData->isPositionValid())
         {
             _myData->x *= ratio;
@@ -328,7 +328,7 @@ BbToolType BbItemTriangle::toolType() const
     return _myData->tooltype;
 }
 
-BbScene *BbItemTriangle::scene()
+BbScene *BbItemTriangle::bbScene()
 {
     return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }

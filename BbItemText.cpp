@@ -51,13 +51,13 @@ void BbItemText::focusOutEvent(QFocusEvent *event)
         // NOTE: 失去焦點后移除選擇狀態
         setSelected(false);
 
-        scene()->unsetCurrentItem(this);
+        bbScene()->unsetCurrentItem(this);
 
         if(isEmpty())
         {
             if(!isRemoved)
             {
-                scene()->remove(this); // 空白的不要保留，移除本地的。
+                bbScene()->remove(this); // 空白的不要保留，移除本地的。
             }
         }
         else if(_myData->prevText != _myData->text)
@@ -238,10 +238,10 @@ BbToolType BbItemText::toolType() const
 
 Blackboard *BbItemText::blackboard()
 {
-    return scene()->blackboard();
+    return bbScene()->blackboard();
 }
 
-BbScene *BbItemText::scene()
+BbScene *BbItemText::bbScene()
 {
     return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
@@ -255,7 +255,7 @@ bool BbItemText::doubleClicked(const QPointF &pos)
 {
     Q_UNUSED(pos);
     // NOTE: 通过Picker工具双击文本来编辑时，外部的鼠标样式极可能不是“文本光标”，所以需要这里修改一下
-    scene()->setEditingItem(this);
+    bbScene()->setEditingItem(this);
     blackboard()->toToolCursor(BBTT_Text);
     setTextInteractionFlags(Qt::TextEditorInteraction);
     setFocus();
@@ -264,7 +264,7 @@ bool BbItemText::doubleClicked(const QPointF &pos)
 
 void BbItemText::toolDown(const QPointF &pos)
 {
-    if(scene()->currentItem() == this)
+    if(bbScene()->currentItem() == this)
     {
         if(!boundingRect().contains(pos - this->pos()))
         {
@@ -286,8 +286,8 @@ void BbItemText::toolDown(const QPointF &pos)
     }
     else
     {
-        scene()->setCurrentItem(this);
-        setId(scene()->generatItemId());
+        bbScene()->setCurrentItem(this);
+        setId(bbScene()->generatItemId());
         setZValue(QDateTime::currentMSecsSinceEpoch());
 
         auto settings = blackboard()->toolSettings<BbItemTextData>(BBTT_Text);
@@ -316,7 +316,7 @@ void BbItemText::toolDone(const QPointF &pos)
 {
     Q_UNUSED(pos);
     // do nothing.
-    if(scene()->toolType() != BBTT_Text)
+    if(bbScene()->toolType() != BBTT_Text)
     {
         clearFocus();
     }
@@ -372,7 +372,7 @@ void BbItemText::absolutize()
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {
         _myData->mode = BbItemData::CM_ABSOLUTE;
-        qreal ratio = scene()->width() / 100;
+        qreal ratio = bbScene()->width() / 100;
         if(_myData->isPositionValid())
         {
             _myData->x *= ratio;

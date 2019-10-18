@@ -173,10 +173,10 @@ BbToolType BbItemRect::toolType() const
 
 Blackboard *BbItemRect::blackboard()
 {
-    return scene()->blackboard();
+    return bbScene()->blackboard();
 }
 
-BbScene *BbItemRect::scene()
+BbScene *BbItemRect::bbScene()
 {
     return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
@@ -188,16 +188,16 @@ BbItemData *BbItemRect::data()
 
 void BbItemRect::toolDown(const QPointF &pos)
 {
-    setId(scene()->generatItemId());
+    setId(bbScene()->generatItemId());
     setZValue(QDateTime::currentMSecsSinceEpoch());
     auto settings = blackboard()->toolSettings<BbItemRectData>(BBTT_Rectangle);
     setPenColor(settings->pen.color());
     setBrushColor(settings->brush.color());
     setWeight(settings->weight());
 
-    scene()->setCurrentItem(this);
+    bbScene()->setCurrentItem(this);
     begin(pos);
-    setSquare(scene()->modifiers() & Qt::ShiftModifier);
+    setSquare(bbScene()->modifiers() & Qt::ShiftModifier);
     emit blackboard()->itemChanged(BBIET_rectDown,this);
 }
 
@@ -212,7 +212,7 @@ void BbItemRect::toolDone(const QPointF &pos)
     Q_UNUSED(pos);
     done();
     emit blackboard()->itemChanged(BBIET_rectDone,this);
-    scene()->unsetCurrentItem(this);
+    bbScene()->unsetCurrentItem(this);
 }
 
 void BbItemRect::modifiersChanged(Qt::KeyboardModifiers modifiers)
@@ -240,7 +240,7 @@ void BbItemRect::absolutize()
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {
         _myData->mode = BbItemData::CM_ABSOLUTE;
-        qreal ratio = scene()->width() / 100;
+        qreal ratio = bbScene()->width() / 100;
         if(_myData->isPositionValid())
         {
             _myData->x *= ratio;

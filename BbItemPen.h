@@ -99,7 +99,7 @@ public:
    QString id() const override;
    void setId(const QString &id) override;
    BbToolType toolType() const override;
-   BbScene *scene() override;
+   BbScene *bbScene() override;
    BbItemData *data() override;
 
     Blackboard *blackboard() override;

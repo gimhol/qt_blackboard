@@ -65,7 +65,7 @@ void BbItemEllipse::absolutize()
     if(_data->mode == BbItemData::CM_PERCENTAGE)
     {
         _data->mode = BbItemData::CM_ABSOLUTE;
-        qreal ratio = scene()->width() / 100;
+        qreal ratio = bbScene()->width() / 100;
         if(_data->isPositionValid())
         {
             _data->x *= ratio;
@@ -222,10 +222,10 @@ BbToolType BbItemEllipse::toolType() const
 
 Blackboard *BbItemEllipse::blackboard()
 {
-    return scene()->blackboard();
+    return bbScene()->blackboard();
 }
 
-BbScene *BbItemEllipse::scene()
+BbScene *BbItemEllipse::bbScene()
 {
     return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }
@@ -244,9 +244,9 @@ void BbItemEllipse::toolDown(const QPointF &pos)
     setWeight(settings->weight());
 
     begin(pos);
-    setId(scene()->generatItemId());
-    setCircle(scene()->modifiers() & Qt::ShiftModifier);
-    scene()->setCurrentItem(this);
+    setId(bbScene()->generatItemId());
+    setCircle(bbScene()->modifiers() & Qt::ShiftModifier);
+    bbScene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_ellipseDown,this);
 }
 
@@ -261,7 +261,7 @@ void BbItemEllipse::toolDone(const QPointF &pos)
     Q_UNUSED(pos);
     done();
     emit blackboard()->itemChanged(BBIET_ellipseDone,this);
-    scene()->unsetCurrentItem(this);
+    bbScene()->unsetCurrentItem(this);
 }
 
 bool BbItemEllipse::square()

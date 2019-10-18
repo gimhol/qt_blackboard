@@ -53,7 +53,7 @@ public: //IItemIndex
     void setId(const QString &id) override;
     BbToolType toolType() const override;
     Blackboard *blackboard() override;
-    BbScene *scene() override;
+    BbScene *bbScene() override;
     BbItemData *data() override;
     void repaint() override;
     bool mouseDown(const QPointF &pos) override;

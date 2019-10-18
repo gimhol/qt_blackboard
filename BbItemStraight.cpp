@@ -43,7 +43,7 @@ void BbItemStraight::init()
 
 Blackboard *BbItemStraight::blackboard()
 {
-    return scene()->blackboard();
+    return bbScene()->blackboard();
 }
 
 void BbItemStraight::toolDown(const QPointF &pos)
@@ -55,9 +55,9 @@ void BbItemStraight::toolDown(const QPointF &pos)
     setWeight(settings->weight());
 
     begin(pos);
-    setId(scene()->generatItemId());
-    setFortyFive(scene()->onlyShiftDown());
-    scene()->setCurrentItem(this);
+    setId(bbScene()->generatItemId());
+    setFortyFive(bbScene()->onlyShiftDown());
+    bbScene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_straightDown,this);
 }
 
@@ -72,7 +72,7 @@ void BbItemStraight::toolDone(const QPointF &pos)
     Q_UNUSED(pos);
     done();
     emit blackboard()->itemChanged(BBIET_straightDone,this);
-    scene()->unsetCurrentItem(this);
+    bbScene()->unsetCurrentItem(this);
 }
 
 void BbItemStraight::modifiersChanged(Qt::KeyboardModifiers modifiers)
@@ -100,7 +100,7 @@ void BbItemStraight::absolutize()
     if(_myData->mode == BbItemData::CM_PERCENTAGE)
     {
         _myData->mode = BbItemData::CM_ABSOLUTE;
-        qreal ratio = scene()->width() / 100;
+        qreal ratio = bbScene()->width() / 100;
         if(_myData->isPositionValid())
         {
             _myData->x *= ratio;
@@ -325,7 +325,7 @@ BbToolType BbItemStraight::toolType() const
     return _myData->tooltype;
 }
 
-BbScene *BbItemStraight::scene()
+BbScene *BbItemStraight::bbScene()
 {
     return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }

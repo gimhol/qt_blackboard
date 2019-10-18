@@ -74,7 +74,7 @@ public:
     void setId(const QString &id) override;
     BbToolType toolType() const override;
     Blackboard *blackboard() override;
-    BbScene *scene() override;
+    BbScene *bbScene() override;
     BbItemData *data() override;
     void toolDown(const QPointF &pos) override;
     void toolDraw(const QPointF &pos) override;

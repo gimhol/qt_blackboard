@@ -263,7 +263,7 @@ void BbItemImage::updatePrevSize()
 void BbItemImage::begin(const QPointF &point)
 {
     Q_UNUSED(point)
-    modifiersChanged(scene()->modifiers());
+    modifiersChanged(bbScene()->modifiers());
     _lastX = int(this->x());
     _lastY = int(this->y());
     _lastW = int(this->rect().width());
@@ -429,7 +429,7 @@ bool BbItemImage::done()
 
 Blackboard *BbItemImage::blackboard()
 {
-    return scene()->blackboard();
+    return bbScene()->blackboard();
 }
 
 bool BbItemImage::mouseDown(const QPointF &pos)
@@ -450,7 +450,7 @@ bool BbItemImage::mouseDown(const QPointF &pos)
     }
     else
     {
-        scene()->unsetEditingItem(this);
+        bbScene()->unsetEditingItem(this);
         update();
         return false;
     }
@@ -510,7 +510,7 @@ bool BbItemImage::clicked(const QPointF &pos)
     Q_UNUSED(pos)
     if(_data->editable)
     {
-        scene()->setEditingItem(this);
+        bbScene()->setEditingItem(this);
         return mouseDown(pos);
     }
     return false;
@@ -565,7 +565,7 @@ void BbItemImage::absolutize()
     if(_data->mode == BbItemData::CM_PERCENTAGE)
     {
         _data->mode = BbItemData::CM_ABSOLUTE;
-        qreal ratio = scene()->width() / 100;
+        qreal ratio = bbScene()->width() / 100;
         if(_data->isPositionValid())
         {
             _data->x *= ratio;
@@ -631,7 +631,7 @@ void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
         painter->drawRect(rect());
         painter->setPen(Qt::DashLine);
         painter->drawRect(rect());
-        if(scene()->editingItem() == this)
+        if(bbScene()->editingItem() == this)
         {
             painter->setPen(QColor(0,0,0));
             painter->setBrush(QColor(255,255,255));
@@ -693,7 +693,7 @@ BbToolType BbItemImage::toolType() const
     return _data->tooltype;
 }
 
-BbScene *BbItemImage::scene()
+BbScene *BbItemImage::bbScene()
 {
     return dynamic_cast<BbScene *>(QGraphicsItem::scene());
 }

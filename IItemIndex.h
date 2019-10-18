@@ -46,7 +46,7 @@ public:
      * @brief scene 本item的所处的 BbScene
      * @return 本item的所处的 BbScene
      */
-    virtual BbScene *scene() = 0;
+    virtual BbScene *bbScene() = 0;
     /**
      * @brief data 本item的数据基类指针
      * @return 本item的数据基类指针

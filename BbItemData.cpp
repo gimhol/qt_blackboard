@@ -28,7 +28,7 @@ void BbItemData::updatePostion(IItemIndex *itemIdx)
     auto itemBase = dynamic_cast<QGraphicsItem*>(itemIdx);
     if(itemBase)
     {
-        auto scene = itemIdx->scene();
+        auto scene = itemIdx->bbScene();
         if(scene && CM_PERCENTAGE == mode)
         {
             qreal ratio = scene->width() / 100;
