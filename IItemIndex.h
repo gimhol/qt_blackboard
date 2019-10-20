@@ -1,8 +1,19 @@
 ﻿#ifndef IITEMINDEX_H
 #define IITEMINDEX_H
 
-// 为了保证本地调用移动时会将坐标记录下来，用IItemIndex提供的设置位置的函数代替下面这些QGraphicsItem的函数。
+/**
+ * 为了保证本地调用移动时，
+ * data可以将坐标记录下来，
+ * 每个可编辑的Item需要使用此宏定义来对外隐藏QGraphicsItem的设置位置的函数。
+ * 然后用IItemIndex提供的函数来代替。有以下关系：
+ * 原： setX 新： moveToX
+ * 原： setY 新： moveToY
+ * 原： setPos 新：moveToPosition
+ * 原： moveBy moveByVector2
+ */
+
 #define BB_HIDE_POS_SETTER \
+protected: \
 void setX(qreal x) { QGraphicsItem::setX(x); } \
 void setY(qreal y) { QGraphicsItem::setY(y); } \
 void setPos(const QPointF &pos){ return QGraphicsItem::setPos(pos); } \
