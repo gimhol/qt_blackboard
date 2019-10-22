@@ -1,6 +1,7 @@
 INCLUDEPATH += $$PWD
 
 HEADERS += \
+    $$PWD/BbFactory.h \
     $$PWD/BbHeader.h \
     $$PWD/BbHelper.h \
     $$PWD/BbScene.h \
@@ -27,6 +28,7 @@ HEADERS += \
     $$PWD/BBItemEventType.h
 
 SOURCES += \
+    $$PWD/BbFactory.cpp \
     $$PWD/BbHelper.cpp \
     $$PWD/BbScene.cpp \
     $$PWD/Blackboard.cpp \
