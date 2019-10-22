@@ -45,7 +45,7 @@ Blackboard::Blackboard(QWidget *parent):
     QGraphicsView(parent),
     dptr(new BlackboardPrivate)
 {
-    setScene(new BbScene(this));
+    setScene(factory()->createScene(this));
 
     setMouseTracking(true);
     setTabletTracking(true);

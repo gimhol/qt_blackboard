@@ -7,6 +7,8 @@ BbFactory::BbFactory()
 
 }
 
+BbFactory::~BbFactory(){}
+
 BbScene *BbFactory::createScene(Blackboard *blackboard)
 {
     return new BbScene(blackboard);

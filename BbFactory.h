@@ -1,16 +1,12 @@
 #ifndef BBFACTORY_H
 #define BBFACTORY_H
+#include <BbHelper.h>
 
-#include <BbToolType.h>
-class BbScene;
-class IItemIndex;
-class BbItemData;
-class Blackboard;
-class BbFactory
+class NSB_BLACKBOARD_EXPORT BbFactory
 {
 public:
     BbFactory();
-    virtual ~BbFactory(){}
+    virtual ~BbFactory();
     virtual BbScene *createScene(Blackboard *blackboard);
     virtual IItemIndex *createItemWhenToolDown(BbToolType bbtt);
     virtual IItemIndex *createItem(BbToolType bbtt);
