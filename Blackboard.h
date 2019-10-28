@@ -5,6 +5,7 @@
 #include "BBItemEventType.h"
 #include "BbHelper.h"
 #include "BbScene.h"
+#include "BbFactory.h"
 
 class BbItemData;
 class BbPointer;
@@ -13,6 +14,10 @@ class NSB_BLACKBOARD_EXPORT Blackboard: public QGraphicsView, public IStreamWR
 {
     Q_OBJECT
 public:
+    static void setFactory(BbFactory *factory);
+
+    static BbFactory *factory();
+
     Blackboard(QWidget *parent = Q_NULLPTR);
 
     ~Blackboard() override;

@@ -25,11 +25,28 @@ public:
     bool tabletActive = false;
 };
 
+static BbFactory *_factory = new BbFactory();
+
+void Blackboard::setFactory(BbFactory *factory)
+{
+    if(_factory)
+    {
+        delete _factory;
+    }
+    _factory = factory;
+}
+
+BbFactory *Blackboard::factory()
+{
+    return _factory;
+}
+
 Blackboard::Blackboard(QWidget *parent):
     QGraphicsView(parent),
     dptr(new BlackboardPrivate)
 {
-    setScene(new BbScene(this));
+    setScene(factory()->createScene(this));
+
     setMouseTracking(true);
     setTabletTracking(true);
     setToolCursor(BBTT_Pen,Qt::CrossCursor);
@@ -420,7 +437,7 @@ BbItemData *Blackboard::toolSettings(const BbToolType &toolType)
     {
         return itr.value();
     }
-    auto settings = BbHelper::createToolSettings(toolType);
+    auto settings = factory()->createToolSettings(toolType);
     if(settings)
     {
         dptr->toolSettings.insert(toolType,settings);

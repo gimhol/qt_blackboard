@@ -207,7 +207,7 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             {
                 if(!_curItemIndex)
                 {
-                    auto item = BbHelper::createItemWhenToolDown(_toolType);
+                    auto item = Blackboard::factory()->createItemWhenToolDown(_toolType);
                     if(item)
                     {
                         add(item);
@@ -811,7 +811,7 @@ IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
 {
     int type;
     stream >> type;
-    auto index = BbHelper::createItem(static_cast<BbToolType>(type));
+    auto index = Blackboard::factory()->createItem(static_cast<BbToolType>(type));
     if(index)
     {
         add(index);
@@ -926,7 +926,7 @@ void BbScene::clearItems()
 
 IItemIndex *BbScene::readItemData(BbItemData *itemData)
 {
-    auto item = BbHelper::createItem(itemData);
+    auto item = Blackboard::factory()->createItem(itemData);
     if(item)
     {
         add(item);
