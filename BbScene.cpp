@@ -41,6 +41,7 @@ BbScene::BbScene(Blackboard *parent):
                              Qt::RoundCap,
                              Qt::MiterJoin));
     _pickerRect->setEnabled(false);
+    _pickerRect->setZValue(DBL_MAX);
     QGraphicsScene::addItem(_pickerRect);
 }
 
