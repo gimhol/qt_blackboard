@@ -2,8 +2,6 @@
 #include "BbItemEllipseData.h"
 #include "Blackboard.h"
 #include "BbScene.h"
-
-#include <QDateTime>
 #include <QPainter>
 
 BbItemEllipse::BbItemEllipse():
@@ -201,14 +199,16 @@ BbItemData *BbItemEllipse::data()
 
 void BbItemEllipse::toolDown(const QPointF &pos)
 {
-    setZValue(QDateTime::currentMSecsSinceEpoch());
+    setId(blackboard()->factory()->makeItemId());
+    setZ(blackboard()->factory()->makeItemZ());
+    updatePrevZ();
+
     auto settings = blackboard()->toolSettings<BbItemEllipseData>(BBTT_Ellipse);
     setPenColor(settings->pen.color());
     setBrushColor(settings->brush.color());
     setWeight(settings->weight());
 
     begin(pos);
-    setId(bbScene()->generatItemId());
     setCircle(bbScene()->modifiers() & Qt::ShiftModifier);
     bbScene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_ellipseDown,this);

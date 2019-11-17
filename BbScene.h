@@ -159,18 +159,6 @@ public:
 
     QList<QPair<QString,QGraphicsItem *>> backgrounds();
 
-    /*
-     * @brief generatItemId 生成itemid
-     * @return itemId
-     */
-    QString generatItemId() const;
-
-    /**
-     * @brief generateBackgroundId 生成一个backgroundId
-     * @return backgroundId
-     */
-    QString generateBackgroundId() const;
-
     IItemIndex *currentItem();
 
     void setCurrentItem(IItemIndex *item);

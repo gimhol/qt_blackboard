@@ -3,7 +3,6 @@
 #include "Blackboard.h"
 #include "BbItemPenData.h"
 #include <QDebug>
-#include <QDateTime>
 
 #ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
 float penSqrt(float number)
@@ -473,13 +472,15 @@ BbItemData *BbItemPen::data()
 
 void BbItemPen::toolDown(const QPointF &pos)
 {
+    setId(blackboard()->factory()->makeItemId());
+    setZ(blackboard()->factory()->makeItemZ());
+    updatePrevZ();
+
     setStraight(bbScene()->modifiers() & Qt::ShiftModifier);
-    setZValue(QDateTime::currentMSecsSinceEpoch());
     auto settings = blackboard()->toolSettings<BbItemPenData>(BBTT_Pen);
     setWeight(settings->weight());
     setColor(settings->pen.color());
     penDown(pos);
-    setId(bbScene()->generatItemId());
     bbScene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_penDown,this);
 }

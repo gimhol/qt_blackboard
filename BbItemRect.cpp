@@ -3,7 +3,6 @@
 #include "Blackboard.h"
 #include "BbScene.h"
 
-#include <QDateTime>
 #include <QPainter>
 
 BbItemRect::BbItemRect():
@@ -163,8 +162,10 @@ BbItemData *BbItemRect::data()
 
 void BbItemRect::toolDown(const QPointF &pos)
 {
-    setId(bbScene()->generatItemId());
-    setZValue(QDateTime::currentMSecsSinceEpoch());
+    setId(blackboard()->factory()->makeItemId());
+    setZ(blackboard()->factory()->makeItemZ());
+    updatePrevZ();
+
     auto settings = blackboard()->toolSettings<BbItemRectData>(BBTT_Rectangle);
     setPenColor(settings->pen.color());
     setBrushColor(settings->brush.color());

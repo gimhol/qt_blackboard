@@ -12,6 +12,13 @@ public:
     virtual IItemIndex *createItem(BbToolType bbtt);
     virtual IItemIndex *createItem(BbItemData *data);
     virtual BbItemData *createToolSettings(BbToolType bbtt);
+    virtual QString makeItemId();
+    virtual QString makeBackgroundId();
+    virtual qreal makeItemZ();
+private:
+    qint64 _itemIdCount = 0;
+    qint64 _bbIdCount = 0;
+    qint64 _zCount = 0;
 };
 
 #endif // BBFACTORY_H

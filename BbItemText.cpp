@@ -3,7 +3,6 @@
 #include "Blackboard.h"
 #include "BbScene.h"
 
-#include <QDateTime>
 #include <QKeyEvent>
 
 BbItemText::BbItemText():
@@ -261,9 +260,9 @@ void BbItemText::toolDown(const QPointF &pos)
     }
     else
     {
-        bbScene()->setCurrentItem(this);
-        setId(bbScene()->generatItemId());
-        setZValue(QDateTime::currentMSecsSinceEpoch());
+        setId(blackboard()->factory()->makeItemId());
+        setZ(blackboard()->factory()->makeItemZ());
+        updatePrevZ();
 
         auto settings = blackboard()->toolSettings<BbItemTextData>(BBTT_Text);
         setFont(settings->font);
@@ -273,6 +272,7 @@ void BbItemText::toolDown(const QPointF &pos)
         setTextInteractionFlags(Qt::TextEditorInteraction);
         setFocus();
         setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
+        bbScene()->setCurrentItem(this);
 
         if(!isEmpty())
         {

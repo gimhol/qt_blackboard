@@ -14,9 +14,13 @@ class NSB_BLACKBOARD_EXPORT Blackboard: public QGraphicsView, public IStreamWR
 {
     Q_OBJECT
 public:
-    static void setFactory(BbFactory *factory);
+    static void setDefaultFactory(BbFactory *defaultFactory);
 
-    static BbFactory *factory();
+    static BbFactory *defaultFactory();
+
+    void setFactory(BbFactory *factory);
+
+    BbFactory *factory();
 
     Blackboard(QWidget *parent = Q_NULLPTR);
 

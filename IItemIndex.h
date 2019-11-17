@@ -16,6 +16,7 @@
 protected: \
 void setX(qreal x) { QGraphicsItem::setX(x); } \
 void setY(qreal y) { QGraphicsItem::setY(y); } \
+void setZValue(qreal z) { QGraphicsItem::setZValue(z); } \
 void setPos(const QPointF &pos){ return QGraphicsItem::setPos(pos); } \
 void setPos(qreal x, qreal y){ return QGraphicsItem::setPos(x,y); } \
 void moveBy(qreal dx, qreal dy) { QGraphicsItem::moveBy(dx,dy); } \
