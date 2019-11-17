@@ -86,6 +86,10 @@ Blackboard::~Blackboard()
     {
         delete settings;
     }
+    if(dptr->factory)
+    {
+        delete dptr->factory;
+    }
     delete dptr;
 }
 
