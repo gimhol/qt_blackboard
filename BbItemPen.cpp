@@ -123,7 +123,8 @@ void BbItemPen::penDown(const QPointF &point){
     addPointToPath(point);
     if(_straight)
     {
-        _straightLineFrom = QPointF(0,0);
+        _straightLineFrom = _mousePos-point;
+        _straightLineTo = _mousePos-point;
     }
     update();
     _data->updatePostion(this);
