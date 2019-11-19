@@ -30,6 +30,20 @@ static QNetworkAccessManager *networkManager()
     return ret;
 };
 
+class Factory: public BbFactory
+{
+public:
+    Factory(QWidget *window):
+        _window(window){}
+
+    QString makeItemId() override
+    {
+        return _window->windowTitle()+BbFactory::makeItemId();
+    }
+private:
+    QWidget *_window;
+};
+
 
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     QWidget(parent),
@@ -47,15 +61,10 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     buttonGroup->addButton(ui->ellipse);
     buttonGroup->addButton(ui->triangle);
 
-
     for(auto blackboard : findChildren<Blackboard*>())
     {
         blackboard->setToolType(BBTT_Pointer);
-        blackboard->scene()->setItemIdGenerator([this](){
-            return QString("%1_%2")
-                    .arg(windowTitle())
-                    .arg(QDateTime::currentDateTime().toMSecsSinceEpoch());
-        });
+        blackboard->setFactory(new Factory(this));
     }
 
     penSettings = blackboard()->toolSettings<BbItemPenData>(BBTT_Pen);
@@ -943,6 +952,7 @@ void BlackboardTestWindow::on_btn_make_sure_show_all_backgrouns_clicked()
 }
 #include <QMenu>
 #include <QAction>
+#include <QPointer>
 void BlackboardTestWindow::on_btn_remove_one_background_clicked()
 {
     auto menu = new QMenu(ui->btn_remove_one_background);

@@ -921,16 +921,6 @@ IItemIndex *BbScene::readItemData(BbItemData *itemData)
     return item;
 }
 
-void BbScene::setItemIdGenerator(IDGenerator itemIdGenerator)
-{
-    _itemIdGenerator = itemIdGenerator;
-}
-
-void BbScene::setBackgroundIdGenerator(IDGenerator backgroundIdGenerator)
-{
-    _backgroundIdGenerator = backgroundIdGenerator;
-}
-
 void BbScene::writeStream(QDataStream &stream)
 {
     for(auto item: items())
