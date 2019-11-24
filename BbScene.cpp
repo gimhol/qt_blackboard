@@ -19,7 +19,6 @@
 #include "BbHelper.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
-#include <QDateTime>
 #include <QKeyEvent>
 #include <QApplication>
 #include <QClipboard>
@@ -208,7 +207,7 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             {
                 if(!_curItemIndex)
                 {
-                    auto item = Blackboard::factory()->createItemWhenToolDown(_toolType);
+                    auto item = blackboard()->factory()->createItemWhenToolDown(_toolType);
                     if(item)
                     {
                         add(item);
@@ -419,7 +418,11 @@ void BbScene::copyItems()
 
     QByteArray data;
     QDataStream dataStream(&data, QIODevice::WriteOnly);
-    for(auto item: selectedItems())
+    auto items = selectedItems();
+    std::sort(items.begin(),items.end(),[](QGraphicsItem *a,QGraphicsItem*b){
+        return a->zValue() < b->zValue();
+    });
+    for(auto item: items)
     {
         IItemIndex *index = dynamic_cast<IItemIndex *>(item);
         IStreamW *streamWriter = dynamic_cast<IStreamW *>(item);
@@ -509,14 +512,14 @@ void BbScene::setBackground(const QPixmap &pixmap)
 
 QString BbScene::addBackground(const QPixmap &pixmap)
 {
-    auto backgroundId = generateBackgroundId();
+    auto backgroundId = blackboard()->factory()->makeBackgroundId();
     addBackground(backgroundId,pixmap);
     return backgroundId;
 }
 
 QString BbScene::addBackground(QGraphicsItem *graphicsItem)
 {
-    auto backgroundId = generateBackgroundId();
+    auto backgroundId = blackboard()->factory()->makeBackgroundId();
     addBackground(backgroundId,graphicsItem);
     return backgroundId;
 }
@@ -670,24 +673,6 @@ void BbScene::pickingItems(const QPointF &mousePos)
     }
 }
 
-QString BbScene::generatItemId() const
-{
-    if(_itemIdGenerator != nullptr)
-    {
-        return _itemIdGenerator();
-    }
-    return QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch());
-}
-
-QString BbScene::generateBackgroundId() const
-{
-    if(_backgroundIdGenerator != nullptr)
-    {
-        return _backgroundIdGenerator();
-    }
-    return QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch());
-}
-
 IItemIndex *BbScene::currentItem()
 {
     return _curItemIndex;
@@ -812,7 +797,7 @@ IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
 {
     int type;
     stream >> type;
-    auto index = Blackboard::factory()->createItem(static_cast<BbToolType>(type));
+    auto index = blackboard()->factory()->createItem(static_cast<BbToolType>(type));
     if(index)
     {
         add(index);
@@ -927,23 +912,13 @@ void BbScene::clearItems()
 
 IItemIndex *BbScene::readItemData(BbItemData *itemData)
 {
-    auto item = Blackboard::factory()->createItem(itemData);
+    auto item = blackboard()->factory()->createItem(itemData);
     if(item)
     {
         add(item);
         item->repaint();
     }
     return item;
-}
-
-void BbScene::setItemIdGenerator(IDGenerator itemIdGenerator)
-{
-    _itemIdGenerator = itemIdGenerator;
-}
-
-void BbScene::setBackgroundIdGenerator(IDGenerator backgroundIdGenerator)
-{
-    _backgroundIdGenerator = backgroundIdGenerator;
 }
 
 void BbScene::writeStream(QDataStream &stream)
@@ -979,8 +954,8 @@ BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height)
     add(item);
     item->resize(width,height);
     item->updatePrevPosition();
-    item->setZ(QDateTime::currentMSecsSinceEpoch());
-    item->setId(generatItemId());
+    item->setZ(blackboard()->factory()->makeItemZ());
+    item->setId(blackboard()->factory()->makeItemId());
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
 }
@@ -991,8 +966,8 @@ BbItemImage *BbScene::addImageItem(const QPixmap &pixmap)
     add(item);
     item->resize(pixmap.width(),pixmap.height());
     item->updatePrevPosition();
-    item->setZ(QDateTime::currentMSecsSinceEpoch());
-    item->setId(generatItemId());
+    item->setZ(blackboard()->factory()->makeItemZ());
+    item->setId(blackboard()->factory()->makeItemId());
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1004,8 +979,8 @@ BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height, cons
     add(item);
     item->resize(width,height);
     item->updatePrevPosition();
-    item->setZ(QDateTime::currentMSecsSinceEpoch());
-    item->setId(generatItemId());
+    item->setZ(blackboard()->factory()->makeItemZ());
+    item->setId(blackboard()->factory()->makeItemId());
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1020,8 +995,8 @@ BbItemImage *BbScene::addImageItemWithPath(const QString &path)
     data->path = path;
     item->resize(pixmap.width(),pixmap.height());
     item->updatePrevPosition();
-    item->setZ(QDateTime::currentMSecsSinceEpoch());
-    item->setId(generatItemId());
+    item->setZ(blackboard()->factory()->makeItemZ());
+    item->setId(blackboard()->factory()->makeItemId());
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1036,8 +1011,8 @@ BbItemImage *BbScene::addImageItemWithPath(const qreal &width, const qreal &heig
     data->path = path;
     item->resize(width,height);
     item->updatePrevPosition();
-    item->setZ(QDateTime::currentMSecsSinceEpoch());
-    item->setId(generatItemId());
+    item->setZ(blackboard()->factory()->makeItemZ());
+    item->setId(blackboard()->factory()->makeItemId());
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1052,8 +1027,8 @@ BbItemImage *BbScene::addImageItemWithUrl(const qreal &width, const qreal &heigh
     item->resize(width,height);
 
     item->updatePrevPosition();
-    item->setZ(QDateTime::currentMSecsSinceEpoch());
-    item->setId(generatItemId());
+    item->setZ(blackboard()->factory()->makeItemZ());
+    item->setId(blackboard()->factory()->makeItemId());
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
 }
@@ -1064,11 +1039,8 @@ IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)
     auto index = readItemFromStream(stream);
     if(index)
     {
-        // maybe we need a better rule to make the 'copy' id.
-        auto copyId = QString("%1_%2").arg(index->id()).arg(time);
-        auto z = QDateTime::currentMSecsSinceEpoch();
-        index->setId(copyId);
-        index->setZ(z);
+        index->setId(blackboard()->factory()->makeItemId());
+        index->setZ(blackboard()->factory()->makeItemZ());
         index->updatePrevZ();
         index->moveByVector2(10,10);
         index->updatePrevPosition();

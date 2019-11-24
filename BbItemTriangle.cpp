@@ -6,7 +6,6 @@
 #include <QPainter>
 #include <QDebug>
 #include <QStyleOptionGraphicsItem>
-#include <QDateTime>
 
 BbItemTriangle::BbItemTriangle():
     QGraphicsRectItem(),
@@ -45,13 +44,15 @@ void BbItemTriangle::toolDown(const QPointF &pos)
 {
     if(step() == 0)
     {
-        setZValue(QDateTime::currentMSecsSinceEpoch());
+        setId(blackboard()->factory()->makeItemId());
+        setZ(blackboard()->factory()->makeItemZ());
+        updatePrevZ();
+
         auto settings = blackboard()->toolSettings<BbItemTriangleData>(BBTT_Triangle);
         setPenColor(settings->pen.color());
         setBrushColor(settings->brush.color());
         setWeight(settings->weight());
         begin(pos);
-        setId(bbScene()->generatItemId());
         bbScene()->setCurrentItem(this);
         emit blackboard()->itemChanged(BBIET_triangleDown,this);
     }

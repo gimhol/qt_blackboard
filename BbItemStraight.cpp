@@ -6,7 +6,6 @@
 #include <QPainter>
 #include <QDebug>
 #include <QStyleOptionGraphicsItem>
-#include <QDateTime>
 
 BbItemStraight::BbItemStraight():
     QGraphicsRectItem(),
@@ -43,14 +42,15 @@ void BbItemStraight::init()
 
 void BbItemStraight::toolDown(const QPointF &pos)
 {
-    setZValue(QDateTime::currentMSecsSinceEpoch());
+    setId(blackboard()->factory()->makeItemId());
+    setZ(blackboard()->factory()->makeItemZ());
+    updatePrevZ();
 
     auto settings = blackboard()->toolSettings<BbItemStraightData>(BBTT_Straight);
     setColor(settings->pen.color());
     setWeight(settings->weight());
 
     begin(pos);
-    setId(bbScene()->generatItemId());
     setFortyFive(bbScene()->onlyShiftDown());
     bbScene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_straightDown,this);

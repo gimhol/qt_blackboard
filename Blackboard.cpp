@@ -23,29 +23,47 @@ public:
     QMap<BbToolType,QCursor> cursors;
     QMap<QString, QPoint> lazerPenPositions;
     bool tabletActive = false;
+    BbFactory *factory = nullptr;
 };
 
-static BbFactory *_factory = new BbFactory();
+static BbFactory *_defaultFactory = new BbFactory();
+
+void Blackboard::setDefaultFactory(BbFactory *factory)
+{
+    if(_defaultFactory)
+    {
+        delete _defaultFactory;
+    }
+    _defaultFactory = factory;
+}
+
+BbFactory *Blackboard::defaultFactory()
+{
+    return _defaultFactory;
+}
 
 void Blackboard::setFactory(BbFactory *factory)
 {
-    if(_factory)
+    if(dptr->factory)
     {
-        delete _factory;
+        delete dptr->factory;
     }
-    _factory = factory;
+    dptr->factory = factory;
 }
 
 BbFactory *Blackboard::factory()
 {
-    return _factory;
+    if(dptr->factory){
+        return dptr->factory;
+    }
+    return _defaultFactory;
 }
 
 Blackboard::Blackboard(QWidget *parent):
     QGraphicsView(parent),
     dptr(new BlackboardPrivate)
 {
-    setScene(factory()->createScene(this));
+    setScene(defaultFactory()->createScene(this));
 
     setMouseTracking(true);
     setTabletTracking(true);
@@ -67,6 +85,10 @@ Blackboard::~Blackboard()
     for(auto settings: dptr->toolSettings)
     {
         delete settings;
+    }
+    if(dptr->factory)
+    {
+        delete dptr->factory;
     }
     delete dptr;
 }
@@ -437,7 +459,7 @@ BbItemData *Blackboard::toolSettings(const BbToolType &toolType)
     {
         return itr.value();
     }
-    auto settings = factory()->createToolSettings(toolType);
+    auto settings = defaultFactory()->createToolSettings(toolType);
     if(settings)
     {
         dptr->toolSettings.insert(toolType,settings);

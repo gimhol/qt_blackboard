@@ -8,7 +8,6 @@
 #include "IStreamWR.h"
 #include "IItemIndex.h"
 
-typedef std::function<QString()> IDGenerator;
 class BbItemPen;
 class BbItemPenData;
 class BbItemText;
@@ -38,8 +37,6 @@ protected:
     QGraphicsRectItem * _pickerRect = nullptr;
     IItemIndex * _curItemIndex = nullptr;
     IItemIndex * _editingItemIndex = nullptr;
-    IDGenerator _itemIdGenerator = nullptr;
-    IDGenerator _backgroundIdGenerator = nullptr;
     bool _controlEnable = true;
     Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
     bool _onlyShiftDown = false;
@@ -75,18 +72,6 @@ public:
     void remove(IItemIndex *item);
 
     void add(IItemIndex *item);
-
-    /**
-     * @brief setItemIdGenerator 设置id生成器
-     * @param itemIDGenerator id生成器, 一个返回字符串类型的匿名函数
-     */
-    void setItemIdGenerator(IDGenerator itemIDGenerator);
-
-    /**
-     * @brief setBackgroundIdGenerator 设置背景id生成器
-     * @param backgroundIdGenerator 背景id生成器, 一个返回字符串类型的匿名函数
-     */
-    void setBackgroundIdGenerator(IDGenerator backgroundIdGenerator);
 
     /**
      * @brief setControlEnable 设置能否进行画板操作
@@ -158,18 +143,6 @@ public:
     QRectF backgroundRect();
 
     QList<QPair<QString,QGraphicsItem *>> backgrounds();
-
-    /*
-     * @brief generatItemId 生成itemid
-     * @return itemId
-     */
-    QString generatItemId() const;
-
-    /**
-     * @brief generateBackgroundId 生成一个backgroundId
-     * @return backgroundId
-     */
-    QString generateBackgroundId() const;
 
     IItemIndex *currentItem();
 
