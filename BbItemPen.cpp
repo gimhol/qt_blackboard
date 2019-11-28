@@ -383,39 +383,30 @@ void BbItemPen::repaint()
     if(_path){
         delete _path;
     }
-    _path = new QPainterPath();
     qreal halfPenW = 0.5 * _data->pen.widthF();
     for(int i = 0; i < _data->coords.length(); i+=2)
     {
-        qreal x = _data->coords[i];
-        qreal y = _data->coords[i+1];
-        QPointF point(x,y);
-        if(i==0)
-        {
-            setPos(point + QPointF(halfPenW,halfPenW));
+        QPointF point(_data->coords[i],_data->coords[i+1]);
+        if(i == 0){
+            _path = new QPainterPath();
+            _path->moveTo(0,0);
+            setPos(point);
         }
         qreal oldLeft = pos().x();
         qreal oldTop = pos().y();
         qreal newLeft = std::min(point.x(), oldLeft);
         qreal newTop = std::min(point.y(), oldTop);
-        _path->translate(oldLeft-newLeft,oldTop-newTop);
-        _path->lineTo(point-QPointF(newLeft, newTop));
+        _path->translate(oldLeft-newLeft,oldTop-newTop);    // 重新计算左上角位置
+        _path->lineTo(point - QPointF(newLeft, newTop));
          setPos(newLeft, newTop);
+        _rect = _path->boundingRect();
+        _rect.setX(_rect.x()-halfPenW);
+        _rect.setY(_rect.y()-halfPenW);
+        _rect.setWidth(_rect.width()+halfPenW);
+        _rect.setHeight(_rect.height()+halfPenW);
+        setRect(_rect);
     }
-    _rect = _path->boundingRect();
-    _rect.setX(_rect.x()-halfPenW);
-    _rect.setY(_rect.y()-halfPenW);
-    _rect.setWidth(_rect.width()+halfPenW);
-    _rect.setHeight(_rect.height()+halfPenW);
-    setRect(_rect);
-    if(_data->isPositionValid())
-    {
-        _data->updatePrevPostion();
-        qreal x = _data->x;
-        qreal y = _data->y;
-        setPos(x,y);
-    }
-    setZValue(_data->z);
+    setZ(_data->z);
     update();
 }
 
