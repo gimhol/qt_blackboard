@@ -406,7 +406,12 @@ void BbItemPen::repaint()
         _rect.setHeight(_rect.height()+halfPenW);
         setRect(_rect);
     }
+    if(_data->isPositionValid()){
+        moveToPosition(_data->x,_data->y);
+        updatePrevPosition();
+    }
     setZ(_data->z);
+    updatePrevZ();
     update();
 }
 
