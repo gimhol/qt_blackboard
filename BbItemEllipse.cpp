@@ -40,9 +40,10 @@ void BbItemEllipse::init()
 
 void BbItemEllipse::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
-    if(_circle != (modifiers == Qt::ShiftModifier))
-    {
-        setCircle(modifiers == Qt::ShiftModifier);
+    if(setCircular(modifiers&Qt::ShiftModifier, false) ||
+       setStartFromCenter(modifiers & Qt::AltModifier, false) ||
+       setPointcut(modifiers & Qt::ControlModifier, false)){
+        draw(_mousePos);
         emit blackboard()->itemChanged(BBIET_ellipseDraw,this);
     }
 }
@@ -112,28 +113,42 @@ void BbItemEllipse::begin(const QPointF &point)
     _mousePos = point;
     _beginX = point.x();
     _beginY = point.y();
-    setPos(point);
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    moveToPosition(point);
+    updatePrevPosition();
 }
 void BbItemEllipse::draw(const QPointF &point)
 {
     _mousePos = point;
-    if(!_circle)
-    {
+    if(_circular){
+        toCircular(point,_dragX,_dragY);
+    }
+    else{
         _dragX = point.x();
         _dragY = point.y();
     }
-    else
-    {
-        toNinety(point,_dragX,_dragY);
+    if(_startFromCenter){
+        _data->x = _beginX - std::abs(_dragX-_beginX);
+        _data->y = _beginY - std::abs(_dragY-_beginY);
+        _data->size.setWidth(2 * std::abs(_dragX-_beginX));
+        _data->size.setHeight(2 * std::abs(_dragY-_beginY));
+
+    }else if(_pointcut){
+        qreal radius = std::sqrt(std::pow(std::abs(_dragX-_beginX),2)+
+                                 std::pow(std::abs(_dragY-_beginY),2));
+        _data->x = _beginX-radius;
+        _data->y = _beginY-radius;
+        _data->size.setWidth(2*radius);
+        _data->size.setHeight(2*radius);
+    }else{
+        _data->x = std::min(_dragX,_beginX);
+        _data->y = std::min(_dragY,_beginY);
+        _data->size.setWidth(std::abs(_dragX-_beginX));
+        _data->size.setHeight(std::abs(_dragY-_beginY));
     }
-    qreal l = std::min(_dragX,_beginX);
-    qreal t = std::min(_dragY,_beginY);
-    setPos(l,t);
-    setRect(0,0,std::abs(_dragX-_beginX),std::abs(_dragY-_beginY));
-    _data->updatePostion(this);
     _data->updatePrevPostion();
+    setPos(_data->x,_data->y);
+    setRect(0,0,_data->size.width(),_data->size.height());
+
     _data->empty = !size().isEmpty();
 }
 
@@ -209,7 +224,7 @@ void BbItemEllipse::toolDown(const QPointF &pos)
     setWeight(settings->weight());
 
     begin(pos);
-    setCircle(bbScene()->modifiers() & Qt::ShiftModifier);
+    setCircular(bbScene()->modifiers() & Qt::ShiftModifier);
     bbScene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_ellipseDown,this);
 }
@@ -230,20 +245,40 @@ void BbItemEllipse::toolDone(const QPointF &pos)
 
 bool BbItemEllipse::square()
 {
-    return _circle;
+    return _circular;
 }
 
-void BbItemEllipse::setCircle(const bool circle)
+bool BbItemEllipse::setCircular(bool circle,bool drawImmediately)
 {
-    if(_circle == circle)
-    {
-        return;
-    }
-    _circle = circle;
-    draw(_mousePos);
+    if(_circular == circle)
+        return false;
+    _circular = circle;
+    if(drawImmediately)
+        draw(_mousePos);
+    return true;
 }
 
-void BbItemEllipse::toNinety(const QPointF &point, qreal &outX, qreal &outY)
+bool BbItemEllipse::setStartFromCenter(bool startFromCenter,bool drawImmediately)
+{
+    if(_startFromCenter == startFromCenter)
+        return false;
+    _startFromCenter = startFromCenter;
+    if(drawImmediately)
+        draw(_mousePos);
+    return true;
+}
+
+bool BbItemEllipse::setPointcut(bool pointcut, bool drawImmediately)
+{
+    if(_pointcut == pointcut)
+        return false;
+    _pointcut = pointcut;
+    if(drawImmediately)
+        draw(_mousePos);
+    return true;
+}
+
+void BbItemEllipse::toCircular(const QPointF &point, qreal &outX, qreal &outY)
 {
     QPointF vec2(_beginX-point.x(),_beginY-point.y());
     qreal degree = std::atan2(vec2.y(), vec2.x());

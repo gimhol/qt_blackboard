@@ -36,13 +36,8 @@ protected:
     bool _mouseLeftButtonDown = false;
     QGraphicsRectItem * _pickerRect = nullptr;
     IItemIndex * _curItemIndex = nullptr;
-    IItemIndex * _editingItemIndex = nullptr;
     bool _controlEnable = true;
     Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
-    bool _onlyShiftDown = false;
-    bool _onlyAltDown = false;
-    bool _onlyCtrlDown = false;
-
     QRectF _backgroundRect;
     QList<QPair<QString,QGraphicsItem*>> _backgrounds;
 public:
@@ -149,14 +144,6 @@ public:
     void setCurrentItem(IItemIndex *item);
 
     void unsetCurrentItem(IItemIndex *item);
-
-    IItemIndex *editingItem();
-
-    void setEditingItem(IItemIndex *item);
-
-    void unsetEditingItem(IItemIndex *item);
-
-    bool onlyShiftDown();
 
     Qt::KeyboardModifiers modifiers();
 

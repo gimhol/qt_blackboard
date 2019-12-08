@@ -77,55 +77,6 @@ public:
      * @brief repaint 根据data重绘item的逻辑。
      */
     virtual void repaint() = 0;
-
-    /**
-     * @brief mouseDown 当本item就是编辑中item，鼠标左键在黑板按下时会被调用
-     * @param pos 鼠标位置
-     * @return
-     *      返回true时，鼠标左键按下的事件将不会继续处理。
-     *      返回false时，将会继续分发。
-     */
-    virtual bool mouseDown(const QPointF &pos){Q_UNUSED(pos) return false; }
-
-    /**
-     * @brief mouseMove 当本item就是编辑中item时，鼠标在黑板中移动时会被调用（即使不点击也会）
-     *      如：返回false时，move事件将不能移动此item。
-     * @param pos 鼠标位置
-     * @return
-     *      返回true时，鼠标移动按下的事件将不会继续处理。
-     *      返回false时，将会继续分发。
-     */
-    virtual bool mouseMove(const QPointF &pos){Q_UNUSED(pos) return false; }
-
-    /**
-     * @brief mouseRelease 当本item就是编辑中item，鼠标左键在黑板抬起时会被调用
-     * @param pos 鼠标位置
-     * @return
-     *      返回true时，鼠标左键抬起的事件将不会继续处理。
-     *      返回false时，将会继续分发。
-     */
-    virtual bool mouseRelease(const QPointF &pos){Q_UNUSED(pos) return false; }
-
-    /**
-     * @brief clicked Picker工具下，被鼠标左键点击时被调用
-     *      鼠标左键按下时，会按Z值从高到低的遍历underMouse的item并调用其clicked，
-     *      直到某个item的clicked返回true。
-     * @param pos 鼠标位置
-     * @return
-     *      返回true时，表示本item会处理。
-     *      返回false时，表示本item不处理。
-     */
-    virtual bool clicked(const QPointF &pos){Q_UNUSED(pos) return false; }
-    /**
-     * @brief doubleClicked Picker工具下，被鼠标左键双击时被调用
-     *      双击时，会按Z值从高到低的遍历underMouse的item并调用其doubleClicked，
-     *      直到某个item的doubleClicked返回true。
-     * @param pos 鼠标位置
-     * @return
-     *      返回true时，表示本item会处理。
-     *      返回false时，表示本item不处理。
-     */
-    virtual bool doubleClicked(const QPointF &pos){Q_UNUSED(pos) return false; }
     /**
      * @brief toolDown
      * @param pos 鼠标位置

@@ -159,82 +159,26 @@ void BbScene::removeSelected()
 void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if(!_controlEnable)
-    {
         return;
-    }
-    _mouseBeginPos = event->scenePos();
-    _mousePos = event->scenePos();
-    if(event->button() == Qt::MouseButton::LeftButton && !_mouseLeftButtonDown)
+
+    QGraphicsScene::mousePressEvent(event);
+    if(event->button() == Qt::MouseButton::LeftButton)
     {
         _mouseLeftButtonDown = true;
-        switch(_toolType)
-        {
-            case BBTT_Picker:
-            {
-                bool interrupt = false;
-                if(_editingItemIndex)
-                {
-                    interrupt = _editingItemIndex->mouseDown(_mousePos);
+        _mouseBeginPos = event->scenePos();
+        _mousePos = event->scenePos();
+        if(_toolType != BBTT_Picker){
+            if(!_curItemIndex){
+                auto item = blackboard()->factory()->createItemWhenToolDown(_toolType);
+                if(item){
+                    add(item);
+                    item->toolDown(_mousePos);
                 }
-                if(!interrupt)
-                {
-                    QGraphicsScene::mousePressEvent(event);
-                    bool editing = false;
-                    bool response = false;
-                    for(auto item: selectedItems())
-                    {
-                        IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
-                        if(idx)
-                        {
-                            auto pos = event->scenePos();
-                            auto data = idx->data();
-                            data->prevX = data->x;
-                            data->prevY = data->y;
-                            if(_editingItemIndex == idx && item->isUnderMouse())
-                            {
-                                editing = true;
-                            }
-                            if(!response && item->isUnderMouse())
-                            {
-                                response = idx->clicked(pos);
-                            }
-                        }
-                    }
-                }
-                break;
-            }
-            default:
-            {
-                if(!_curItemIndex)
-                {
-                    auto item = blackboard()->factory()->createItemWhenToolDown(_toolType);
-                    if(item)
-                    {
-                        add(item);
-                        item->toolDown(_mousePos);
-                    }
-                }
-                else
-                {
-                    _curItemIndex->toolDown(_mousePos);
-                }
-                QGraphicsScene::mousePressEvent(event);
-                break;
+            }else{
+                _curItemIndex->toolDown(_mousePos);
             }
         }
     }
-}
-
-void BbScene::emitItemMovingSignals()
-{
-    auto enumJob = [&](IItemIndex *index,int i){
-        Q_UNUSED(i)
-        index->data()->updatePostion(index);
-        emit blackboard()->itemChanged(BBIET_itemMoving,index);
-        return false;
-    };
-    auto index = enumSelected(enumJob);
-    emit blackboard()->multipleItemChanged(BBIET_itemMoving,index);
 }
 
 void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -248,28 +192,20 @@ void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     {
         case BBTT_Picker:
         {
-            auto interrupt = false;
-            if(_editingItemIndex)
+            QGraphicsScene::mouseMoveEvent(event); // 调用函数才能拖动。
+            if(_mouseLeftButtonDown)
             {
-                interrupt = _editingItemIndex->mouseMove(_mousePos);
-            }
-            if(!interrupt)
-            {
-                QGraphicsScene::mouseMoveEvent(event); // 调用函数才能拖动。
-                if(_mouseLeftButtonDown)
+                /*
+                 * NOTE: 拖动item会使得此event被Accepted，故在此发出移动信号。
+                 *      但如果有其他被Accepted的情况就不应该这么做。但现在还没发现。
+                 */
+                if(event->isAccepted())
                 {
-                    /*
-                     * NOTE: 拖动item会使得此event被Accepted，故在此发出移动信号。
-                     *      但如果有其他被Accepted的情况就不应该这么做。但现在还没发现。
-                     */
-                    if(event->isAccepted())
-                    {
-                        emitItemMovingSignals();
-                    }
-                    else // 没拖动任何东西，在这里进行框选item的工作。
-                    {
-                        pickingItems(_mousePos);
-                    }
+                    emitItemMovingSignals();
+                }
+                else // 没拖动任何东西，在这里进行框选item的工作。
+                {
+                    pickingItems(_mousePos);
                 }
             }
             break;
@@ -277,9 +213,7 @@ void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         default:
         {
             if(_curItemIndex && _mouseLeftButtonDown)
-            {
                 _curItemIndex->toolDraw(_mousePos);
-            }
             break;
         }
     }
@@ -298,16 +232,8 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         {
             case BBTT_Picker:
             {
-                auto interrupt = false;
-                if(_editingItemIndex)
-                {
-                    interrupt = _editingItemIndex->mouseRelease(_mousePos);
-                }
-                if(!interrupt)
-                {
-                    QGraphicsScene::mouseReleaseEvent(event);
-                    emitItemMovedSignals();
-                }
+                QGraphicsScene::mouseReleaseEvent(event);
+                emitItemMovedSignals();
                 _pickerRect->hide();
                 break;
             }
@@ -315,9 +241,7 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             {
                 QGraphicsScene::mouseReleaseEvent(event);
                 if(_curItemIndex)
-                {
                     _curItemIndex->toolDone(_mousePos);
-                }
                 break;
             }
         }
@@ -326,90 +250,28 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 void BbScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-    if(!_controlEnable)
-    {
-        return;
-    }
-    switch(_toolType)
-    {
-        case BBTT_Picker:
-        {
-            auto pos = event->scenePos();
-            for(auto item : items())
-            {
-                IItemIndex *index = dynamic_cast<IItemIndex *>(item);
-                if(index && item->isUnderMouse() && index->doubleClicked(pos))
-                {
-                    break;
-                }
-            }
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
     QGraphicsScene::mouseDoubleClickEvent(event);
 }
 
 void BbScene::keyPressEvent(QKeyEvent *e)
 {
-    if(_modifiers != e->modifiers())
-    {
-        if(_editingItemIndex)
-        {
-            _editingItemIndex->modifiersChanged(e->modifiers());
-        }
+    QGraphicsScene::keyPressEvent(e);
+    if(_modifiers != e->modifiers()){
         if(_curItemIndex)
-        {
             _curItemIndex->modifiersChanged(e->modifiers());
-        }
         _modifiers = e->modifiers();
     }
-    _onlyShiftDown = e->modifiers() ==  Qt::ShiftModifier;
-    _onlyAltDown = e->modifiers() ==  Qt::AltModifier;
-    _onlyCtrlDown = e->modifiers() ==  Qt::ControlModifier;
-    QGraphicsScene::keyPressEvent(e);
 }
 
 void BbScene::keyReleaseEvent(QKeyEvent *e)
 {
-    if(_modifiers != e->modifiers())
-    {
-        if(_editingItemIndex)
-        {
-            _editingItemIndex->modifiersChanged(e->modifiers());
-        }
+    QGraphicsScene::keyReleaseEvent(e);
+    if(_modifiers != e->modifiers()){
         if(_curItemIndex)
-        {
             _curItemIndex->modifiersChanged(e->modifiers());
-        }
+
         _modifiers = e->modifiers();
     }
-    switch(e->key())
-    {
-        case Qt::Key_Shift:
-        {
-            _onlyShiftDown = false;
-            break;
-        }
-        case Qt::Key_Control:
-        {
-            _onlyCtrlDown = false;
-            break;
-        }
-        case Qt::Key_Alt:
-        {
-            _onlyAltDown = false;
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
-    QGraphicsScene::keyReleaseEvent(e);
 }
 
 void BbScene::copyItems()
@@ -691,29 +553,6 @@ void BbScene::unsetCurrentItem(IItemIndex *item)
     }
 }
 
-IItemIndex *BbScene::editingItem()
-{
-    return _editingItemIndex;
-}
-
-void BbScene::setEditingItem(IItemIndex *item)
-{
-    _editingItemIndex = item;
-}
-
-void BbScene::unsetEditingItem(IItemIndex *item)
-{
-    if(_editingItemIndex == item)
-    {
-        _editingItemIndex = nullptr;
-    }
-}
-
-bool BbScene::onlyShiftDown()
-{
-    return _onlyShiftDown;
-}
-
 Qt::KeyboardModifiers BbScene::modifiers()
 {
 #ifdef WIN32
@@ -766,7 +605,6 @@ void BbScene::onToolChanged(BbToolType previous)
     {
         case BBTT_Picker:
         {
-            _editingItemIndex = nullptr;
             setItemPicking(false);
             break;
         }
@@ -847,10 +685,6 @@ void BbScene::remove(IItemIndex *index)
         if(_curItemIndex == index)
         {
             _curItemIndex = nullptr;
-        }
-        if(_editingItemIndex == index)
-        {
-            _editingItemIndex= nullptr;
         }
         auto item = dynamic_cast<QGraphicsItem*>(index);
         if(item)
@@ -1049,26 +883,30 @@ IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)
     return index;
 }
 
-void BbScene::emitItemMovedSignals()
+void BbScene::emitItemMovingSignals()
 {
-    bool moved = false;
-    auto enumJob = [&](IItemIndex *index,int i)
-    {
-        if(i == 0)
-        {
-            auto item = dynamic_cast<QGraphicsItem *>(index);
-            auto dx = std::abs(index->data()->prevX - item->x());
-            auto dy = std::abs(index->data()->prevY - item->y());
-            moved = dx >= 1 || dy >= 1;
-            if(!moved)
-            {
-                return true;
-            }
-        }
+    auto enumJob = [&](IItemIndex *index,int i){
+        Q_UNUSED(i)
+        index->data()->updatePostion(index);
+        emit blackboard()->itemChanged(BBIET_itemMoving,index);
         return false;
     };
     auto index = enumSelected(enumJob);
     emit blackboard()->multipleItemChanged(BBIET_itemMoving,index);
+}
+
+void BbScene::emitItemMovedSignals()
+{
+    bool moved = false;
+    auto enumJob = [&](IItemIndex *index,int)
+    {
+        auto item = dynamic_cast<QGraphicsItem *>(index);
+        auto dx = std::abs(index->data()->prevX - item->x());
+        auto dy = std::abs(index->data()->prevY - item->y());
+        moved = dx >= 1 || dy >= 1;
+        return false; // 是一堆item被拖动的，所以第一个item位置变了，就可以判定为已拖动。
+    };
+    auto index = enumSelected(enumJob);
     if(moved)
     {
         emit blackboard()->multipleItemChanged(BBIET_itemMoved,index);

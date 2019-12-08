@@ -30,8 +30,10 @@ void BbItemText::init()
     {
         _myData = new BbItemTextData();
     }
+    setFlag(ItemSendsScenePositionChanges);
     setFont(_myData->font);
     setDefaultTextColor(_myData->color);
+    setAcceptedMouseButtons(Qt::LeftButton);
 }
 void BbItemText::focusOutEvent(QFocusEvent *event)
 {
@@ -225,17 +227,6 @@ BbItemData *BbItemText::data()
     return _myData;
 }
 
-bool BbItemText::doubleClicked(const QPointF &pos)
-{
-    Q_UNUSED(pos)
-    // NOTE: 通过Picker工具双击文本来编辑时，外部的鼠标样式极可能不是“文本光标”，所以需要这里修改一下
-    bbScene()->setEditingItem(this);
-    blackboard()->toToolCursor(BBTT_Text);
-    setTextInteractionFlags(Qt::TextEditorInteraction);
-    setFocus();
-    return true;
-}
-
 void BbItemText::toolDown(const QPointF &pos)
 {
     if(bbScene()->currentItem() == this)
@@ -325,4 +316,12 @@ void BbItemText::absolutize()
             _myData->prevY *= ratio;
         }
     }
+}
+
+void BbItemText::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    // NOTE: 通过Picker工具双击文本来编辑时，外部的鼠标样式极可能不是“文本光标”，所以需要这里修改一下
+    blackboard()->toToolCursor(BBTT_Text);
+    setTextInteractionFlags(Qt::TextEditorInteraction);
+    QGraphicsItem::mouseDoubleClickEvent(event);
 }
