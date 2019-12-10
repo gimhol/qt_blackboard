@@ -51,7 +51,7 @@ void BbItemStraight::toolDown(const QPointF &pos)
     setWeight(settings->weight());
 
     begin(pos);
-    setFortyFive(bbScene()->onlyShiftDown());
+    setFortyFive(bbScene()->modifiers()&Qt::ShiftModifier);
     bbScene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_straightDown,this);
 }
@@ -72,9 +72,9 @@ void BbItemStraight::toolDone(const QPointF &pos)
 
 void BbItemStraight::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
-    if(_fortyFive != (modifiers == Qt::ShiftModifier))
+    if(_fortyFive != (modifiers & Qt::ShiftModifier))
     {
-        setFortyFive(modifiers == Qt::ShiftModifier);
+        setFortyFive(modifiers & Qt::ShiftModifier);
         emit blackboard()->itemChanged(BBIET_straightDraw,this);
     }
 }

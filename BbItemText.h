@@ -67,13 +67,14 @@ public:
     // IItemIndex interface
 public:
     BbItemData *data() override;
-    bool doubleClicked(const QPointF &pos) override;
     void toolDown(const QPointF &pos) override;
     void toolDraw(const QPointF &pos) override;
     void toolDone(const QPointF &pos) override;
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void removed() override;
     void absolutize() override;
+protected:
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
 
     BbItemTextData *_myData;
     QString _lastContent;

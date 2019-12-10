@@ -52,16 +52,20 @@ public: // IStreamWR
 public: //IItemIndex
     BbItemData *data() override;
     void repaint() override;
-    bool mouseDown(const QPointF &pos) override;
-    bool mouseMove(const QPointF &pos) override;
-    bool mouseRelease(const QPointF &pos) override;
-    bool clicked(const QPointF &pos) override;
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void added() override;
     void absolutize() override;
+    void init();
+
+protected:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
 private:
-    BbItemImageData * _data;
+    BbItemImageData * _data = nullptr;
     bool _stretching = false;
     Direction _direction = Invalid;
     QPointF _stretchOffset;

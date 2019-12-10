@@ -80,6 +80,9 @@ public:
 
     virtual ~BbItemData() override;
 
+    QPointF position() { return QPointF(x,y); }
+    QPointF prevPosition() { return QPointF(prevX,prevY); }
+
     virtual bool isPositionValid();
 
     virtual bool isPrevPositionValid();
