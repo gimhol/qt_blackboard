@@ -40,6 +40,7 @@ protected:
     Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
     QRectF _backgroundRect;
     QList<QPair<QString,QGraphicsItem*>> _backgrounds;
+    QList<IItemIndex*> _deletingItems;
 public:
     BbScene(Blackboard *parent = Q_NULLPTR);
 
@@ -63,6 +64,8 @@ public:
      * @brief removeSelectedElement 移除当前所有被选择的元素
      */
     void removeSelected();
+
+    void remove(QString lid);
 
     void remove(IItemIndex *item);
 

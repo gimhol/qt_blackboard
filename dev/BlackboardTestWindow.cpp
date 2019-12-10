@@ -341,14 +341,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         if(item)
         {
             auto index = dynamic_cast<IItemIndex*>(item);
-            if(index)
-            {
-                auto copy = blackboard1->find<QGraphicsItem>(index->id());
-                if(copy)
-                {
-                    copy->scene()->removeItem(copy);
-                }
-            }
+            blackboard1->remove(index->id());
         }
     };
     auto itemPaste = [&,blackboard1](QGraphicsItem *item){

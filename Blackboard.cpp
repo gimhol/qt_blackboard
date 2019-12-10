@@ -371,13 +371,18 @@ void Blackboard::removeSelectedItems()
     }
 }
 
+void Blackboard::remove(QString lid)
+{
+    auto inner = scene();
+    if(inner)
+        inner->remove(lid);
+}
+
 void Blackboard::remove(IItemIndex *item)
 {
     auto inner = scene();
     if(inner)
-    {
         inner->remove(item);
-    }
 }
 
 void Blackboard::add(IItemIndex *item)

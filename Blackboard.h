@@ -108,6 +108,8 @@ public:
 
     void removeSelectedItems();
 
+    void remove(QString lid);
+
     void remove(IItemIndex *item);
 
     void add(IItemIndex *item);

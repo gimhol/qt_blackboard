@@ -23,10 +23,13 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QMimeData>
+
 #ifdef WIN32
 #include <Windows.h>
 #pragma comment(lib, "user32")
 #endif
+
+#define GRAPHICS_ITEM_DATA_KEY_DELETING 1000
 
 BbScene::BbScene(Blackboard *parent):
     QGraphicsScene(parent),
@@ -46,10 +49,14 @@ BbScene::BbScene(Blackboard *parent):
 
 BbScene::~BbScene()
 {
-    QGraphicsScene::removeItem(_pickerRect);
     delete _pickerRect;
     _pickerRect = nullptr;
     clearBackground();
+
+    for(auto idx: _deletingItems){
+        delete idx;
+    }
+    _deletingItems.clear();
 }
 
 Blackboard *BbScene::blackboard(){
@@ -58,7 +65,6 @@ Blackboard *BbScene::blackboard(){
 
 void BbScene::setToolType(BbToolType toolType)
 {
-    _mouseLeftButtonDown = false;
     if(_toolType != toolType)
     {
         auto prev = _toolType;
@@ -81,22 +87,22 @@ IItemIndex *BbScene::enumAll(std::function<bool (IItemIndex *, int)> job)
     int i = 0;
     for(auto item: items())
     {
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+            continue;
+
         IItemIndex *index = dynamic_cast<IItemIndex *>(item);
-        if(index)
-        {
-            if(first)
-            {
+        if(index){
+            if(first){
                 index->last = current;
                 current->next = index;
             }
-            else
-            {
+            else{
                 index->last = nullptr;
                 first = index;
             }
             index->next = nullptr;
-            if(job && job(index,i))
-            {
+            if(job && job(index,i)){
                 break;
             }
             current = index;
@@ -111,38 +117,36 @@ IItemIndex *BbScene::enumSelected(std::function<bool(IItemIndex *,int)> job)
     IItemIndex *first = nullptr;
     IItemIndex *current = nullptr;
     int i = 0;
-    for(auto item: selectedItems())
-    {
+    for(auto item: selectedItems()){
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+            continue;
+
         IItemIndex *index = dynamic_cast<IItemIndex *>(item);
-        if(index)
-        {
-            if(first)
-            {
-                index->last = current;
-                current->next = index;
-            }
-            else
-            {
-                index->last = nullptr;
-                first = index;
-            }
-            index->next = nullptr;
-            if(job && job(index,i))
-            {
-                break;
-            }
-            current = index;
-            i++;
+        if(!index)
+            continue;
+
+        if(first){
+            index->last = current;
+            current->next = index;
         }
+        else{
+            index->last = nullptr;
+            first = index;
+        }
+        index->next = nullptr;
+        if(job && job(index,i)){
+            break;
+        }
+        current = index;
+        i++;
     }
     return first;
 }
 
 void BbScene::removeSelected()
 {
-    auto enumJob = [&](IItemIndex *index,int i)
-    {
-        Q_UNUSED(i)
+    auto enumJob = [&](IItemIndex *index,int ){
         emit blackboard()->itemChanged(BBIET_itemDelete,index);
         return false;
     };
@@ -154,6 +158,13 @@ void BbScene::removeSelected()
         remove(index);
         index = next;
     }
+}
+
+void BbScene::remove(QString lid)
+{
+    auto index = find<IItemIndex>(lid);
+    if(index)
+        remove(index);
 }
 
 void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -183,16 +194,14 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
+    QGraphicsScene::mouseMoveEvent(event);
     if(!_controlEnable)
-    {
         return;
-    }
     _mousePos = event->scenePos();
     switch(_toolType)
     {
         case BBTT_Picker:
         {
-            QGraphicsScene::mouseMoveEvent(event); // 调用函数才能拖动。
             if(_mouseLeftButtonDown)
             {
                 /*
@@ -221,9 +230,10 @@ void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    if(!_controlEnable){
+    QGraphicsScene::mouseReleaseEvent(event);
+    if(!_controlEnable)
         return;
-    }
+
     _mousePos = event->scenePos();
     if(event->button() == Qt::MouseButton::LeftButton)
     {
@@ -232,19 +242,28 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         {
             case BBTT_Picker:
             {
-                QGraphicsScene::mouseReleaseEvent(event);
                 emitItemMovedSignals();
                 _pickerRect->hide();
                 break;
             }
             default:
             {
-                QGraphicsScene::mouseReleaseEvent(event);
                 if(_curItemIndex)
                     _curItemIndex->toolDone(_mousePos);
                 break;
             }
         }
+
+        /*
+         * NOTE:
+         * 在拖动item时移除item。会导致后面新出现的item拖动动时发生跳至其他位置的BUG，故在这里特殊处理。
+         * 鼠标是按下状态时，先加入待移除的列。在鼠标抬起时再移除。
+         *      -Gim
+         */
+        for(auto idx: _deletingItems){
+            delete idx;
+        }
+        _deletingItems.clear();
     }
 }
 
@@ -284,8 +303,11 @@ void BbScene::copyItems()
     std::sort(items.begin(),items.end(),[](QGraphicsItem *a,QGraphicsItem*b){
         return a->zValue() < b->zValue();
     });
-    for(auto item: items)
-    {
+    for(auto item: items){
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+            continue;
+
         IItemIndex *index = dynamic_cast<IItemIndex *>(item);
         IStreamW *streamWriter = dynamic_cast<IStreamW *>(item);
         if(!index || !streamWriter)
@@ -307,8 +329,12 @@ void BbScene::pasteItems()
     const QMimeData *mimeData = clipboard->mimeData();
 
 
-    for(auto item: selectedItems())
-    {
+    for(auto item: selectedItems()){
+
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+            continue;
+
         item->setSelected(false);
     }
     if(mimeData && mimeData->hasFormat("nsb/blackboard-items"))
@@ -520,18 +546,22 @@ void BbScene::pickingItems(const QPointF &mousePos)
                 (std::abs)(mousePos.y()-_mouseBeginPos.y())
                 );
     _pickerRect->show();
-    for(auto item: items())
-    {
+    for(auto item: items()){
+
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+            continue;
+
         IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
-        if(itemIndex)
-        {
-            bool collided = item->collidesWithItem(_pickerRect);
-            if(collided != item->isSelected())
-            {
-                item->setSelected(collided);
-                emit blackboard()->itemSelected(itemIndex,collided);
-            }
-        }
+        if(!itemIndex)
+            continue;
+
+        // 排除已selected的item
+        if(item->collidesWithItem(_pickerRect) == item->isSelected())
+            continue;
+
+        item->setSelected(true);
+        emit blackboard()->itemSelected(itemIndex,true);
     }
 }
 
@@ -589,6 +619,10 @@ void BbScene::setItemPicking(bool picking)
 {
     for(auto item: items())
     {
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+            continue;
+
         auto idx = dynamic_cast<IItemIndex*>(item);
         if(idx && !idx->isEditing())
         {
@@ -650,15 +684,18 @@ IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
 
 void BbScene::selectedAll()
 {
-    if(_toolType == BBTT_Picker)
-    {
-        for(auto item: items())
-        {
+    if(_toolType == BBTT_Picker){
+
+        for(auto item: items()){
+
+            // 忽略正在被移除的item。
+            if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+                continue;
+
             IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
             if(!itemIndex)
-            {
                 continue;
-            }
+
             item->setSelected(true);
         }
     }
@@ -668,34 +705,53 @@ void BbScene::deselectAll()
 {
     for(auto item: selectedItems())
     {
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+            continue;
+
         IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
         if(!itemIndex)
-        {
             continue;
-        }
+
         item->setSelected(false);
     }
 }
 
 void BbScene::remove(IItemIndex *index)
 {
-    if(index)
-    {
+    if(index){
         index->removed();
         if(_curItemIndex == index)
-        {
             _curItemIndex = nullptr;
-        }
+
         auto item = dynamic_cast<QGraphicsItem*>(index);
         if(item)
         {
-            QGraphicsScene::removeItem(item);
+            item->clearFocus();
+            item->setSelected(false);
+            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,false);
+            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,false);
+            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,false);
+            item->setOpacity(0);
+            item->setScale(0);
+            item->setData(GRAPHICS_ITEM_DATA_KEY_DELETING,true);
         }
         else
         {
             qWarning() << "[BlackboardScene::remove] item is not a 'QGraphicsItem'! what happen?!";
         }
-        delete index;
+
+        /*
+         * NOTE:
+         * 在拖动item时移除item。会导致后面新出现的item拖动动时发生跳至其他位置的BUG，故在这里特殊处理。
+         * 鼠标是按下状态时，先加入待移除的列。在鼠标抬起时再移除。
+         *      -Gim
+         */
+        if(_mouseLeftButtonDown){
+            _deletingItems << index;
+        }else{
+            delete index;
+        }
     }
     else
     {
@@ -757,12 +813,15 @@ IItemIndex *BbScene::readItemData(BbItemData *itemData)
 
 void BbScene::writeStream(QDataStream &stream)
 {
-    for(auto item: items())
-    {
+    for(auto item: items()){
+
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+            continue;
+
         IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
         IStreamWR *wr = dynamic_cast<IStreamWR *>(item);
-        if(idx && wr)
-        {
+        if(idx && wr){
             stream << static_cast<int>(idx->toolType());
             wr->writeStream(stream);
         }
@@ -885,8 +944,7 @@ IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)
 
 void BbScene::emitItemMovingSignals()
 {
-    auto enumJob = [&](IItemIndex *index,int i){
-        Q_UNUSED(i)
+    auto enumJob = [&](IItemIndex *index,int ){
         index->data()->updatePostion(index);
         emit blackboard()->itemChanged(BBIET_itemMoving,index);
         return false;
@@ -898,20 +956,22 @@ void BbScene::emitItemMovingSignals()
 void BbScene::emitItemMovedSignals()
 {
     bool moved = false;
-    auto enumJob = [&](IItemIndex *index,int)
-    {
+    auto enumJob = [&](IItemIndex *index,int){
         auto item = dynamic_cast<QGraphicsItem *>(index);
-        auto dx = std::abs(index->data()->prevX - item->x());
-        auto dy = std::abs(index->data()->prevY - item->y());
-        moved = dx >= 1 || dy >= 1;
-        return false; // 是一堆item被拖动的，所以第一个item位置变了，就可以判定为已拖动。
+        auto d = std::abs(index->data()->prevX - item->x()) +
+                 std::abs(index->data()->prevY - item->y());
+        moved = d > 0;
+        /*
+            NOTE: 是一堆item被拖动的，目前还不存在不能被拖动的item。
+            所以第一个item位置变了，就可以判定为已拖动。
+            此处return true，打断循环。
+        */
+        return true;
     };
     auto index = enumSelected(enumJob);
-    if(moved)
-    {
+    if(moved){
         emit blackboard()->multipleItemChanged(BBIET_itemMoved,index);
-        while(index)
-        {
+        while(index){
             auto next = index->next;
             auto data = index->data();
             data->updatePostion(index);
