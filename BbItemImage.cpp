@@ -13,17 +13,14 @@ static bool equal(const qreal &a,const qreal &b)
 }
 
 BbItemImage::BbItemImage():
-    QGraphicsRectItem(),
-    _data(new BbItemImageData()){}
-
+    QGraphicsRectItem(){
+    init();
+}
 BbItemImage::BbItemImage(BbItemData *data):
     QGraphicsRectItem(),
     _data(dynamic_cast<BbItemImageData*>(data))
 {
-    if(!_data)
-    {
-        new BbItemImageData();
-    }
+    init();
 }
 
 BbItemImage::~BbItemImage()
@@ -34,23 +31,30 @@ BbItemImage::~BbItemImage()
         _data = nullptr;
     }
 }
+void BbItemImage::init()
+{
+    if(!_data)
+        _data = new BbItemImageData();
+    setAcceptedMouseButtons(Qt::LeftButton);
+    setAcceptHoverEvents(true);
+}
 
 qreal BbItemImage::minWidth()
 {
     if(_data->height > 0 && _data->height > _data->width && ratioLock())
     {
-        return 3 * _dotSize * _data->width / _data->height;
+        return 6 * _dotSize * _data->width / _data->height;
     }
-    return 3 * _dotSize;
+    return 6 * _dotSize;
 }
 
 qreal BbItemImage::minHeight()
 {
     if(_data->width > 0 && _data->width > _data->height && ratioLock())
     {
-        return 3 * _dotSize * _data->height / _data->width;
+        return 6 * _dotSize * _data->height / _data->width;
     }
-    return 3 * _dotSize;
+    return 6 * _dotSize;
 }
 
 bool BbItemImage::ratioLock()
@@ -134,13 +138,13 @@ void BbItemImage::setPath(QString path)
     _data->path = path;
 }
 
-BbItemImage::Direction BbItemImage::stretchDirection(const QPointF &mousePos)
+BbItemImage::Direction BbItemImage::stretchDirection(const QPointF &scenePos)
 {
     QRectF rects[8];
     updateDots(rects);
     for(int i=0;i<8;++i)
     {
-        if(rects[i].contains(mousePos.toPoint()))
+        if(rects[i].contains(scenePos))
         {
             return Direction(i);
         }
@@ -427,90 +431,6 @@ bool BbItemImage::done()
     return changed;
 }
 
-bool BbItemImage::mouseDown(const QPointF &pos)
-{
-    if(isUnderMouse())
-    {
-        _mouseDown = true;
-        _mousePos = pos;
-        updateCursor(pos);
-        _direction = stretchDirection(pos);
-        _stretching = _direction != Invalid;
-        if(_stretching)
-        {
-            _stretchOffset = stretchOffset(pos);
-            begin(pos);
-        }
-        return _stretching;
-    }
-    else
-    {
-        bbScene()->unsetEditingItem(this);
-        update();
-        return false;
-    }
-}
-
-bool BbItemImage::mouseMove(const QPointF &pos)
-{
-    if(_mouseDown)
-    {
-        _mousePos = pos;
-        if(_stretching)
-        {
-            if(draw(_mousePos))
-            {
-                emit blackboard()->itemChanged(BBIET_imageResizing,this);
-                _data->prevWidth = _data->width;
-                _data->prevHeight = _data->height;
-            }
-            return true;
-        }
-        else
-        {
-            blackboard()->revertToolCursor();
-        }
-    }
-    else
-    {
-        updateCursor(pos);
-    }
-    return false;
-}
-
-bool BbItemImage::mouseRelease(const QPointF &pos)
-{
-    updateCursor(pos);
-    if(_mouseDown)
-    {
-        auto ret = _stretching;
-        if(ret)
-        {
-            if(done())
-            {
-                emit blackboard()->itemChanged(BBIET_imageResized,this);
-                _data->updatePrevPostion();
-                _data->updatePrevSize();
-            }
-        }
-        _stretching = false;
-        _mouseDown = false;
-        return ret;
-    }
-    return false;
-}
-
-bool BbItemImage::clicked(const QPointF &pos)
-{
-    Q_UNUSED(pos)
-    if(_data->editable)
-    {
-        bbScene()->setEditingItem(this);
-        return mouseDown(pos);
-    }
-    return false;
-}
-
 void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
     Q_UNUSED(modifiers)
@@ -533,7 +453,6 @@ void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
         }
         emit blackboard()->itemChanged(BBIET_imageResizing,this);
     }
-
 }
 
 void BbItemImage::added()
@@ -563,6 +482,64 @@ void BbItemImage::absolutize()
         _data->width *= ratio;
         _data->height *= ratio;
         resize(_data->width,_data->height);
+    }
+}
+
+void BbItemImage::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+{
+    QGraphicsItem::hoverMoveEvent(event);
+    if(isSelected()){
+        _direction = stretchDirection(event->scenePos());
+        _stretching = _direction != Invalid;
+        _stretchOffset = stretchOffset(event->scenePos());
+        updateCursor(_direction);
+    }
+}
+
+void BbItemImage::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    QGraphicsItem::hoverLeaveEvent(event);
+    blackboard()->revertToolCursor();
+}
+
+void BbItemImage::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsItem::mousePressEvent(event);
+    _mouseDown = true;
+    _mousePos = event->scenePos();
+    if(_stretching)
+        begin(_mousePos);
+}
+
+void BbItemImage::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    _mousePos = event->scenePos();
+    if(_stretching){
+        // resize it.
+        if(draw(_mousePos)){
+            emit blackboard()->itemChanged(BBIET_imageResizing,this);
+            _data->prevWidth = _data->width;
+            _data->prevHeight = _data->height;
+        }
+    }else{
+        // move it.
+        QGraphicsItem::mouseMoveEvent(event);
+    }
+}
+
+void BbItemImage::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsItem::mouseReleaseEvent(event);
+    if(_data->editable)
+        update();
+
+    if(_stretching){
+        if(done()){
+            emit blackboard()->itemChanged(BBIET_imageResized,this);
+            _data->updatePrevPostion();
+            _data->updatePrevSize();
+        }
+        _stretching = false;
     }
 }
 
@@ -615,19 +592,14 @@ void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
         painter->drawRect(rect());
         painter->setPen(Qt::DashLine);
         painter->drawRect(rect());
-        if(bbScene()->editingItem() == this)
+        painter->setPen(QColor(0,0,0));
+        painter->setBrush(QColor(255,255,255));
+        QRectF rect[8];
+        updateDots(rect);
+        for(auto i = 0;i<8;++i)
         {
-            painter->setPen(QColor(0,0,0));
-            painter->setBrush(QColor(255,255,255));
-
-            QRectF rect[8];
-            updateDots(rect);
-
-            for(auto i = 0;i<8;++i)
-            {
-                rect[i].translate(-x(),-y());
-                painter->drawRect(rect[i]);
-            }
+            rect[i].translate(-x(),-y());
+            painter->drawRect(rect[i]);
         }
     }
 }

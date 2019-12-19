@@ -341,14 +341,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         if(item)
         {
             auto index = dynamic_cast<IItemIndex*>(item);
-            if(index)
-            {
-                auto copy = blackboard1->find<QGraphicsItem>(index->id());
-                if(copy)
-                {
-                    copy->scene()->removeItem(copy);
-                }
-            }
+            blackboard1->remove(index->id());
         }
     };
     auto itemPaste = [&,blackboard1](QGraphicsItem *item){
@@ -470,18 +463,21 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
                 copy->setPenColor(item->penColor());
                 copy->setWeight(item->weight());
                 copy->setBrushColor(item->brushColor());
-                copy->begin(item->beginPos());
                 copy->setId(item->id());
+
+                copy->begin(item->beginPos());
             }
         }
     };
     auto ellipseDraw = [blackboard1](BbItemEllipse *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemEllipse>(item->id());
-            if(copy)
-            {
-                copy->draw(item->dragPos());
+        if(item){ //
+            auto data = dynamic_cast<BbItemEllipseData*>(item->data());
+            auto copy = blackboard1->find<BbItemEllipse>(data->lid);
+            if(copy){
+                copy->begin(data->position());
+                copy->draw(QPointF(data->x+data->size.width(),
+                                   data->y+data->size.height()));
+                copy->done();
             }
         }
     };

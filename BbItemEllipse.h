@@ -19,8 +19,9 @@ protected:
 
     QPointF _mousePos;
 
-    bool _circle = false;
-
+    bool _circular = false;
+    bool _startFromCenter = false;
+    bool _pointcut = false;
     bool _editing = false;
 public:
     BbItemEllipse();
@@ -63,9 +64,11 @@ public:
 
     bool square();
 
-    void setCircle(const bool circle);
+    bool setCircular(bool circle,bool drawImmediately = false);
+    bool setStartFromCenter(bool startFromCenter,bool drawImmediately = false);
+    bool setPointcut(bool pointcut,bool drawImmediately = false);
 
-    void toNinety(const QPointF &mousePos, qreal & outX,qreal & outY);
+    void toCircular(const QPointF &mousePos, qreal & outX,qreal & outY);
 
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
