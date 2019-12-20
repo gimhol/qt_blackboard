@@ -956,17 +956,22 @@ void BbScene::emitItemMovingSignals()
 void BbScene::emitItemMovedSignals()
 {
     bool moved = false;
-    auto enumJob = [&](IItemIndex *index,int){
-        auto item = dynamic_cast<QGraphicsItem *>(index);
-        auto d = std::abs(index->data()->prevX - item->x()) +
-                 std::abs(index->data()->prevY - item->y());
-        moved = d > 0;
-        /*
-            NOTE: 是一堆item被拖动的，目前还不存在不能被拖动的item。
-            所以第一个item位置变了，就可以判定为已拖动。
-            此处return true，打断循环。
-        */
-        return true;
+    auto enumJob = [&](IItemIndex *index,int n){
+        if(n == 0){
+            /*
+            NOTE:
+                是一堆item被拖动的，目前还不存在不能被拖动的item。
+                若第一item位置沒有变化，就可以判定为未拖动。此时return true打断。
+                    - Gim
+            */
+            auto item = dynamic_cast<QGraphicsItem *>(index);
+            auto d = std::abs(index->data()->prevX - item->x()) +
+                     std::abs(index->data()->prevY - item->y());
+            moved = d > 0;
+            if(!moved)
+                return true;
+        }
+        return false;
     };
     auto index = enumSelected(enumJob);
     if(moved){
