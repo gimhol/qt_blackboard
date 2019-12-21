@@ -1,5 +1,8 @@
 INCLUDEPATH += $$PWD
 HEADERS += \
+    $$PWD/BlackboardClient.h \
+    $$PWD/BlackboardNetwork.h \
+    $$PWD/BlackboardServer.h \
     $$PWD/ColorPanel.h \
     $$PWD/BlackboardTestWindow.h \
     $$PWD/SaturationValueZone.h \
@@ -8,6 +11,8 @@ HEADERS += \
     $$PWD/AlphaBar.h \
     $$PWD/ColorDisplayer.h
 SOURCES += \
+    $$PWD/BlackboardClient.cpp \
+    $$PWD/BlackboardServer.cpp \
     $$PWD/Main.cpp \
     $$PWD/ColorPanel.cpp \
     $$PWD/BlackboardTestWindow.cpp \

@@ -1,5 +1,7 @@
 ﻿#ifndef BLACKBOARDTESTWINDOW_H
 #define BLACKBOARDTESTWINDOW_H
+#include "BlackboardClient.h"
+
 #include <QWidget>
 #include <Blackboard.h>
 namespace Ui {
@@ -91,8 +93,10 @@ private slots:
 
     void on_btn_remove_one_background_clicked();
 
+    void onMeMsgRead();
 private:
     Ui::BlackboardTestWindow *ui;
+    QPointer<BlackboardClient> _me;
 };
 
 #endif // BLACKBOARDTESTWINDOW_H

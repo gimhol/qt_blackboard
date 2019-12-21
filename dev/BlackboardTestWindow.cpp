@@ -19,6 +19,15 @@
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QHostAddress>
+#include <QMenu>
+#include <QAction>
+#include <QPointer>
+#include <QHostAddress>
+#include <QHostAddress>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 static QNetworkAccessManager *networkManager()
 {
@@ -47,7 +56,8 @@ private:
 
 BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::BlackboardTestWindow)
+    ui(new Ui::BlackboardTestWindow),
+    _me(new BlackboardClient(this))
 {
     ui->setupUi(this);
 
@@ -226,8 +236,107 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 
     connect(ui->graphicsView,&Blackboard::itemSelected,[&](IItemIndex *index, bool selected){
         if(selected)
-        {
             ui->textBrowser->append(QString(QStringLiteral("选择: %1")).arg(index->id()));
+    });
+
+    QPixmap pm(5,5);
+    pm.fill("red");
+    ui->graphicsView->setCanvasSize(ui->graphicsView->width(),
+                                    ui->graphicsView->width());
+    ui->graphicsView->setPointerPixmap(pm);
+    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    _me->setObjectName("window");
+    _me->connectToHost(QHostAddress::LocalHost,9527);
+
+    connect(_me,&BlackboardClient::msgRead,this,&BlackboardTestWindow::onMeMsgRead);
+    connect(ui->graphicsView,&Blackboard::scrolled,this,[&](float x, float y){
+        _me->send(MsgTypeBlackboardScrolled,sizeof(int)*2)
+                << static_cast<int>(x)
+                << static_cast<int>(y);
+    });
+
+    auto onPointerShown = [&](QPoint localPoint){
+        QJsonObject jobj;
+        jobj["id"] = "remote_pointer";
+        jobj["x"] = localPoint.x();
+        jobj["y"] = localPoint.y();
+        _me->send(MsgTypeBlackboardPointerShown,QJsonDocument(jobj).toBinaryData());
+    };
+    auto onPointerMoving = [&](QPoint localPoint){
+        QJsonObject jobj;
+        jobj["id"] = "remote_pointer";
+        jobj["x"] = localPoint.x();
+        jobj["y"] = localPoint.y();
+        _me->send(MsgTypeBlackboardPointerMoving,QJsonDocument(jobj).toBinaryData());
+    };
+    auto onPointerMoved = [&](QPoint localPoint){
+        QJsonObject jobj;
+        jobj["id"] = "remote_pointer";
+        jobj["x"] = localPoint.x();
+        jobj["y"] = localPoint.y();
+        _me->send(MsgTypeBlackboardPointerMoved,QJsonDocument(jobj).toBinaryData());
+    };
+    auto onPointerHidden = [&](QPoint){
+        QJsonObject jobj;
+        jobj["id"] = "remote_pointer";
+        _me->send(MsgTypeBlackboardPointerHidden,QJsonDocument(jobj).toBinaryData());
+    };
+
+    connect(ui->graphicsView,&Blackboard::pointerShown,this,onPointerShown);
+    connect(ui->graphicsView,&Blackboard::pointerMoving,this,onPointerMoving);
+    connect(ui->graphicsView,&Blackboard::pointerMoved,this,onPointerMoved);
+    connect(ui->graphicsView,&Blackboard::pointerHidden,this,onPointerHidden);
+    connect(ui->graphicsView,&Blackboard::cursorShown,this,onPointerShown);
+    connect(ui->graphicsView,&Blackboard::cursorMoving,this,onPointerMoving);
+    connect(ui->graphicsView,&Blackboard::cursorMoved,this,onPointerMoved);
+    connect(ui->graphicsView,&Blackboard::cursorHidden,this,onPointerHidden);
+    connect(ui->graphicsView,&Blackboard::itemChanged,this,[=](BBItemEventType eventType,IItemIndex *index){
+        switch(eventType){
+        case BBIET_penDown:{
+            auto pen = dynamic_cast<BbItemPen*>(index);
+            QJsonObject jobj;
+            jobj["id"] = pen->id();
+            jobj["z"] = pen->z();
+            jobj["color"] = int(pen->color().rgba());
+            jobj["weight"] = pen->weight();
+            auto dot = pen->changed()->first();
+            jobj["x"] = qreal(dot.x())/ui->graphicsView->canvasWidth();
+            jobj["y"] = qreal(dot.y())/ui->graphicsView->canvasWidth();
+            _me->send(eventType,QJsonDocument(jobj).toBinaryData());
+            break;
+        }
+        case BBIET_penDraw:{
+            auto pen = dynamic_cast<BbItemPen*>(index);
+            QJsonObject jobj;
+            jobj["id"] = pen->id();
+            QJsonArray dots;
+            for(auto p: *pen->changed()){
+                dots << (p.x()/ui->graphicsView->canvasWidth())
+                     << (p.y()/ui->graphicsView->canvasWidth());
+            }
+            jobj["dots"] = dots;
+            _me->send(eventType,QJsonDocument(jobj).toBinaryData());
+            break;
+        }
+        case BBIET_penStraighting:{
+            auto pen = dynamic_cast<BbItemPen*>(index);
+            QJsonObject jobj;
+            jobj["id"] = pen->id();
+            jobj["x"] = qreal(pen->straightTo().x())/ui->graphicsView->canvasWidth();
+            jobj["y"] = qreal(pen->straightTo().y())/ui->graphicsView->canvasWidth();
+            _me->send(eventType,QJsonDocument(jobj).toBinaryData());
+            break;
+        }
+        case BBIET_penDone:{
+            QJsonObject jobj;
+            jobj["id"] = index->id();
+            _me->send(eventType,QJsonDocument(jobj).toBinaryData());
+            break;
+        }
+        default:
+            break;
         }
     });
 }
@@ -237,66 +346,39 @@ BlackboardTestWindow::~BlackboardTestWindow()
     delete ui;
 }
 
+static QByteArray ba;
 void BlackboardTestWindow::start()
 {
-    static BlackboardTestWindow win0, win1;
-    win0.setWindowTitle(QStringLiteral("测试窗口0"));
-    win1.setWindowTitle(QStringLiteral("测试窗口1"));
-    win0.show();
-    win1.show();
-    win0.move(0,0);
-    win1.move(win0.width(),0);
-    bindBlackboard(win0.blackboard(),win1.blackboard());
-    bindBlackboard(win1.blackboard(),win0.blackboard());
-    win0.ui->blackboardHeight->setValue(win0.blackboard()->width());
-    win1.ui->blackboardHeight->setValue(win1.blackboard()->width());
+    BlackboardTestWindow *win0 = new BlackboardTestWindow();
+    win0->setAttribute(Qt::WA_DeleteOnClose);
+    win0->setWindowTitle(QStringLiteral("测试窗口0"));
+    win0->show();
+    win0->move(0,0);
+    win0->blackboard()->readByteArray(ba);
+    win0->ui->blackboardHeight->setValue(win0->blackboard()->width());
+
+    BlackboardTestWindow *win1 = new BlackboardTestWindow();
+    win1->setAttribute(Qt::WA_DeleteOnClose);
+    win1->setWindowTitle(QStringLiteral("测试窗口1"));
+    win1->show();
+    win1->move(win0->width(),0);
+    win1->ui->blackboardHeight->setValue(win1->blackboard()->width());
+
+    bindBlackboard(win0->blackboard(),win1->blackboard());
+    bindBlackboard(win1->blackboard(),win0->blackboard());
+
+//    QTimer::singleShot(5000,win0,[&,win0](){
+//        ba.clear();
+//        win0->blackboard()->saveByteArray(ba);
+//        win0->close();
+//        BlackboardTestWindow::start();
+//    });
+
 }
 
 void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *blackboard1)
 {
-    static QPixmap * pm;
-    if(!pm)
-    {
-        pm = new QPixmap(5,5);
-        pm->fill("red");
-    }
-
-    blackboard0->setCanvasSize(blackboard0->width(),blackboard0->width());
-    blackboard0->setPointerPixmap(*pm);
-    blackboard0->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    blackboard0->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 #define TOINT(_NUM_) static_cast<int>(_NUM_)
-
-    connect(blackboard0,&Blackboard::scrolled,[blackboard1](float x, float y){
-        blackboard1->setScroll(TOINT(x),TOINT(y));
-    });
-    connect(blackboard0,&Blackboard::pointerShown,[blackboard1](QPoint localPoint){
-        blackboard1->addPointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::pointerMoved,[blackboard1](QPoint localPoint){
-        blackboard1->movePointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::pointerMoving,[blackboard1](QPoint localPoint){
-        blackboard1->movePointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::pointerHidden,[blackboard1](QPoint localPoint){
-        Q_UNUSED(localPoint)
-        blackboard1->hidePointer("remote_pointer");
-    });
-
-    connect(blackboard0,&Blackboard::cursorShown,[blackboard1](QPoint localPoint){
-        blackboard1->addPointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::cursorMoved,[blackboard1](QPoint localPoint){
-        blackboard1->movePointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::cursorMoving,[blackboard1](QPoint localPoint){
-        blackboard1->movePointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::cursorHidden,[blackboard1](QPoint localPoint){
-        Q_UNUSED(localPoint)
-        blackboard1->hidePointer("remote_pointer");
-    });
     auto copyFullItem = [&](Blackboard *blackboard1, IStreamWR *itemWR,IItemIndex *itemIndex)
     {
         QByteArray byteArray;
@@ -328,9 +410,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     {
         itemMoving(item);
         auto index = dynamic_cast<IItemIndex*>(item);
-        if(index)
-        {
-
+        if(index){
             qDebug() << QString("move item %1 from (%2,%3) to (%4,%5).").
                         arg(index->id()).
                         arg(index->data()->prevX).arg(index->data()->prevY).
@@ -594,61 +674,12 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             }
         }
     };
-    auto penDone = [blackboard1](BbItemPen *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemPen>(item->id());
-            if(copy)
-            {
-                copy->done();
-            }
-        }
-    };
-    auto penDraw = [blackboard1](BbItemPen *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemPen>(item->id());
-            if(copy)
-            {
-                for(auto point : *item->changed())
-                {
-                    copy->penDraw(point);
-                }
-            }
-        }
-    };
-    auto penStraighting = [blackboard1](BbItemPen *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemPen>(item->id());
-            if(copy)
-            {
-                copy->penStraighting(item->straightTo());
-            }
-        }
-    };
-    auto penDown = [blackboard1](BbItemPen *item){
-        if(item)
-        {
-            BbItemPen *copy = new BbItemPen();
-            if(copy)
-            {
-                copy->setZ(item->z());
-                copy->setColor(item->color());
-                copy->setWeight(item->weight());
-                copy->setId(item->id());
-                blackboard1->scene()->add(copy);
-                copy->penDown(item->changed()->first());
-            }
-        }
-    };
-
 #define HANDLE_ITEM_EVENT(_EVENT_TYPE_,_ITEM_TYPE_) \
     case BBIET_##_EVENT_TYPE_: \
         _EVENT_TYPE_(dynamic_cast<_ITEM_TYPE_*>(index)); \
         break
 
-    connect(blackboard0,&Blackboard::multipleItemChanged,[=](BBItemEventType eventType,IItemIndex *index){
+    connect(blackboard0,&Blackboard::multipleItemChanged,blackboard1,[=](BBItemEventType eventType,IItemIndex *index){
         while(index)
         {
             auto next = index->next;
@@ -665,14 +696,9 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             index = next;
         }
     });
-    connect(blackboard0,&Blackboard::itemChanged,[=](BBItemEventType eventType,IItemIndex *index){
+    connect(blackboard0,&Blackboard::itemChanged,blackboard1,[=](BBItemEventType eventType,IItemIndex *index){
         switch(eventType)
         {
-            HANDLE_ITEM_EVENT(itemMoved,QGraphicsItem);
-            HANDLE_ITEM_EVENT(penStraighting,BbItemPen);
-            HANDLE_ITEM_EVENT(penDown,BbItemPen);
-            HANDLE_ITEM_EVENT(penDraw,BbItemPen);
-            HANDLE_ITEM_EVENT(penDone,BbItemPen);
             HANDLE_ITEM_EVENT(straightDown,BbItemStraight);
             HANDLE_ITEM_EVENT(straightDraw,BbItemStraight);
             HANDLE_ITEM_EVENT(straightDone,BbItemStraight);
@@ -946,9 +972,6 @@ void BlackboardTestWindow::on_btn_make_sure_show_all_backgrouns_clicked()
                 (std::max)(canvasH,int(bgRect.bottom()))
                 );
 }
-#include <QMenu>
-#include <QAction>
-#include <QPointer>
 void BlackboardTestWindow::on_btn_remove_one_background_clicked()
 {
     auto menu = new QMenu(ui->btn_remove_one_background);
@@ -962,8 +985,81 @@ void BlackboardTestWindow::on_btn_remove_one_background_clicked()
         bb->removeBackground(action->text());
     });
     connect(menu,&QMenu::aboutToHide,menu,&QObject::deleteLater);
-
     menu->move(ui->btn_remove_one_background->mapTo(this,QPoint(0,0)));
     menu->show();
+}
 
+void BlackboardTestWindow::onMeMsgRead()
+{
+    switch(_me->msgType()){
+    case MsgTypeBlackboardScrolled:{
+        int x = 0;
+        int y = 0;
+        _me->msgBodyReader() >> x >> y;
+        ui->graphicsView->setScroll(x,y);
+        return;
+    }
+    case MsgTypeBlackboardPointerShown:
+    case MsgTypeBlackboardPointerMoving:
+    case MsgTypeBlackboardPointerMoved:{
+        auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+        ui->graphicsView->movePointer(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
+        return;
+    }
+    case MsgTypeBlackboardPointerHidden:{
+        auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+        ui->graphicsView->hidePointer(jobj["id"].toString());
+        return;
+    }
+    default:break;
+    }
+
+    switch(static_cast<BBItemEventType>(_me->msgType())){
+    case BBIET_penDown:{
+        auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+        BbItemPen *item = new BbItemPen();
+        ui->graphicsView->add(item);
+        item->setId(jobj["id"].toString());
+        item->setZ(jobj["z"].toDouble());
+        item->setColor(QColor::fromRgba(uint32_t(jobj["color"].toInt())));
+        item->setWeight(item->weight());
+        QPointF dot(jobj["x"].toDouble()*ui->graphicsView->canvasWidth(),
+                    jobj["y"].toDouble()*ui->graphicsView->canvasWidth());
+        item->penDown(dot);
+        return;
+    }
+    case BBIET_penDraw:{
+        auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+        BbItemPen *item = ui->graphicsView->find<BbItemPen>(jobj["id"].toString());
+        if(!item)
+            return;
+        auto dots = jobj["dots"].toArray();
+        for(auto itr = dots.begin(); itr!=dots.end(); ++itr){
+
+            QPointF dot;
+            dot.setX(itr->toDouble()*ui->graphicsView->canvasWidth());
+            ++itr;
+            dot.setY(itr->toDouble()*ui->graphicsView->canvasWidth());
+            item->penDraw(dot);
+        }
+        return;
+    }
+    case BBIET_penStraighting:{
+        auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+        BbItemPen *item = new BbItemPen();
+        ui->graphicsView->add(item);
+        QPointF dot(jobj["x"].toDouble()*ui->graphicsView->canvasWidth(),
+                    jobj["y"].toDouble()*ui->graphicsView->canvasWidth());
+        item->penStraighting(dot);
+        break;
+    }
+    case BBIET_penDone:{
+        auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+        BbItemPen *item = ui->graphicsView->find<BbItemPen>(jobj["id"].toString());
+        if(item)
+            item->done();
+        return;
+    }
+    default:break;
+    }
 }
