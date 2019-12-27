@@ -88,15 +88,12 @@ private slots:
 
     void on_btn_clear_background_clicked();
 
-
     void on_btn_make_sure_show_all_backgrouns_clicked();
 
     void on_btn_remove_one_background_clicked();
 
-    void onMeMsgRead();
 private:
     Ui::BlackboardTestWindow *ui;
-    QPointer<BlackboardClient> _me;
 };
 
 #endif // BLACKBOARDTESTWINDOW_H

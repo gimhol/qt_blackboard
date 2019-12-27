@@ -15,6 +15,7 @@ public:
 protected:
     void onNewConnection();
     void onClientMsgRead();
+    void onClientDisconnected();
     QPointer<QTcpServer> _server;
     QList<QPointer<BlackboardClient>> _clients;
 };

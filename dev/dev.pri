@@ -1,6 +1,7 @@
 INCLUDEPATH += $$PWD
 HEADERS += \
     $$PWD/BlackboardClient.h \
+    $$PWD/BlackboardConnector.h \
     $$PWD/BlackboardNetwork.h \
     $$PWD/BlackboardServer.h \
     $$PWD/ColorPanel.h \
@@ -12,6 +13,7 @@ HEADERS += \
     $$PWD/ColorDisplayer.h
 SOURCES += \
     $$PWD/BlackboardClient.cpp \
+    $$PWD/BlackboardConnector.cpp \
     $$PWD/BlackboardServer.cpp \
     $$PWD/Main.cpp \
     $$PWD/ColorPanel.cpp \

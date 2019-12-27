@@ -13,6 +13,7 @@ void BlackboardServer::onNewConnection()
     auto client = new BlackboardClient(_server->nextPendingConnection(),this);
     client->setObjectName("client");
     connect(client,&BlackboardClient::msgRead,this,&BlackboardServer::onClientMsgRead);
+    connect(client,&BlackboardClient::disconnected,this,&BlackboardServer::onClientDisconnected);
     _clients << client;
 }
 
@@ -25,4 +26,11 @@ void BlackboardServer::onClientMsgRead()
                         client->msgBody());
         }
     }
+}
+
+void BlackboardServer::onClientDisconnected()
+{
+    auto client = qobject_cast<BlackboardClient*>(sender());
+    _clients.removeOne(client);
+    client->deleteLater();
 }
