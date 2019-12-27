@@ -12,6 +12,10 @@ class BlackboardServer: public QObject
     Q_OBJECT
 public:
     explicit BlackboardServer(QObject *parent = nullptr);
+
+    bool isRunning();
+    void start(int port);
+    void stop();
 protected:
     void onNewConnection();
     void onClientMsgRead();

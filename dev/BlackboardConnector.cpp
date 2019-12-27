@@ -26,16 +26,29 @@ BlackboardConnector::BlackboardConnector(Blackboard *blackboard):
 
     // remote
     connect(_me,&BlackboardClient::msgRead,this,&BlackboardConnector::onMeMsgRead);
+}
 
-    _me->setObjectName("window");
-    _me->connectToHost(QHostAddress::LocalHost,9527);
+bool BlackboardConnector::isConnected()
+{
+    return _me->isConnected();
+}
+
+void BlackboardConnector::connectToServer(const QString &hostName, quint16 port)
+{
+    _me->connectToHost(hostName,port);
+}
+
+void BlackboardConnector::disconnectFromServer()
+{
+    _me->disconnectFromHost();
 }
 
 void BlackboardConnector::onLocalBlackboardScrolled(float x, float y)
 {
-    _me->send(MsgTypeBlackboardScrolled,sizeof(int)*2)
-            << static_cast<int>(x)
-            << static_cast<int>(y);
+    QJsonObject jobj;
+    jobj["x"] = qreal(x)/_bb->canvasWidth();
+    jobj["y"] = qreal(y)/_bb->canvasWidth();
+    _me->send(MsgTypeBlackboardScrolled,QJsonDocument(jobj).toBinaryData());
 }
 
 void BlackboardConnector::onLocalPointerShown(QPoint localPoint){
@@ -433,10 +446,10 @@ void BlackboardConnector::onMeMsgRead()
 }
 
 void BlackboardConnector::onRemoteBlackboardScrolled(){
-    int x = 0;
-    int y = 0;
-    _me->msgBodyReader() >> x >> y;
-    _bb->setScroll(x,y);
+    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+    _bb->setScroll(
+            jobj["x"].toDouble() * _bb->canvasWidth(),
+            jobj["y"].toDouble() * _bb->canvasWidth());
 }
 
 void BlackboardConnector::onRemotePointerShown(){

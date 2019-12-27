@@ -61,6 +61,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->blackboardHeight->setValue(1000);
     QButtonGroup * buttonGroup = new QButtonGroup(this);
     buttonGroup->addButton(ui->picker);
     buttonGroup->addButton(ui->pen);
@@ -242,38 +243,17 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     QPixmap pm(5,5);
     pm.fill("red");
     ui->graphicsView->setCanvasSize(ui->graphicsView->width(),
-                                    ui->graphicsView->width());
+                                    1000);
     ui->graphicsView->setPointerPixmap(pm);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    new BlackboardConnector(ui->graphicsView);
+    _connector = new BlackboardConnector(ui->graphicsView);
 }
 
 BlackboardTestWindow::~BlackboardTestWindow()
 {
     delete ui;
-}
-
-void BlackboardTestWindow::start()
-{
-    BlackboardTestWindow *win0 = new BlackboardTestWindow();
-    win0->setAttribute(Qt::WA_DeleteOnClose);
-    win0->setWindowTitle(QStringLiteral("测试窗口0"));
-    win0->show();
-    win0->move(0,0);
-    win0->ui->blackboardHeight->setValue(win0->blackboard()->width());
-
-    BlackboardTestWindow *win1 = new BlackboardTestWindow();
-    win1->setAttribute(Qt::WA_DeleteOnClose);
-    win1->setWindowTitle(QStringLiteral("测试窗口1"));
-    win1->show();
-    win1->move(win0->width(),0);
-    win1->ui->blackboardHeight->setValue(win1->blackboard()->width());
-
-    bindBlackboard(win0->blackboard(),win1->blackboard());
-    bindBlackboard(win1->blackboard(),win0->blackboard());
-
 }
 
 void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *blackboard1)
@@ -658,3 +638,15 @@ void BlackboardTestWindow::on_btn_remove_one_background_clicked()
     menu->show();
 }
 
+void BlackboardTestWindow::on_btnConnectionToggle_clicked()
+{
+    if(_connector->isConnected()){
+        ui->btnConnectionToggle->setText(QStringLiteral("进入"));
+        _connector->disconnectFromServer();
+    }else{
+        ui->btnConnectionToggle->setText(QStringLiteral("退出"));
+        _connector->connectToServer(
+                    ui->leAddress->text(),
+                    ui->lePort->text().toInt());
+    }
+}

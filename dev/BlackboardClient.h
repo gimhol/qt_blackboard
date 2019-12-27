@@ -25,6 +25,7 @@ public:
 
     ~BlackboardClient();
 
+    QPointer<QTcpSocket> socket();
     QDataStream &reader();
     QDataStream &writer();
     MsgHeader msgHeader();
@@ -33,10 +34,10 @@ public:
     MsgSize msgSize();
     QByteArray msgBody();
     QDataStream &msgBodyReader();
-    void connectToHost(const QHostAddress &address, quint16 port);
-
+    bool isConnected();
+    void connectToHost(const QString &hostName, quint16 port);
+    void disconnectFromHost();
     void send(int msgType, QByteArray data);
-    QDataStream &send(int msgType, MsgSize size);
 
 signals:
     void wrongMsgHeader();
@@ -48,6 +49,7 @@ protected:
     void onSocketReadyRead();
     void onSocketConnected();
     void onSocketDisconnected();
+    void onSocketError(QAbstractSocket::SocketError error);
 
     QPointer<QTcpSocket> _socket;
     QDataStream *_reader = nullptr;
@@ -60,6 +62,7 @@ protected:
     MsgSize _readMsgSize = 0;
     QByteArray *_readMsgBody = nullptr;
     QDataStream *_msgBodyReader = nullptr;
+    bool _connected = false;
 };
 
 #endif // BLACKBOARDCLIENT_H

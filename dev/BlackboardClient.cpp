@@ -32,6 +32,11 @@ BlackboardClient::~BlackboardClient(){
         delete _readMsgBody;
 }
 
+QPointer<QTcpSocket> BlackboardClient::socket()
+{
+    return _socket;
+}
+
 QDataStream &BlackboardClient::reader()
 {
     return *_reader;
@@ -54,12 +59,25 @@ QByteArray BlackboardClient::msgBody(){ return *_readMsgBody;}
 
 QDataStream &BlackboardClient::msgBodyReader(){ return *_msgBodyReader;}
 
-void BlackboardClient::connectToHost(const QHostAddress &address, quint16 port)
+bool BlackboardClient::isConnected()
 {
-    _socket->connectToHost(address,port);
+    return _connected;
+}
+
+void BlackboardClient::connectToHost(const QString &hostName, quint16 port)
+{
+    _socket->connectToHost(hostName,port);
+}
+
+void BlackboardClient::disconnectFromHost()
+{
+    _socket->disconnectFromHost();
 }
 
 void BlackboardClient::send(int msgType, QByteArray data){
+    if(!socket()->isOpen() || !socket()->isValid()){
+        return;
+    }
     writer() << int(MsgHeaderDefault)
              << QDateTime::currentMSecsSinceEpoch()
              << msgType
@@ -67,19 +85,13 @@ void BlackboardClient::send(int msgType, QByteArray data){
     writer().writeRawData(data.data(),data.size());
 }
 
-QDataStream &BlackboardClient::send(int msgType, MsgSize size)
-{
-    return writer() << int(MsgHeaderDefault)
-             << QDateTime::currentMSecsSinceEpoch()
-             << msgType
-             << int(size);
-}
-
 void BlackboardClient::init()
 {
     connect(_socket,&QAbstractSocket::readyRead,this,&BlackboardClient::onSocketReadyRead);
     connect(_socket,&QAbstractSocket::connected,this,&BlackboardClient::onSocketConnected);
     connect(_socket,&QAbstractSocket::disconnected,this,&BlackboardClient::onSocketDisconnected);
+    auto signal = static_cast<void(QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error);
+    connect(_socket,signal,this,&BlackboardClient::onSocketError);
 }
 #define fallThrough [[clang::fallthrough]]
 void BlackboardClient::onSocketReadyRead()
@@ -142,10 +154,17 @@ void BlackboardClient::onSocketReadyRead()
 
 void BlackboardClient::onSocketConnected()
 {
+    _connected = true;
     emit connected();
 }
 
 void BlackboardClient::onSocketDisconnected()
 {
+    _connected = false;
     emit disconnected();
+}
+
+void BlackboardClient::onSocketError(QAbstractSocket::SocketError error)
+{
+    qWarning() << error;
 }

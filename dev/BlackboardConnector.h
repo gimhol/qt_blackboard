@@ -11,6 +11,10 @@ class BlackboardConnector: public QObject
 public:
     BlackboardConnector(Blackboard *blackboard);
 
+    bool isConnected();
+    void connectToServer(const QString &hostName, quint16 port);
+    void disconnectFromServer();
+
     void onLocalBlackboardScrolled(float x, float y);
     void onLocalPointerShown(QPoint localPoint);
     void onLocalPointerMoving(QPoint localPoint);
