@@ -49,13 +49,15 @@ BbScene::BbScene(Blackboard *parent):
 
 BbScene::~BbScene()
 {
-    delete _pickerRect;
     _pickerRect = nullptr;
-    clearBackground();
-
-    for(auto idx: _deletingItems){
-        delete idx;
-    }
+    _curItemIndex = nullptr;
+    _backgrounds.clear();
+    /*
+     * Note: 这里不需要delete 因为会item 会在clear中被delete。
+     * 这里的delete可能会导致不可预知的问题。(?)
+     * 但还没有找到重现的方法？？？
+     * -Gim
+     */
     _deletingItems.clear();
 }
 
