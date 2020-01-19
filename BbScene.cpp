@@ -261,7 +261,13 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
          *      -Gim
          */
         for(auto idx: _deletingItems){
-            delete idx;
+            if(idx->toolType() == BBTT_Text){
+                auto text = dynamic_cast<BbItemText*>(idx);
+                text->deleteLater();
+            }
+            else{
+                delete idx;
+            }
         }
         _deletingItems.clear();
     }
@@ -750,7 +756,13 @@ void BbScene::remove(IItemIndex *index)
         if(_mouseLeftButtonDown){
             _deletingItems << index;
         }else{
-            delete index;
+            if(index->toolType() == BBTT_Text){
+                auto text = dynamic_cast<BbItemText*>(index);
+                text->deleteLater();
+            }
+            else{
+                delete index;
+            }
         }
     }
     else
