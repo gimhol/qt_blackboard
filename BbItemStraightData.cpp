@@ -41,38 +41,31 @@ void BbItemStraightData::writeStream(QDataStream &stream)
 {
     BbItemData::writeStream(stream);
 
-    stream << pen.widthF()
-           << pen.color().rgba()
-           << static_cast<short>(pen.style())
-           << a.x() << a.y()
-           << b.x() << b.y();
+    QJsonObject jobj;
+    jobj["pen_width"] = pen.widthF();
+    jobj["pen_color"] = int(pen.color().rgba());
+    jobj["pen_style"] = int(pen.style());
+    jobj["a_x"] = a.x();
+    jobj["a_y"] = a.y();
+    jobj["b_x"] = b.x();
+    jobj["b_y"] = b.y();
+    stream << QJsonDocument(jobj).toBinaryData();
 }
 
 void BbItemStraightData::readStream(QDataStream &stream)
 {
     BbItemData::readStream(stream);
-
-    qreal penWidth;
-    QRgb rgba;
-    short penStyle;
-    qreal ax,ay,bx,by;
-
-    stream >> penWidth
-           >> rgba
-           >> penStyle
-           >> ax >> ay
-           >> bx >> by;
-
+    QByteArray data;
+    stream >> data;
+    auto jobj = QJsonDocument::fromBinaryData(data).object();
+    pen.setWidthF(jobj["pen_width"].toDouble());
+    pen.setStyle(Qt::PenStyle(jobj["pen_style"].toInt()));
+    pen.setColor(QColor::fromRgba(QRgb(jobj["pen_color"].toInt())));
+    a.setX(jobj["a_x"].toDouble());
+    a.setY(jobj["a_y"].toDouble());
+    b.setX(jobj["b_x"].toDouble());
+    b.setY(jobj["b_y"].toDouble());
     empty = false;
-
-    pen.setWidthF(penWidth);
-    pen.setStyle(static_cast<Qt::PenStyle>(penStyle));
-    pen.setColor(rgba);
-
-    a.setX(ax);
-    a.setY(ay);
-    b.setX(bx);
-    b.setY(by);
 }
 
 void BbItemStraightData::setWeight(qreal weight)

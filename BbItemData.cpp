@@ -54,11 +54,28 @@ void BbItemData::updatePrevPostion()
 }
 
 void BbItemData::writeStream(QDataStream &stream){
-    stream << static_cast<int>(mode) << lid << x << y << z << prevX << prevY << prevZ;
+    QJsonObject jobj;
+    jobj["coord_mode"] = mode;
+    jobj["id"] = lid;
+    jobj["x"] = x;
+    jobj["y"] = y;
+    jobj["z"] = z;
+    jobj["prev_x"] = prevX;
+    jobj["prev_y"] = prevY;
+    jobj["prev_z"] = prevZ;
+    stream << QJsonDocument(jobj).toBinaryData();
 }
 
 void BbItemData::readStream(QDataStream &stream){
-    int imode;
-    stream >> imode >> lid >> x >> y >> z >> prevX >> prevY >> prevZ;
-    mode = static_cast<CoordMode>(imode);
+    QByteArray data;
+    stream >> data;
+    auto jobj = QJsonDocument::fromBinaryData(data).object();
+    mode  = CoordMode(jobj["coord_mode"].toInt());
+    lid   = jobj["id"].toString();
+    x     = jobj["x"].toDouble();
+    y     = jobj["y"].toDouble();
+    z     = jobj["z"].toDouble();
+    prevX = jobj["prev_x"].toDouble();
+    prevY = jobj["prev_y"].toDouble();
+    prevZ = jobj["prev_z"].toDouble();
 }

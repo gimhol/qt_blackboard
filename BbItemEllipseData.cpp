@@ -92,31 +92,29 @@ void BbItemEllipseData::setWeight(qreal weight)
 void BbItemEllipseData::writeStream(QDataStream &stream)
 {
     BbItemData::writeStream(stream);
-
-    stream << pen.widthF()
-           << pen.color().rgba()
-           << static_cast<short>(pen.style())
-           << brush.color().rgba()
-           << size.width()
-           << size.height();
+    QJsonObject jobj;
+    jobj["pen_width"]   = pen.widthF();
+    jobj["pen_color"]   = int(pen.color().rgba());
+    jobj["pen_style"]   = int(pen.style());
+    jobj["brush_color"] = int(brush.color().rgba());
+    jobj["brush_style"] = int(brush.style());
+    jobj["width"]       = size.width();
+    jobj["height"]      = size.height();
+    stream << QJsonDocument(jobj).toBinaryData();
 }
 
 void BbItemEllipseData::readStream(QDataStream &stream)
 {
     BbItemData::readStream(stream);
-    qreal penWidth;
-    QRgb penRgba,brushRgba;
-    short penStyle;
-    qreal width,height;
-
-    stream >> penWidth >> penRgba >> penStyle >> brushRgba >> width >> height;
-
-    pen.setWidthF(penWidth);
-    pen.setStyle(static_cast<Qt::PenStyle>(penStyle));
-    pen.setColor(QColor::fromRgba(penRgba));
-
-    brush.setColor(QColor::fromRgba(brushRgba));
-    size.setHeight(height);
-    size.setWidth(width);
-    empty = !size.isEmpty();
+    QByteArray data;
+    stream >> data;
+    auto jobj = QJsonDocument::fromBinaryData(data).object();
+    pen.setWidthF(jobj["pen_width"].toDouble());
+    pen.setColor(QColor::fromRgba(QRgb(jobj["pen_color"].toInt())));
+    pen.setStyle(Qt::PenStyle(jobj["pen_style"].toInt()));
+    brush.setColor(QColor::fromRgba(QRgb(jobj["brush_color"].toInt())));
+    brush.setStyle(Qt::BrushStyle(jobj["brush_style"].toInt()));
+    size.setWidth(jobj["width"].toDouble());
+    size.setHeight(jobj["height"].toDouble());
+    empty = size.isNull();
 }

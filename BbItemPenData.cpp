@@ -1,5 +1,9 @@
 ﻿#include "BbItemPenData.h"
 
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+
 
 static qreal minWidth = 1.1;
 static qreal maxWidth = 30;
@@ -42,41 +46,30 @@ void BbItemPenData::writeStream(QDataStream &stream)
 {
     BbItemData::writeStream(stream);
 
-    stream << pen.widthF()
-           << pen.color().rgba()
-           << static_cast<short>(pen.style())
-           << coords.size();
-
+    QJsonObject jobj;
+    jobj["pen_width"] = pen.widthF();
+    jobj["pen_color"] = int(pen.color().rgba());
+    jobj["pen_style"] = int(pen.style());
+    QJsonArray jarrs;
     for(auto coord: coords)
-    {
-        stream << coord;
-    }
+        jarrs << coord;
+    jobj["coords"] = jarrs;
+
+    stream << QJsonDocument(jobj).toBinaryData();
 }
 
 void BbItemPenData::readStream(QDataStream &stream)
 {
     BbItemData::readStream(stream);
-
-    qreal penWidth;
-    QRgb rgba;
-    short penStyle;
-    int coordsCount;
-
-    stream >> penWidth >> rgba >> penStyle
-           >> coordsCount;
-
-    empty = coordsCount == 0;
-
-    pen.setWidthF(penWidth);
-    pen.setStyle(static_cast<Qt::PenStyle>(penStyle));
-    pen.setColor(rgba);
-
-    qreal crood;
-    for(int i = 0;i < coordsCount; ++i)
-    {
-        stream >> crood;
-        coords.append(crood);
-    }
+    QByteArray data;
+    stream >> data;
+    auto jobj = QJsonDocument::fromBinaryData(data).object();
+    pen.setWidthF(jobj["pen_width"].toDouble());
+    pen.setStyle(Qt::PenStyle(jobj["pen_style"].toInt()));
+    pen.setColor(QColor::fromRgba(QRgb(jobj["pen_color"].toInt())));
+    for(auto jval: jobj["coords"].toArray())
+        coords.append(jval.toDouble());
+    empty = coords.isEmpty();
 }
 
 void BbItemPenData::setColor(const QColor &color)

@@ -95,39 +95,37 @@ void BbItemTriangleData::writeStream(QDataStream &stream)
 {
     BbItemData::writeStream(stream);
 
-    stream << pen.widthF()
-           << pen.color().rgba()
-           << static_cast<short>(pen.style())
-           << brush.color().rgba();
-
-    for(int i = 0; i < 3; ++i)
-    {
-        stream << points[i].x() << points[i].y();
+    QJsonObject jobj;
+    jobj["pen_width"]   = pen.widthF();
+    jobj["pen_color"]   = int(pen.color().rgba());
+    jobj["pen_style"]   = int(pen.style());
+    jobj["brush_color"] = int(brush.color().rgba());
+    jobj["brush_style"] = int(brush.style());
+    QJsonArray jarr;
+    for(int i = 0; i < 3; ++i){
+        jarr << points[i].x() << points[i].y();
     }
+    jobj["coords"] = jarr;
+    stream << QJsonDocument(jobj).toBinaryData();
 }
 
 void BbItemTriangleData::readStream(QDataStream &stream)
 {
     BbItemData::readStream(stream);
-    empty = false;
-    qreal penWidth;
-    QRgb penRgba,brushRgba;
-    short penStyle;
-
-    stream >> penWidth
-           >> penRgba
-           >> penStyle
-           >> brushRgba;
-
-    for(int i = 0; i < 3; ++i)
-    {
-        qreal x,y;
-        stream >> x >> y;
-        points[i] = QPointF(x,y);
+    QByteArray data;
+    stream >> data;
+    auto jobj = QJsonDocument::fromBinaryData(data).object();
+    pen.setWidthF(jobj["pen_width"].toDouble());
+    pen.setColor(QColor::fromRgba(QRgb(jobj["pen_color"].toInt())));
+    pen.setStyle(Qt::PenStyle(jobj["pen_style"].toInt()));
+    brush.setColor(QColor::fromRgba(QRgb(jobj["brush_color"].toInt())));
+    brush.setStyle(Qt::BrushStyle(jobj["brush_style"].toInt()));
+    auto jarr = jobj["coords"].toArray();
+    empty = jarr.size() < 6;
+    if(!empty){
+        for(auto i = 0; i < 3; ++i){
+            points[i].setX(jarr[i*2].toDouble());
+            points[i].setY(jarr[i*2+1].toDouble());
+        }
     }
-
-    pen.setWidthF(penWidth);
-    pen.setStyle(static_cast<Qt::PenStyle>(penStyle));
-    pen.setColor(QColor::fromRgba(penRgba));
-    brush.setColor(QColor::fromRgba(brushRgba));
 }

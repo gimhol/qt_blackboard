@@ -5,6 +5,9 @@
 #include "IStreamWR.h"
 #include "BbToolType.h"
 #include <QDataStream>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 class IItemIndex;
 /**
