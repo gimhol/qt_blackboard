@@ -73,20 +73,20 @@ QList<QPointF> *BbItemPen::changed(){ return &_changed ;}
 bool BbItemPen::isEmpty() { return _data->empty; }
 
 void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
-
     if(_path != nullptr){
-        if(_path->length() < 2000)
-            painter->setRenderHint(QPainter::Antialiasing, true);
-        if(_data->coords.length() == 2){
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        if((!_straight || _straightLineFrom == _straightLineTo) &&
+            _data->coords.length() == 2){
             auto halfPenW = 0.5 * _data->pen.widthF();
             painter->setPen(Qt::NoPen);
             painter->setBrush(_data->pen.color());
             QRectF rect(-halfPenW,-halfPenW,2*halfPenW,2*halfPenW);
             painter->drawEllipse(rect);
+        }else{
+            painter->setPen(_data->pen);
+            painter->setBrush(Qt::NoBrush);
+            painter->drawPath(*_path);
         }
-        painter->setPen(_data->pen);
-        painter->setBrush(Qt::NoBrush);
-        painter->drawPath(*_path);
         if(_straight && _straightLineFrom.x() > -999998){
             painter->drawLine(_straightLineFrom, _straightLineTo);
         }
