@@ -104,8 +104,6 @@ public:
 
     void setCanvasSize(int width, int height);
 
-    void setControlEnable(bool enable);
-
     void removeSelectedItems();
 
     void remove(QString lid);

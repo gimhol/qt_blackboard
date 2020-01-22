@@ -46,21 +46,13 @@ public:
      */
     explicit BbItemTextData(CoordMode mode = CM_ABSOLUTE);
 
-    /**
-     * @brief writeStream 从数据流读取
-     * @param stream 数据流
-     */
-    void writeStream(QDataStream &stream);
-
-    /**
-     * @brief readStream 写入数据流
-     * @param stream 数据流
-     */
-    void readStream(QDataStream &stream);
-
     void setPointWeight(qreal pointWeight);
 
     qreal pointWeight();
+
+    QJsonObject toJsonObject() override;
+
+    void fromJsonObject(QJsonObject jobj) override;
 };
 
 #endif // BBITEMTEXTDATA_H

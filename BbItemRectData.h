@@ -2,8 +2,6 @@
 #define BBITEMRECTDATA_H
 
 #include "BbItemData.h"
-#include <QPen>
-#include <QBrush>
 
 class NSB_BLACKBOARD_EXPORT BbItemRectData : public BbItemData
 {
@@ -22,21 +20,13 @@ public:
     static void setDefaultBrushColor(const QColor &value);
     static void setDefaultBrush(const QBrush &value);
 
-    QPen pen;
-
-    QBrush brush;
-
-    QSizeF size;
-
     explicit BbItemRectData(CoordMode mode = CM_ABSOLUTE);
 
-    qreal weight();
+    qreal weight() override;
 
-    void setWeight(qreal weight);
+    void setWeight(qreal weight) override;
 
-    void writeStream(QDataStream &stream) override;
-
-    void readStream(QDataStream &stream) override;
+    void fromJsonObject(QJsonObject jobj) override;
 };
 
 #endif // BBITEMRECTDATA_H

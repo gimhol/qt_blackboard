@@ -55,38 +55,6 @@ BbItemTextData::BbItemTextData(BbItemData::CoordMode mode):
     tooltype = BBTT_Text;
 }
 
-void BbItemTextData::writeStream(QDataStream &stream)
-{
-    BbItemData::writeStream(stream);
-
-    QJsonObject jobj;
-    jobj["family"]      = font.family();
-    jobj["point_size"]  = font.pointSizeF();
-    jobj["weight"]      = font.weight();
-    jobj["italic"]      = font.italic();
-    jobj["bold"]        = font.bold();
-    jobj["color"]       = int(color.rgba());
-    jobj["text"]        = text;
-    jobj["prev_text"]   = prevText;
-    stream << QJsonDocument(jobj).toBinaryData();
-}
-
-void BbItemTextData::readStream(QDataStream &stream)
-{
-    BbItemData::readStream(stream);
-    QByteArray data;
-    stream >> data;
-    auto jobj = QJsonDocument::fromBinaryData(data).object();
-    font.setFamily(jobj["family"].toString());
-    font.setPointSizeF(jobj["point_size"].toDouble());
-    font.setWeight(jobj["weight"].toInt());
-    font.setItalic(jobj["italic"].toBool());
-    font.setBold(jobj["bold"].toBool());
-    color.setRgba(QRgb(jobj["color"].toInt()));
-    text = jobj["text"].toString();
-    prevText = jobj["prev_text"].toString();
-    empty = text.length() == 0;
-}
 void BbItemTextData::setPointWeight(qreal weight)
 {
     qreal pointSize = minPointSize + weight * (maxPointSize - minPointSize);
@@ -96,4 +64,32 @@ void BbItemTextData::setPointWeight(qreal weight)
 qreal BbItemTextData::pointWeight()
 {
     return (font.pointSizeF()-minPointSize)/(maxPointSize-minPointSize);
+}
+
+QJsonObject BbItemTextData::toJsonObject()
+{
+    auto jobj = BbItemData::toJsonObject();
+    jobj["family"]      = font.family();
+    jobj["point_size"]  = font.pointSizeF();
+    jobj["weight"]      = font.weight();
+    jobj["italic"]      = font.italic();
+    jobj["bold"]        = font.bold();
+    jobj["color"]       = int(color.rgba());
+    jobj["text"]        = text;
+    jobj["prev_text"]   = prevText;
+    return jobj;
+}
+
+void BbItemTextData::fromJsonObject(QJsonObject jobj)
+{
+    BbItemData::fromJsonObject(jobj);
+    font.setFamily(jobj["family"].toString());
+    font.setPointSizeF(jobj["point_size"].toDouble());
+    font.setWeight(jobj["weight"].toInt());
+    font.setItalic(jobj["italic"].toBool());
+    font.setBold(jobj["bold"].toBool());
+    color.setRgba(QRgb(jobj["color"].toInt()));
+    text = jobj["text"].toString();
+    prevText = jobj["prev_text"].toString();
+    empty = text.length() == 0;
 }

@@ -10,6 +10,7 @@ class ColorDisplayer : public QWidget
 public:
     explicit ColorDisplayer(QWidget *parent = nullptr);
 
+    QColor color();
 protected:
     void paintEvent(QPaintEvent *event);
 

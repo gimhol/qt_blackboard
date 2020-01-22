@@ -38,16 +38,6 @@ public:
     QPointF a();
 
     QPointF b();
-
-    QColor color();
-
-    void setColor(const QColor &color);
-
-    qreal penWidth();
-
-    qreal weight();
-
-    void setWeight(qreal weight);
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) override;
 
@@ -70,8 +60,6 @@ public:
     void toolDraw(const QPointF &pos) override;
     void toolDone(const QPointF &pos) override;
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
-    void removed() override { }
-    void added() override { }
     void absolutize() override;
     bool isEditing() override;
 };

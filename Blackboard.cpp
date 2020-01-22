@@ -355,13 +355,6 @@ void Blackboard::setCanvasSize(int width, int height)
     dptr->canvasSize.setHeight(height);
 }
 
-void Blackboard::setControlEnable(bool enable)
-{
-    scene()->setControlEnable(enable);
-
-    setAttribute(Qt::WA_TransparentForMouseEvents, !enable);
-}
-
 void Blackboard::removeSelectedItems()
 {
     auto inner = scene();

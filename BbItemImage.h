@@ -36,6 +36,7 @@ public:
     void updateDots(QRectF *rects);
     void updateCursor(Direction direction);
     void updateCursor(const QPointF &mousePos);
+    void resize(QSizeF size);
     void resize(qreal width, qreal height);
     void updatePrevSize();
     void begin(const QPointF &point);

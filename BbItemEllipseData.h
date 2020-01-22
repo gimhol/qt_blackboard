@@ -2,9 +2,6 @@
 #define BBITEMELLIPSEDATA_H
 
 #include "BbItemData.h"
-#include <QPen>
-#include <QBrush>
-
 /**
  * @brief The BbItemEllipseData class
  *      '椭圆'的数据类
@@ -73,18 +70,6 @@ public:
      */
     static void setDefaultBrush(const QBrush &value);
     /**
-     * @brief pen 描边样式
-     */
-    QPen pen;
-    /**
-     * @brief brush 画刷样式
-     */
-    QBrush brush;
-    /**
-     * @brief size 外接矩形的尺寸
-     */
-    QSizeF size;
-    /**
      * @brief BbItemEllipseData 构造函数
      * @param mode 坐标模式
      */
@@ -93,22 +78,14 @@ public:
      * @brief weight 获取描边粗细程度
      * @return 描边粗细程度（0~1）
      */
-    qreal weight();
+    qreal weight() override;
     /**
      * @brief setWeight 获取设置粗细程度
      * @param weight 描边粗细程度（0~1）
      */
-    void setWeight(qreal weight);
-    /**
-     * @brief writeStream 将自己的数据写入数据流
-     * @param stream 数据流
-     */
-    void writeStream(QDataStream &stream) override;
-    /**
-     * @brief writeStream 从数据流读取数据填充自己
-     * @param stream 数据流
-     */
-    void readStream(QDataStream &stream) override;
+    void setWeight(qreal weight) override;
+
+    void fromJsonObject(QJsonObject jobj) override;
 };
 
 #endif // BBITEMELLIPSEDATA_H

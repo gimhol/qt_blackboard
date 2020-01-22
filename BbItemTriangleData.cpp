@@ -74,11 +74,13 @@ void BbItemTriangleData::setDefaultBrush(const QBrush &value)
 }
 
 BbItemTriangleData::BbItemTriangleData(CoordMode mode):
-    BbItemData(mode),
-    pen(defaultPen),
-    brush(defaultBrush)
+    BbItemData(mode)
 {
     tooltype = BBTT_Triangle;
+    needPen = true;
+    needBrush = true;
+    pen = defaultPen;
+    brush = defaultBrush;
 }
 
 qreal BbItemTriangleData::weight()
@@ -91,35 +93,20 @@ void BbItemTriangleData::setWeight(qreal weight)
     pen.setWidthF(minPenWidth + weight * (maxPenWidth - minPenWidth));
 }
 
-void BbItemTriangleData::writeStream(QDataStream &stream)
+QJsonObject BbItemTriangleData::toJsonObject()
 {
-    BbItemData::writeStream(stream);
-
-    QJsonObject jobj;
-    jobj["pen_width"]   = pen.widthF();
-    jobj["pen_color"]   = int(pen.color().rgba());
-    jobj["pen_style"]   = int(pen.style());
-    jobj["brush_color"] = int(brush.color().rgba());
-    jobj["brush_style"] = int(brush.style());
+    auto jobj = BbItemData::toJsonObject();
     QJsonArray jarr;
     for(int i = 0; i < 3; ++i){
         jarr << points[i].x() << points[i].y();
     }
     jobj["coords"] = jarr;
-    stream << QJsonDocument(jobj).toBinaryData();
+    return jobj;
 }
 
-void BbItemTriangleData::readStream(QDataStream &stream)
+void BbItemTriangleData::fromJsonObject(QJsonObject jobj)
 {
-    BbItemData::readStream(stream);
-    QByteArray data;
-    stream >> data;
-    auto jobj = QJsonDocument::fromBinaryData(data).object();
-    pen.setWidthF(jobj["pen_width"].toDouble());
-    pen.setColor(QColor::fromRgba(QRgb(jobj["pen_color"].toInt())));
-    pen.setStyle(Qt::PenStyle(jobj["pen_style"].toInt()));
-    brush.setColor(QColor::fromRgba(QRgb(jobj["brush_color"].toInt())));
-    brush.setStyle(Qt::BrushStyle(jobj["brush_style"].toInt()));
+    BbItemData::fromJsonObject(jobj);
     auto jarr = jobj["coords"].toArray();
     empty = jarr.size() < 6;
     if(!empty){

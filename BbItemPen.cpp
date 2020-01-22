@@ -74,28 +74,20 @@ bool BbItemPen::isEmpty() { return _data->empty; }
 
 void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
 
-    QGraphicsRectItem::paint(painter,option,widget);
-
-    if(_path != nullptr)
-    {
-        if(_data->coords.length() == 2)
-        {
-            qreal halfPenW = 0.5 * _data->pen.widthF();
-            painter->drawEllipse(_data->coords[0] - halfPenW,
-                                 _data->coords[1] - halfPenW,
-                                 2*halfPenW,
-                                 2*halfPenW);
+    if(_path != nullptr){
+        if(_path->length() < 2000)
+            painter->setRenderHint(QPainter::Antialiasing, true);
+        if(_data->coords.length() == 2){
+            auto halfPenW = 0.5 * _data->pen.widthF();
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(_data->pen.color());
+            QRectF rect(-halfPenW,-halfPenW,2*halfPenW,2*halfPenW);
+            painter->drawEllipse(rect);
         }
-
         painter->setPen(_data->pen);
         painter->setBrush(Qt::NoBrush);
-        if(_path->length() < 2000)
-        {
-            painter->setRenderHint(QPainter::Antialiasing, true);
-        }
         painter->drawPath(*_path);
-        if(_straight && _straightLineFrom.x() > -999998)
-        {
+        if(_straight && _straightLineFrom.x() > -999998){
             painter->drawLine(_straightLineFrom, _straightLineTo);
         }
     }
@@ -107,6 +99,8 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         painter->drawPixmap(0,0,width,height,*_pixmap);
     }
 #endif
+
+    QGraphicsRectItem::paint(painter,option,widget);
 }
 
 void BbItemPen::penDown(const QPointF &point){
@@ -120,10 +114,10 @@ void BbItemPen::penDown(const QPointF &point){
     _path->moveTo(0,0);
     _mousePos = point;
     addPointToPath(point);
-    if(_straight)
-    {
-        _straightLineFrom = _mousePos-point;
-        _straightLineTo = _mousePos-point;
+    setRect(_rect);
+    if(_straight){
+        _straightLineFrom = _mousePos - point;
+        _straightLineTo = _straightLineFrom;
     }
     update();
     _data->updatePostion(this);
@@ -210,35 +204,6 @@ void BbItemPen::done()
 
     }while(false);
 #endif
-}
-
-QColor BbItemPen::color(){
-    return _data->pen.color();
-}
-
-void BbItemPen::setColor(const QColor &color)
-{
-    _data->pen.setColor(color);
-}
-
-qreal BbItemPen::penWidth()
-{
-    return _data->pen.widthF();
-}
-
-qreal BbItemPen::weight()
-{
-    return (_data->pen.widthF() - BbItemPenData::getMinWidth())  / (BbItemPenData::getMaxWidth() - BbItemPenData::getMinWidth());
-}
-
-void BbItemPen::setPenWidth(qreal width)
-{
-    _data->pen.setWidthF(width);
-}
-
-void BbItemPen::setWeight(qreal weight)
-{
-    _data->setWeight(weight);
 }
 
 void BbItemPen::straightLineDragging(const QPointF &point)
@@ -474,8 +439,8 @@ void BbItemPen::toolDown(const QPointF &pos)
 
     setStraight(bbScene()->modifiers() & Qt::ShiftModifier);
     auto settings = blackboard()->toolSettings<BbItemPenData>(BBTT_Pen);
-    setWeight(settings->weight());
-    setColor(settings->pen.color());
+    _data->setWeight(settings->weight());
+    _data->pen = settings->pen;
     penDown(pos);
     bbScene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_penDown,this);

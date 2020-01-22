@@ -36,40 +36,11 @@ void BbItemPenData::setDefaultPen(const QPen &value)
 }
 
 BbItemPenData::BbItemPenData(CoordMode mode):
-    BbItemData(mode),
-    pen(defaultPen)
+    BbItemData(mode)
 {
     tooltype = BBTT_Pen;
-}
-
-void BbItemPenData::writeStream(QDataStream &stream)
-{
-    BbItemData::writeStream(stream);
-
-    QJsonObject jobj;
-    jobj["pen_width"] = pen.widthF();
-    jobj["pen_color"] = int(pen.color().rgba());
-    jobj["pen_style"] = int(pen.style());
-    QJsonArray jarrs;
-    for(auto coord: coords)
-        jarrs << coord;
-    jobj["coords"] = jarrs;
-
-    stream << QJsonDocument(jobj).toBinaryData();
-}
-
-void BbItemPenData::readStream(QDataStream &stream)
-{
-    BbItemData::readStream(stream);
-    QByteArray data;
-    stream >> data;
-    auto jobj = QJsonDocument::fromBinaryData(data).object();
-    pen.setWidthF(jobj["pen_width"].toDouble());
-    pen.setStyle(Qt::PenStyle(jobj["pen_style"].toInt()));
-    pen.setColor(QColor::fromRgba(QRgb(jobj["pen_color"].toInt())));
-    for(auto jval: jobj["coords"].toArray())
-        coords.append(jval.toDouble());
-    empty = coords.isEmpty();
+    needPen = true;
+    pen = defaultPen;
 }
 
 void BbItemPenData::setColor(const QColor &color)
@@ -85,4 +56,22 @@ void BbItemPenData::setWeight(qreal weight)
 qreal BbItemPenData::weight()
 {
     return (pen.widthF() - minWidth) / (maxWidth - minWidth);
+}
+
+QJsonObject BbItemPenData::toJsonObject()
+{
+    auto jobj = BbItemData::toJsonObject();
+    QJsonArray jarrs;
+    for(auto coord: coords)
+        jarrs << coord;
+    jobj["coords"] = jarrs;
+    return jobj;
+}
+
+void BbItemPenData::fromJsonObject(QJsonObject jobj)
+{
+    BbItemData::fromJsonObject(jobj);
+    for(auto jval: jobj["coords"].toArray())
+        coords.append(jval.toDouble());
+    empty = coords.isEmpty();
 }

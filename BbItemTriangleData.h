@@ -1,10 +1,7 @@
 ﻿#ifndef BBITEMTRIANGLEDATA_H
 #define BBITEMTRIANGLEDATA_H
 
-
 #include "BbItemData.h"
-#include <QPen>
-#include <QBrush>
 
 class NSB_BLACKBOARD_EXPORT BbItemTriangleData: public BbItemData
 {
@@ -23,20 +20,16 @@ public:
     static void setDefaultBrushColor(const QColor &value);
     static void setDefaultBrush(const QBrush &value);
 
-    QPen pen;
-
-    QBrush brush;
-
     QPointF points[3];
 
     explicit BbItemTriangleData(CoordMode mode = CM_ABSOLUTE);
 
-    qreal weight();
+    qreal weight() override;
 
-    void setWeight(qreal weight);
+    void setWeight(qreal weight) override;
 
-    void writeStream(QDataStream &stream) override;
+    QJsonObject toJsonObject() override;
 
-    void readStream(QDataStream &stream) override;
+    void fromJsonObject(QJsonObject jobj) override;
 };
 #endif // BBITEMTRIANGLEDATA_H

@@ -7,7 +7,7 @@
 #include "IItemIndex.h"
 
 class BbItemEllipseData;
-class NSB_BLACKBOARD_EXPORT BbItemEllipse: public QGraphicsEllipseItem, public IStreamWR, public IItemIndex
+class NSB_BLACKBOARD_EXPORT BbItemEllipse: public QGraphicsRectItem, public IStreamWR, public IItemIndex
 {
     BB_HIDE_POS_SETTER
 protected:
@@ -44,29 +44,19 @@ public:
 
     void done();
 
-    void setPenColor(const QColor & color);
-
-    void setWeight(const qreal & weight);
-
-    void setBrushColor(const QColor & color);
-
-    QSizeF size();
-
-    QColor penColor();
-
-    QColor brushColor();
-
-    qreal weight();
-
     QPointF beginPos();
 
     QPointF dragPos();
 
-    bool square();
+    bool isCircular();
+    bool isStartFromCenter();
+    bool isPointcut();
 
-    bool setCircular(bool circle,bool drawImmediately = false);
-    bool setStartFromCenter(bool startFromCenter,bool drawImmediately = false);
-    bool setPointcut(bool pointcut,bool drawImmediately = false);
+    void setCircular(bool circle,bool drawImmediately = false);
+
+    void setStartFromCenter(bool startFromCenter,bool drawImmediately = false);
+
+    void setPointcut(bool pointcut,bool drawImmediately = false);
 
     void toCircular(const QPointF &mousePos, qreal & outX,qreal & outY);
 
@@ -80,8 +70,6 @@ public:
     void toolDraw(const QPointF &pos) override;
     void toolDone(const QPointF &pos) override;
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
-    void removed() override { }
-    void added() override { }
     void absolutize() override;
     bool isEditing() override;
 };

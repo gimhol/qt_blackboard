@@ -2,6 +2,7 @@
 #define BLACKBOARDTESTWINDOW_H
 #include "BlackboardClient.h"
 #include "BlackboardConnector.h"
+#include "ColorPanel.h"
 
 #include <QWidget>
 #include <Blackboard.h>
@@ -9,16 +10,29 @@ namespace Ui {
     class BlackboardTestWindow;
 }
 class Blackboard;
+enum WhichColor{
+    WhichColor_Invalid,
+    WhichColor_Pen,
+    WhichColor_Text,
+    WhichColor_Straight,
+    WhichColor_RectPen,
+    WhichColor_RectBrush,
+    WhichColor_EllipsePen,
+    WhichColor_EllipseBrush,
+    WhichColor_TrianglePen,
+    WhichColor_TriangleBrush,
+    WhichColor_Max
+};
 class BlackboardTestWindow : public QWidget
 {
     Q_OBJECT
+    WhichColor _whichColor = WhichColor_Invalid;
     BbItemPenData *penSettings;
     BbItemStraightData *straightSettings;
     BbItemTextData *textSettings;
     BbItemRectData *rectSettings;
     BbItemEllipseData *ellipseSettings;
     BbItemTriangleData *triangleSettings;
-
 public:
     explicit BlackboardTestWindow(QWidget *parent = nullptr);
 
@@ -31,6 +45,11 @@ public:
     static void loadImage(BbItemImage *item);
 
 private slots:
+//    void openColorPanel();
+    void onColorChanged(const QColor &color);
+
+    void onColorDisplayerClicked();
+
     void on_pointer_clicked();
 
     void on_pen_clicked();
@@ -96,6 +115,7 @@ private slots:
 private:
     Ui::BlackboardTestWindow *ui;
     QPointer<BlackboardConnector> _connector;
+    QPointer<ColorPanel> _colorPanel;
 };
 
 #endif // BLACKBOARDTESTWINDOW_H

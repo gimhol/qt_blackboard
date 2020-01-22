@@ -8,6 +8,8 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QPen>
+#include <QBrush>
 
 class IItemIndex;
 /**
@@ -79,12 +81,46 @@ public:
      */
     BbToolType tooltype = BBTT_None;
 
+    /**
+     * @brief needPen 是否用到笔。
+     */
+    bool needPen = false;
+    /**
+     * @brief pen 笔的样式
+     */
+    QPen pen;
+    /**
+     * @brief needBrush 是否用到画刷。
+     */
+    bool needBrush = false;
+    /**
+     * @brief brush 画刷样式
+     */
+    QBrush brush;
+    /**
+     * @brief needSize 是否用到尺寸。
+     */
+    bool needSize = false;
+    /**
+     * @brief size item尺寸
+     */
+    QSizeF size;
+    /**
+     * @brief prevSize 修改前的尺寸
+     */
+    QSizeF prevSize;
+
+    virtual qreal weight(){return 1;}
+
+    virtual void setWeight(qreal){}
+
     explicit BbItemData(CoordMode mode = CM_ABSOLUTE);
 
     virtual ~BbItemData() override;
 
-    QPointF position() { return QPointF(x,y); }
-    QPointF prevPosition() { return QPointF(prevX,prevY); }
+    virtual QPointF position() { return QPointF(x,y); }
+
+    virtual QPointF prevPosition() { return QPointF(prevX,prevY); }
 
     virtual bool isPositionValid();
 
@@ -93,6 +129,13 @@ public:
     virtual void updatePostion(IItemIndex *itemIdx);
 
     virtual void updatePrevPostion();
+
+    virtual void updatePrevSize();
+
+    virtual QJsonObject toJsonObject();
+
+    virtual void fromJsonObject(QJsonObject jobj);
+
     // IStreamWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;

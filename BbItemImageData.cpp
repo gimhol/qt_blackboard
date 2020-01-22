@@ -22,33 +22,30 @@ void BbItemImageData::lockRatio()
     ratioLocked = true;
 }
 
-void BbItemImageData::updatePrevSize()
-{
-    prevWidth = width;
-    prevHeight = height;
-}
-
 BbItemImageData::BbItemImageData(CoordMode mode):
     BbItemData(mode)
 {
     tooltype = BBTT_Image;
     editable = true;
+    needSize = true;
 }
 
 void BbItemImageData::writeStream(QDataStream &stream)
 {
     BbItemData::writeStream(stream);
-    stream << width << height
-           << prevWidth << prevHeight
-           << path << url
-           << pixmap;
+    QJsonObject jobj;
+    jobj["path"] = path;
+    jobj["url"] = url;
+    stream << pixmap << QJsonDocument(jobj).toBinaryData();
 }
 
 void BbItemImageData::readStream(QDataStream &stream)
 {
     BbItemData::readStream(stream);
-    stream >> width >> height
-            >> prevWidth >> prevHeight
-            >> path >> url
-            >> pixmap;
+    QByteArray data;
+    stream >> pixmap >> data;
+    auto jobj = QJsonDocument::fromBinaryData(data).object();
+    path = jobj["path"].toString();
+    url = jobj["url"].toString();
+
 }

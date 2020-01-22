@@ -62,9 +62,8 @@ qreal IItemIndex::z() {
         return i->zValue();
     }else{
         auto d = data();
-        if(d){
+        if(d)
             return d->z;
-        }
     }
     return 0;
 }
@@ -80,9 +79,8 @@ void IItemIndex::setZ(const qreal &value) {
 
 void IItemIndex::updatePrevZ(){
     auto d = data();
-    if(d){
+    if(d)
         d->prevZ = d->z;
-    }
 }
 
 void IItemIndex::moveByVector2(const QPointF &offset)
@@ -122,9 +120,8 @@ void IItemIndex::moveToX(qreal x){
      if(i)
          i->setX(x);
      auto d = data();
-     if(d){
+     if(d)
          d->x = x;
-     }
 }
 
 void IItemIndex::moveToY(qreal y){
@@ -132,9 +129,8 @@ void IItemIndex::moveToY(qreal y){
      if(i)
          i->setY(y);
      auto d = data();
-     if(d){
+     if(d)
          d->y = y;
-     }
 }
 
 QPointF IItemIndex::position(){
@@ -142,9 +138,8 @@ QPointF IItemIndex::position(){
     if(i)
         return i->pos();
     auto d = data();
-    if(d){
+    if(d)
         return QPointF(d->x,d->y);
-    }
     return QPointF(0,0);
 }
 

@@ -36,7 +36,6 @@ protected:
     bool _mouseLeftButtonDown = false;
     QGraphicsRectItem * _pickerRect = nullptr;
     IItemIndex * _curItemIndex = nullptr;
-    bool _controlEnable = true;
     Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
     QRectF _backgroundRect;
     QList<QPair<QString,QGraphicsItem*>> _backgrounds;
@@ -70,12 +69,6 @@ public:
     void remove(IItemIndex *item);
 
     void add(IItemIndex *item);
-
-    /**
-     * @brief setControlEnable 设置能否进行画板操作
-     * @param enable true表示可以涂写，否则不能涂写。
-     */
-    void setControlEnable(bool enable);
 
     void clearItems();
 

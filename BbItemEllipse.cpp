@@ -5,14 +5,14 @@
 #include <QPainter>
 
 BbItemEllipse::BbItemEllipse():
-    QGraphicsEllipseItem(),
+    QGraphicsRectItem(),
     _data(new BbItemEllipseData())
 {
    init();
 }
 
 BbItemEllipse::BbItemEllipse(BbItemData *data):
-    QGraphicsEllipseItem(),
+    QGraphicsRectItem(),
     _data(dynamic_cast<BbItemEllipseData*>(data))
 {
     init();
@@ -34,18 +34,17 @@ void BbItemEllipse::init()
     {
         _data = new BbItemEllipseData();
     }
-    setPen(_data->pen);
-    setBrush(_data->brush);
+    setPen(Qt::NoPen);
+    setBrush(Qt::NoBrush);
 }
 
 void BbItemEllipse::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
-    if(setCircular(modifiers&Qt::ShiftModifier, false) ||
-       setStartFromCenter(modifiers & Qt::AltModifier, false) ||
-       setPointcut(modifiers & Qt::ControlModifier, false)){
-        draw(_mousePos);
-        emit blackboard()->itemChanged(BBIET_ellipseDraw,this);
-    }
+    setCircular(modifiers & Qt::ShiftModifier,false);
+    setStartFromCenter(modifiers & Qt::AltModifier,false);
+    setPointcut(modifiers & Qt::ControlModifier,false);
+    draw(_mousePos);
+    emit blackboard()->itemChanged(BBIET_ellipseDraw,this);
 }
 
 void BbItemEllipse::absolutize()
@@ -78,8 +77,6 @@ bool BbItemEllipse::isEditing()
 
 void BbItemEllipse::repaint()
 {
-    setPen(_data->pen);
-    setBrush(_data->brush);
     qreal x = _data->x;
     qreal y = _data->y;
     QSizeF size = _data->size;
@@ -148,8 +145,7 @@ void BbItemEllipse::draw(const QPointF &point)
     _data->updatePrevPostion();
     setPos(_data->x,_data->y);
     setRect(0,0,_data->size.width(),_data->size.height());
-
-    _data->empty = !size().isEmpty();
+    _data->empty = !rect().size().isEmpty();
 }
 
 void BbItemEllipse::done()
@@ -157,44 +153,7 @@ void BbItemEllipse::done()
     _data->updatePostion(this);
     _data->updatePrevPostion();
     _editing = false;
-}
-
-void BbItemEllipse::setPenColor(const QColor &color)
-{
-    _data->pen.setColor(color);
-    setPen(_data->pen);
-}
-
-void BbItemEllipse::setWeight(const qreal &weight)
-{
-    _data->setWeight(weight);
-    setPen(_data->pen);
-}
-
-void BbItemEllipse::setBrushColor(const QColor &color)
-{
-    _data->brush.setColor(color);
-    setBrush(_data->brush);
-}
-
-QSizeF BbItemEllipse::size()
-{
-    return rect().size();
-}
-
-QColor BbItemEllipse::penColor()
-{
-    return _data->pen.color();
-}
-
-QColor BbItemEllipse::brushColor()
-{
-    return _data->brush.color();
-}
-
-qreal BbItemEllipse::weight()
-{
-    return _data->weight();
+    update();
 }
 
 QPointF BbItemEllipse::beginPos()
@@ -219,12 +178,14 @@ void BbItemEllipse::toolDown(const QPointF &pos)
     updatePrevZ();
 
     auto settings = blackboard()->toolSettings<BbItemEllipseData>(BBTT_Ellipse);
-    setPenColor(settings->pen.color());
-    setBrushColor(settings->brush.color());
-    setWeight(settings->weight());
+    _data->pen = settings->pen;
+    _data->brush = settings->brush;
+    _data->setWeight(settings->weight());
 
     begin(pos);
     setCircular(bbScene()->modifiers() & Qt::ShiftModifier);
+    setStartFromCenter(bbScene()->modifiers() & Qt::AltModifier);
+    setPointcut(bbScene()->modifiers() & Qt::ControlModifier);
     bbScene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_ellipseDown,this);
 }
@@ -243,39 +204,46 @@ void BbItemEllipse::toolDone(const QPointF &pos)
     bbScene()->unsetCurrentItem(this);
 }
 
-bool BbItemEllipse::square()
+bool BbItemEllipse::isCircular()
 {
     return _circular;
 }
 
-bool BbItemEllipse::setCircular(bool circle,bool drawImmediately)
+bool BbItemEllipse::isStartFromCenter()
+{
+    return _startFromCenter;
+}
+
+bool BbItemEllipse::isPointcut()
+{
+    return _pointcut;
+}
+
+void BbItemEllipse::setCircular(bool circle,bool drawImmediately)
 {
     if(_circular == circle)
-        return false;
+        return;
     _circular = circle;
     if(drawImmediately)
         draw(_mousePos);
-    return true;
 }
 
-bool BbItemEllipse::setStartFromCenter(bool startFromCenter,bool drawImmediately)
+void BbItemEllipse::setStartFromCenter(bool startFromCenter,bool drawImmediately)
 {
     if(_startFromCenter == startFromCenter)
-        return false;
+        return;
     _startFromCenter = startFromCenter;
     if(drawImmediately)
         draw(_mousePos);
-    return true;
 }
 
-bool BbItemEllipse::setPointcut(bool pointcut, bool drawImmediately)
+void BbItemEllipse::setPointcut(bool pointcut, bool drawImmediately)
 {
     if(_pointcut == pointcut)
-        return false;
+        return;
     _pointcut = pointcut;
     if(drawImmediately)
         draw(_mousePos);
-    return true;
 }
 
 void BbItemEllipse::toCircular(const QPointF &point, qreal &outX, qreal &outY)
@@ -303,6 +271,29 @@ void BbItemEllipse::toCircular(const QPointF &point, qreal &outX, qreal &outY)
 
 void BbItemEllipse::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+
+    auto penW = _data->pen.widthF();
+    auto w = rect().width();
+    auto h = rect().height();
+    QRectF r;
+
     painter->setRenderHint(QPainter::Antialiasing, true);
-    QGraphicsEllipseItem::paint(painter,option,widget);
+    if(w > penW*2 && h > penW*2){
+        painter->setPen(_data->pen);
+        painter->setBrush(_data->brush);
+        r.setRect(penW/2, penW/2, w-penW, h-penW);
+    }else{
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(_data->pen.color());
+        r.setRect(0,0,w,h);
+    }
+    painter->drawEllipse(r);
+
+//    if((isSelected() || _editing) && (w > 8 && h > 8)){ // 圆心
+//        painter->setBrush(QColor(255,255,255,122));
+//        painter->setPen(QColor(0,0,0,122));
+//        auto center = rect().center();
+//        painter->drawEllipse(center,3.0,3.0);
+//    }
+    QGraphicsRectItem::paint(painter,option,widget); // 仅用于绘制选取的虚线。
 }

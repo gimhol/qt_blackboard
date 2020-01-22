@@ -10,7 +10,7 @@ class NSB_BLACKBOARD_EXPORT BbItemRect: public QGraphicsRectItem, public IStream
 {
     BB_HIDE_POS_SETTER
 protected:
-    BbItemRectData *_myData;
+    BbItemRectData *_data;
 
     qreal _beginX, _beginY;
 
@@ -42,20 +42,6 @@ public:
 
     void done();
 
-    void setPenColor(const QColor & color);
-
-    void setWeight(const qreal & weight);
-
-    void setBrushColor(const QColor & color);
-
-    QSizeF size();
-
-    QColor penColor();
-
-    QColor brushColor();
-
-    qreal weight();
-
     QPointF beginPos();
 
     QPointF dragPos();
@@ -76,8 +62,6 @@ public:
     void toolDraw(const QPointF &pos) override;
     void toolDone(const QPointF &pos) override;
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
-    void removed() override { }
-    void added() override { }
     void absolutize() override;
     bool isEditing() override;
 };

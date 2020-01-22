@@ -41,18 +41,22 @@ void BbItemImage::init()
 
 qreal BbItemImage::minWidth()
 {
-    if(_data->height > 0 && _data->height > _data->width && ratioLock())
+    auto w = _data->size.width();
+    auto h = _data->size.height();
+    if(h > 0 && h > w && ratioLock())
     {
-        return 6 * _dotSize * _data->width / _data->height;
+        return 6 * _dotSize * w / h;
     }
     return 6 * _dotSize;
 }
 
 qreal BbItemImage::minHeight()
 {
-    if(_data->width > 0 && _data->width > _data->height && ratioLock())
+    auto w = _data->size.width();
+    auto h = _data->size.height();
+    if(w > 0 && w > h && ratioLock())
     {
-        return 6 * _dotSize * _data->height / _data->width;
+        return 6 * _dotSize * h / w;
     }
     return 6 * _dotSize;
 }
@@ -101,15 +105,17 @@ void BbItemImage::setText(QString text)
 
 qreal BbItemImage::ratio()
 {
+    auto w = _data->size.width();
+    auto h = _data->size.height();
     if(_data->pixmap.isNull())
     {
-        if(equal(0,_data->height))
+        if(equal(0,h))
         {
             return 1;
         }
         else
         {
-            return _data->width / _data->height;
+            return w / h;
         }
     }
     else
@@ -179,15 +185,15 @@ QPointF BbItemImage::stretchOffset(const QPointF &mousePos)
                 offset.setX(mousePos.x() - rects[i].right());
             };
             switch(Direction(i)){
-                case N: handleN(); break;
-                case S: handleS(); break;
-                case W: handleW(); break;
-                case E: handleE(); break;
-                case NE: handleN(); handleE();break;
-                case SE: handleS(); handleE();break;
-                case NW: handleN(); handleW();break;
-                case SW: handleS(); handleW();break;
-                default:break;
+            case N: handleN(); break;
+            case S: handleS(); break;
+            case W: handleW(); break;
+            case E: handleE(); break;
+            case NE: handleN(); handleE();break;
+            case SE: handleS(); handleE();break;
+            case NW: handleN(); handleW();break;
+            case SW: handleS(); handleW();break;
+            case Invalid: break;
             }
             break;
         }
@@ -218,6 +224,11 @@ void BbItemImage::updateDots(QRectF *rects)
 void BbItemImage::updateCursor(const QPointF &mousePos)
 {
     updateCursor(stretchDirection(mousePos));
+}
+
+void BbItemImage::resize(QSizeF size)
+{
+    resize(size.width(),size.height());
 }
 
 void BbItemImage::updateCursor(Direction direction)
@@ -254,8 +265,8 @@ void BbItemImage::resize(qreal width, qreal height)
     {
         height = minHeight();
     }
-    _data->width = width;
-    _data->height = height;
+    _data->size.setWidth(width);
+    _data->size.setHeight(height);
     setRect(0,0,width,height);
 }
 
@@ -391,7 +402,7 @@ bool BbItemImage::draw(const QPointF &mousePos)
     case SE:{stretchS(); stretchE(); clampFromTopLeft(); break;}
     case SW:{stretchW(); stretchS(); clampFromTopRight(); break;}
     case NW:{stretchW(); stretchN(); clampFromBottomRight(); break;}
-    default:{break;}
+    case Invalid: break;
     }
     if(_centerLock)
     {
@@ -426,8 +437,8 @@ bool BbItemImage::done()
     _lastY = y;
     _lastW = w;
     _lastH = h;
-    _data->width = w;
-    _data->height = h;
+    _data->size.setWidth(w);
+    _data->size.setHeight(h);
     return changed;
 }
 
@@ -479,9 +490,8 @@ void BbItemImage::absolutize()
             _data->prevX *= ratio;
             _data->prevY *= ratio;
         }
-        _data->width *= ratio;
-        _data->height *= ratio;
-        resize(_data->width,_data->height);
+        _data->size *= ratio;
+        resize(_data->size);
     }
 }
 
@@ -518,8 +528,7 @@ void BbItemImage::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         // resize it.
         if(draw(_mousePos)){
             emit blackboard()->itemChanged(BBIET_imageResizing,this);
-            _data->prevWidth = _data->width;
-            _data->prevHeight = _data->height;
+            _data->updatePrevSize();
         }
     }else{
         // move it.
@@ -606,7 +615,7 @@ void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 
 void BbItemImage::repaint()
 {
-    setRect(QRectF(0,0,_data->width,_data->height));
+    setRect(0,0,_data->size.width(),_data->size.height());
     setPos(_data->x,_data->y);
     setZValue(_data->z);
     setPixmap(_data->pixmap);
@@ -617,8 +626,7 @@ void BbItemImage::writeStream(QDataStream &stream)
 {
     _data->x = x();
     _data->y = y();
-    _data->width = rect().width();
-    _data->height = rect().height();
+    _data->size = rect().size();
     _data->z = zValue();
     _data->writeStream(stream);
 }

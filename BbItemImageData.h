@@ -13,21 +13,11 @@ public:
     static void unlockRatio();
     static void lockRatio();
 
-    qreal width = 0;
-
-    qreal height = 0;
-
-    qreal prevWidth = 0;
-
-    qreal prevHeight = 0;
-
     QString path; // 本地目录
 
     QString url; // 图片地址
 
     QPixmap pixmap;
-
-    void updatePrevSize();
 
     explicit BbItemImageData(CoordMode mode = CM_ABSOLUTE);
 

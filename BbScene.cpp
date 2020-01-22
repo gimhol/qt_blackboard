@@ -171,9 +171,6 @@ void BbScene::remove(QString lid)
 
 void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if(!_controlEnable)
-        return;
-
     QGraphicsScene::mousePressEvent(event);
     if(event->button() == Qt::MouseButton::LeftButton)
     {
@@ -197,63 +194,41 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsScene::mouseMoveEvent(event);
-    if(!_controlEnable)
-        return;
     _mousePos = event->scenePos();
-    switch(_toolType)
-    {
-        case BBTT_Picker:
-        {
-            if(_mouseLeftButtonDown)
-            {
-                /*
-                 * NOTE: 拖动item会使得此event被Accepted，故在此发出移动信号。
-                 *      但如果有其他被Accepted的情况就不应该这么做。但现在还没发现。
-                 */
-                if(event->isAccepted())
-                {
-                    emitItemMovingSignals();
-                }
-                else // 没拖动任何东西，在这里进行框选item的工作。
-                {
-                    pickingItems(_mousePos);
-                }
-            }
-            break;
+    if(_mouseLeftButtonDown){
+        if(BBTT_Picker == _toolType){
+            /*
+             * NOTE:
+             *      拖动item会使得此event被Accepted，故在此发出移动信号。
+             *      但如果有其他被Accepted的情况就不应该这么做。但现在还没发现。
+             *      当没被Accepted时，进行进行框选item的工作。
+             */
+            if(event->isAccepted())
+                emitItemMovingSignals();
+            else
+                pickingItems(_mousePos);
         }
-        default:
-        {
-            if(_curItemIndex && _mouseLeftButtonDown)
-                _curItemIndex->toolDraw(_mousePos);
-            break;
+        else if(_curItemIndex && _mouseLeftButtonDown){
+            _curItemIndex->toolDraw(_mousePos);
         }
     }
+
+
 }
 
 void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsScene::mouseReleaseEvent(event);
-    if(!_controlEnable)
-        return;
-
     _mousePos = event->scenePos();
     if(event->button() == Qt::MouseButton::LeftButton)
     {
         _mouseLeftButtonDown = false;
-        switch(_toolType)
-        {
-            case BBTT_Picker:
-            {
-                emitItemMovedSignals();
-                _pickerRect->hide();
-                break;
-            }
-            default:
-            {
-                if(_curItemIndex)
-                    _curItemIndex->toolDone(_mousePos);
-                break;
-            }
+        if(BBTT_Picker == _toolType){
+            emitItemMovedSignals();
+            _pickerRect->hide();
+        }
+        else if(_curItemIndex){
+            _curItemIndex->toolDone(_mousePos);
         }
 
         /*
@@ -634,43 +609,21 @@ void BbScene::setItemPicking(bool picking)
         auto idx = dynamic_cast<IItemIndex*>(item);
         if(idx && !idx->isEditing())
         {
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,picking);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,picking);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,picking);
+            item->setFlag(QGraphicsItem::ItemIsMovable,picking);
+            item->setFlag(QGraphicsItem::ItemIsSelectable,picking);
+            item->setFlag(QGraphicsItem::ItemIsFocusable,picking);
         }
     }
 }
 
 void BbScene::onToolChanged(BbToolType previous)
 {
-    switch(previous)
-    {
-        case BBTT_Picker:
-        {
-            setItemPicking(false);
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
+    if(BBTT_Picker == previous)
+        setItemPicking(false);
     if(_curItemIndex)
-    {
         _curItemIndex->toolDone(_mousePos);
-    }
-    switch(_toolType)
-    {
-        case BBTT_Picker:
-        {
-            setItemPicking(true);
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
+    if(BBTT_Picker == _toolType)
+        setItemPicking(true);
 }
 
 IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
@@ -737,9 +690,9 @@ void BbScene::remove(IItemIndex *index)
         {
             item->clearFocus();
             item->setSelected(false);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,false);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,false);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,false);
+            item->setFlag(QGraphicsItem::ItemIsMovable,false);
+            item->setFlag(QGraphicsItem::ItemIsSelectable,false);
+            item->setFlag(QGraphicsItem::ItemIsFocusable,false);
             item->setOpacity(0);
             item->setScale(0);
             item->setData(GRAPHICS_ITEM_DATA_KEY_DELETING,true);
@@ -780,9 +733,9 @@ void BbScene::add(IItemIndex *index)
         QGraphicsItem *item = dynamic_cast<QGraphicsItem *>(index);
         if(item)
         {
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable,_toolType == BBTT_Picker);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable,_toolType == BBTT_Picker);
-            item->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsFocusable,_toolType == BBTT_Picker);
+            item->setFlag(QGraphicsItem::ItemIsMovable,_toolType == BBTT_Picker);
+            item->setFlag(QGraphicsItem::ItemIsSelectable,_toolType == BBTT_Picker);
+            item->setFlag(QGraphicsItem::ItemIsFocusable,_toolType == BBTT_Picker);
             QGraphicsScene::addItem(item);
             index->absolutize();
         }
@@ -796,11 +749,6 @@ void BbScene::add(IItemIndex *index)
     {
         qWarning() << "[BlackboardScene::add] fail to add item, pointer is nullptr!";
     }
-}
-
-void BbScene::setControlEnable(bool enable)
-{
-    _controlEnable = enable;
 }
 
 void BbScene::clearItems()

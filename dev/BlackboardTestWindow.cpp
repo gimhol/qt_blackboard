@@ -60,6 +60,8 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     ui(new Ui::BlackboardTestWindow)
 {
     ui->setupUi(this);
+    _colorPanel = new ColorPanel(this);
+    connect(_colorPanel,&ColorPanel::colorChanged,this,&BlackboardTestWindow::onColorChanged);
 
     ui->blackboardHeight->setValue(1000);
     QButtonGroup * buttonGroup = new QButtonGroup(this);
@@ -87,153 +89,46 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 
     ui->penWeight->setValue(int(penSettings->weight() * 100));
     ui->penColor->setColor(penSettings->pen.color());
-    connect(ui->penColor,&ColorDisplayer::clicked,[&](){
-        static ColorPanel * cp = nullptr;
-        if(!cp)
-        {
-            cp = new ColorPanel();
-            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),
-                    [&](const QColor &color){penSettings->setColor(color);});
-            connect(cp,&ColorPanel::colorChanged,ui->penColor,&ColorDisplayer::setColor);
-        }
-        cp->setColor(penSettings->pen.color());
-        cp->show();
-    });
+    ui->penColor->setProperty("WhichColor",WhichColor_Pen);
+    connect(ui->penColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
 
     ui->straightWeight->setValue(int(straightSettings->weight() * 100));
     ui->straightColor->setColor(straightSettings->pen.color());
-    connect(ui->straightColor,&ColorDisplayer::clicked,[&](){
-        static ColorPanel * cp = nullptr;
-        if(!cp)
-        {
-            cp = new ColorPanel();
-            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),
-                    [&](const QColor &color){straightSettings->pen.setColor(color);});
-            connect(cp,&ColorPanel::colorChanged,ui->straightColor,&ColorDisplayer::setColor);
-        }
-        cp->setColor(straightSettings->pen.color());
-        cp->show();
-    });
-
-
+    ui->straightColor->setProperty("WhichColor",WhichColor_Straight);
+    connect(ui->straightColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
 
     ui->textWeight->setValue(int(textSettings->pointWeight() * 100));
     ui->textColor->setColor(textSettings->color);
-    connect(ui->textColor,&ColorDisplayer::clicked,[&](){
-        static ColorPanel * cp = nullptr;
-        if(!cp)
-        {
-            cp = new ColorPanel();
-            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),
-                    [&](const QColor &color){textSettings->color = color;});
-            connect(cp,&ColorPanel::colorChanged,ui->textColor,&ColorDisplayer::setColor);
-        }
-        cp->setColor(textSettings->color);
-        cp->show();
-    });
-
+    ui->textColor->setProperty("WhichColor",WhichColor_Text);
+    connect(ui->textColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
 
     ui->rectWeight->setValue(int(rectSettings->weight() * 100));
     ui->rectPenColor->setColor(rectSettings->pen.color());
+    ui->rectPenColor->setProperty("WhichColor",WhichColor_RectPen);
+    connect(ui->rectPenColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
+
     ui->rectBrushColor->setColor(rectSettings->brush.color());
-    connect(ui->rectPenColor,&ColorDisplayer::clicked,[&](){
-        static ColorPanel * cp = nullptr;
-        if(!cp)
-        {
-            cp = new ColorPanel();
-            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),
-                    [&](const QColor &color){rectSettings->pen.setColor(color);});
-            connect(cp,&ColorPanel::colorChanged,ui->rectPenColor,&ColorDisplayer::setColor);
-        }
-        cp->setColor(rectSettings->pen.color());
-        cp->show();
-    });
-    connect(ui->rectBrushColor,&ColorDisplayer::clicked,[&](){
-        static ColorPanel * cp = nullptr;
-        if(!cp)
-        {
-            cp = new ColorPanel();
-            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),
-                    [&](const QColor &color){rectSettings->brush.setColor(color);});
-            connect(cp,&ColorPanel::colorChanged,ui->rectBrushColor,&ColorDisplayer::setColor);
-        }
-        cp->setColor(rectSettings->brush.color());
-        cp->show();
-    });
+    ui->rectBrushColor->setProperty("WhichColor",WhichColor_RectBrush);
+    connect(ui->rectBrushColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
 
     ui->ellipseWeight->setValue(int(ellipseSettings->weight() * 100));
     ui->ellipsePenColor->setColor(ellipseSettings->pen.color());
+    ui->ellipsePenColor->setProperty("WhichColor",WhichColor_EllipsePen);
+    connect(ui->ellipsePenColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
+
     ui->ellipseBrushColor->setColor(ellipseSettings->brush.color());
-    connect(ui->ellipsePenColor,&ColorDisplayer::clicked,[&](){
-        static ColorPanel * cp = nullptr;
-        if(!cp)
-        {
-            cp = new ColorPanel();
-            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),
-                    [&](const QColor &color){ellipseSettings->pen.setColor(color);});
-            connect(cp,&ColorPanel::colorChanged,ui->ellipsePenColor,&ColorDisplayer::setColor);
-        }
-        cp->setColor(ellipseSettings->pen.color());
-        cp->show();
-    });
-    connect(ui->ellipseBrushColor,&ColorDisplayer::clicked,[&](){
-        static ColorPanel * cp = nullptr;
-        if(!cp)
-        {
-            cp = new ColorPanel();
-            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),
-                    [&](const QColor &color){ellipseSettings->brush.setColor(color);});
-            connect(cp,&ColorPanel::colorChanged,ui->ellipseBrushColor,&ColorDisplayer::setColor);
-        }
-        cp->setColor(ellipseSettings->brush.color());
-        cp->show();
-    });
+    ui->ellipseBrushColor->setProperty("WhichColor",WhichColor_EllipseBrush);
+    connect(ui->ellipseBrushColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
+
 
     ui->triangleWeight->setValue(int(triangleSettings->weight() * 100));
     ui->trianglePenColor->setColor(triangleSettings->pen.color());
+    ui->trianglePenColor->setProperty("WhichColor",WhichColor_TrianglePen);
+    connect(ui->trianglePenColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
+
     ui->triangleBrushColor->setColor(triangleSettings->brush.color());
-    connect(ui->trianglePenColor,&ColorDisplayer::clicked,[&](){
-        static ColorPanel * cp = nullptr;
-        if(!cp)
-        {
-            cp = new ColorPanel();
-            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),
-                    [&](const QColor &color){triangleSettings->pen.setColor(color);});
-            connect(cp,&ColorPanel::colorChanged,ui->trianglePenColor,&ColorDisplayer::setColor);
-        }
-        cp->setColor(rectSettings->pen.color());
-        cp->show();
-    });
-    connect(ui->triangleBrushColor,&ColorDisplayer::clicked,[&](){
-        static ColorPanel * cp = nullptr;
-        if(!cp)
-        {
-            cp = new ColorPanel();
-            cp->setWindowModality(Qt::WindowModality::ApplicationModal);
-            cp->setWindowTitle(QStringLiteral("调色"));
-            connect(cp,&ColorPanel::colorChanged,blackboard(),
-                    [&](const QColor &color){triangleSettings->brush.setColor(color);});
-            connect(cp,&ColorPanel::colorChanged,ui->triangleBrushColor,&ColorDisplayer::setColor);
-        }
-        cp->setColor(triangleSettings->brush.color());
-        cp->show();
-    });
+    ui->triangleBrushColor->setProperty("WhichColor",WhichColor_TriangleBrush);
+    connect(ui->triangleBrushColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
 
     connect(ui->graphicsView,&Blackboard::itemSelected,[&](IItemIndex *index, bool selected){
         if(selected)
@@ -289,7 +184,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             {
                 blackboard1->scene()->add(copy);
                 copy->setZ(data->z);
-                copy->resize(data->width,data->height);
+                copy->resize(data->size);
                 if(data->isPositionValid()){
                     copy->moveToPosition(data->x,data->y);
                     copy->updatePrevPosition();
@@ -311,7 +206,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             auto copy = blackboard1->find<BbItemImage>(item->id());
             if(copy)
             {
-                copy->resize(data->width,data->height);
+                copy->resize(data->size);
                 if(data->isPositionValid()){
                     copy->moveToPosition(data->x,data->y);
                     copy->updatePrevPosition();
@@ -328,7 +223,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             auto copy = blackboard1->find<BbItemImage>(item->id());
             if(copy)
             {
-                copy->resize(data->width,data->height);
+                copy->resize(data->size);
                 if(data->isPositionValid()){
                     copy->moveToPosition(data->x,data->y);
                     copy->updatePrevPosition();
@@ -560,6 +455,63 @@ void BlackboardTestWindow::loadImage(BbItemImage *item)
     };
     connect(reply,&QNetworkReply::finished,blackboard,onFinish);
     connect(reply,&QNetworkReply::downloadProgress,blackboard,onDownloadProgress);
+}
+
+void BlackboardTestWindow::onColorChanged(const QColor &color)
+{
+    switch(_whichColor){
+    case WhichColor_Pen:
+        penSettings->setColor(color);
+        ui->penColor->setColor(color);
+        break;
+    case WhichColor_Text:
+        textSettings->color = color;
+        ui->textColor->setColor(color);
+        break;
+    case WhichColor_Straight:
+        straightSettings->pen.setColor(color);
+        ui->straightColor->setColor(color);
+        break;
+    case WhichColor_RectPen:
+        rectSettings->pen.setColor(color);
+        ui->rectPenColor->setColor(color);
+        break;
+    case WhichColor_RectBrush:
+        rectSettings->brush.setColor(color);
+        ui->rectBrushColor->setColor(color);
+        break;
+    case WhichColor_EllipsePen:
+        ellipseSettings->pen.setColor(color);
+        ui->ellipsePenColor->setColor(color);
+        break;
+    case WhichColor_EllipseBrush:
+        ellipseSettings->brush.setColor(color);
+        ui->ellipseBrushColor->setColor(color);
+        break;
+    case WhichColor_TrianglePen:
+        triangleSettings->pen.setColor(color);
+        ui->trianglePenColor->setColor(color);
+        break;
+    case WhichColor_TriangleBrush:
+        triangleSettings->brush.setColor(color);
+        ui->triangleBrushColor->setColor(color);
+        break;
+    case WhichColor_Invalid:
+    case WhichColor_Max:
+        break;
+    }
+}
+
+void BlackboardTestWindow::onColorDisplayerClicked()
+{
+    auto colorDisplayer = qobject_cast<ColorDisplayer*>(sender());
+    _whichColor = WhichColor(colorDisplayer->property("WhichColor").toInt());
+    auto pos = QPoint(colorDisplayer->width(),
+                      colorDisplayer->height());
+    pos = colorDisplayer->mapToGlobal(pos);
+    _colorPanel->move(pos);
+    _colorPanel->show();
+    _colorPanel->setColor(colorDisplayer->color());
 }
 
 void BlackboardTestWindow::on_imageInsert_clicked()

@@ -9,32 +9,32 @@
 
 BbItemTriangle::BbItemTriangle():
     QGraphicsRectItem(),
-    _myData(new BbItemTriangleData)
+    _data(new BbItemTriangleData)
 {
     init();
 }
 
 BbItemTriangle::BbItemTriangle(BbItemData *data):
     QGraphicsRectItem(),
-    _myData(dynamic_cast<BbItemTriangleData*>(data))
+    _data(dynamic_cast<BbItemTriangleData*>(data))
 {
     init();
 }
 
 BbItemTriangle::~BbItemTriangle()
 {
-    if(_myData)
+    if(_data)
     {
-        delete _myData;
-        _myData = nullptr;
+        delete _data;
+        _data = nullptr;
     }
 }
 
 void BbItemTriangle::init()
 {
-    if(!_myData)
+    if(!_data)
     {
-        _myData = new BbItemTriangleData();
+        _data = new BbItemTriangleData();
     }
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
@@ -49,9 +49,10 @@ void BbItemTriangle::toolDown(const QPointF &pos)
         updatePrevZ();
 
         auto settings = blackboard()->toolSettings<BbItemTriangleData>(BBTT_Triangle);
-        setPenColor(settings->pen.color());
-        setBrushColor(settings->brush.color());
-        setWeight(settings->weight());
+        _data->pen = settings->pen;
+        _data->brush = settings->brush;
+        _data->setWeight(settings->weight());
+
         begin(pos);
         bbScene()->setCurrentItem(this);
         emit blackboard()->itemChanged(BBIET_triangleDown,this);
@@ -77,25 +78,25 @@ void BbItemTriangle::toolDone(const QPointF &pos)
 
 void BbItemTriangle::absolutize()
 {
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    if(_data->mode == BbItemData::CM_PERCENTAGE)
     {
-        _myData->mode = BbItemData::CM_ABSOLUTE;
+        _data->mode = BbItemData::CM_ABSOLUTE;
         qreal ratio = bbScene()->width() / 100;
-        if(_myData->isPositionValid())
+        if(_data->isPositionValid())
         {
-            _myData->x *= ratio;
-            _myData->y *= ratio;
+            _data->x *= ratio;
+            _data->y *= ratio;
         }
-        if(_myData->isPrevPositionValid())
+        if(_data->isPrevPositionValid())
         {
-            _myData->prevX *= ratio;
-            _myData->prevY *= ratio;
+            _data->prevX *= ratio;
+            _data->prevY *= ratio;
         }
         for(int i = 0; i < 3; ++i)
         {
-            if(!_myData->points[i].isNull())
+            if(!_data->points[i].isNull())
             {
-                _myData->points[i] *= ratio;
+                _data->points[i] *= ratio;
             }
         }
     }
@@ -109,15 +110,15 @@ bool BbItemTriangle::isEditing()
 void BbItemTriangle::begin(const QPointF &point)
 {
     _editing = true;
-    _myData->points[0] = point;
-    _myData->points[1] = point;
-    _myData->points[2] = point;
+    _data->points[0] = point;
+    _data->points[1] = point;
+    _data->points[2] = point;
     _mousePos = point;
-    _myData->empty = false;
+    _data->empty = false;
 
     setupRectWithABC();
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
 }
 
 void BbItemTriangle::draw(const QPointF &point)
@@ -125,22 +126,22 @@ void BbItemTriangle::draw(const QPointF &point)
     _mousePos = point;
     if(_step == 0)
     {
-        _myData->points[1] = point;
+        _data->points[1] = point;
     }
     else
     {
-        _myData->points[2] = point;
+        _data->points[2] = point;
     }
     setupRectWithABC();
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
 }
 
 void BbItemTriangle::done()
 {
     ++_step;
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
     if(_step == 2)
     {
         _editing = false;
@@ -150,32 +151,32 @@ void BbItemTriangle::done()
 void BbItemTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     QGraphicsRectItem::paint(painter,option,widget);
-    if(!_myData->empty)
+    if(!_data->empty)
     {
         painter->setBrush(Qt::NoBrush);
-        painter->setPen(_myData->pen);
+        painter->setPen(_data->pen);
         painter->setRenderHint(QPainter::Antialiasing);
 
-        if(_myData->points[0] == _myData->points[1])  // 一个点。
+        if(_data->points[0] == _data->points[1])  // 一个点。
         {
-            qreal halfPenW = 0.5 * _myData->pen.widthF();
-            painter->setBrush(QBrush(_myData->pen.color()));
+            qreal halfPenW = 0.5 * _data->pen.widthF();
+            painter->setBrush(QBrush(_data->pen.color()));
             painter->setPen(Qt::NoPen);
             painter->drawEllipse(int(halfPenW),
                                  int(halfPenW),
                                  int(2*halfPenW),
                                  int(2*halfPenW));
         }
-        else if(_myData->points[1] == _myData->points[2]) // 两个点。
+        else if(_data->points[1] == _data->points[2]) // 两个点。
         {
             painter->setBrush(Qt::NoBrush);
-            painter->setPen(_myData->pen);
+            painter->setPen(_data->pen);
             painter->drawLine(_points[0],_points[1]);
         }
         else // 三个点。
         {
-            painter->setBrush(_myData->brush);
-            painter->setPen(_myData->pen);
+            painter->setBrush(_data->brush);
+            painter->setPen(_data->pen);
             painter->drawPolygon(_points,3);
         }
     }
@@ -183,29 +184,29 @@ void BbItemTriangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 
 void BbItemTriangle::setupRectWithABC()
 {
-    qreal halfPenW = 0.5 * _myData->pen.widthF();
+    qreal halfPenW = 0.5 * _data->pen.widthF();
 
-    qreal minx = _myData->points[0].x();
-    qreal maxx = _myData->points[0].x();
-    qreal miny = _myData->points[0].y();
-    qreal maxy = _myData->points[0].y();
+    qreal minx = _data->points[0].x();
+    qreal maxx = _data->points[0].x();
+    qreal miny = _data->points[0].y();
+    qreal maxy = _data->points[0].y();
     for(int i=1;i<3;++i)
     {
-        if(minx > _myData->points[i].x())
+        if(minx > _data->points[i].x())
         {
-            minx = _myData->points[i].x();
+            minx = _data->points[i].x();
         }
-        if(maxx < _myData->points[i].x())
+        if(maxx < _data->points[i].x())
         {
-            maxx = _myData->points[i].x();
+            maxx = _data->points[i].x();
         }
-        if(miny > _myData->points[i].y())
+        if(miny > _data->points[i].y())
         {
-            miny = _myData->points[i].y();
+            miny = _data->points[i].y();
         }
-        if(maxy < _myData->points[i].y())
+        if(maxy < _data->points[i].y())
         {
-            maxy = _myData->points[i].y();
+            maxy = _data->points[i].y();
         }
     }
     qreal x = -halfPenW + minx;
@@ -217,7 +218,7 @@ void BbItemTriangle::setupRectWithABC()
     setRect(-halfPenW,-halfPenW,w,h);
     for(int i=0;i<3;++i)
     {
-        _points[i] = _myData->points[i] - pos();
+        _points[i] = _data->points[i] - pos();
     }
     update();
 }
@@ -225,11 +226,11 @@ void BbItemTriangle::setupRectWithABC()
 void BbItemTriangle::repaint()
 {
     setupRectWithABC();
-    if( _myData->isPositionValid() )
+    if( _data->isPositionValid() )
     {
-        setPos(_myData->x,_myData->y);
+        setPos(_data->x,_data->y);
     }
-    setZValue(_myData->z);
+    setZValue(_data->z);
     update();
 }
 
@@ -240,60 +241,25 @@ unsigned char BbItemTriangle::step()
 
 QPointF BbItemTriangle::point(int index)
 {
-    return _myData->points[index];
-}
-
-QColor BbItemTriangle::penColor()
-{
-    return _myData->pen.color();
-}
-
-void BbItemTriangle::setPenColor(const QColor &color)
-{
-    _myData->pen.setColor(color);
-}
-
-QColor BbItemTriangle::brushColor()
-{
-    return _myData->brush.color();
-}
-
-void BbItemTriangle::setBrushColor(const QColor &color)
-{
-    _myData->brush.setColor(color);
-}
-
-qreal BbItemTriangle::penWidth()
-{
-    return _myData->pen.widthF();
-}
-
-qreal BbItemTriangle::weight()
-{
-    return _myData->weight();
-}
-
-void BbItemTriangle::setWeight(qreal weight)
-{
-    _myData->setWeight(weight);
+    return _data->points[index];
 }
 
 void BbItemTriangle::writeStream(QDataStream &stream)
 {
-    _myData->x = x();
-    _myData->y = y();
-    _myData->z = zValue();
-    _myData->writeStream(stream);
+    _data->x = x();
+    _data->y = y();
+    _data->z = zValue();
+    _data->writeStream(stream);
 }
 
 void BbItemTriangle::readStream(QDataStream &stream)
 {
-    _myData->readStream(stream);
+    _data->readStream(stream);
     absolutize();
     repaint();
 }
 
 BbItemData *BbItemTriangle::data()
 {
-    return _myData;
+    return _data;
 }
