@@ -49,13 +49,15 @@ BbScene::BbScene(Blackboard *parent):
 
 BbScene::~BbScene()
 {
-    delete _pickerRect;
     _pickerRect = nullptr;
-    clearBackground();
-
-    for(auto idx: _deletingItems){
-        delete idx;
-    }
+    _curItemIndex = nullptr;
+    _backgrounds.clear();
+    /*
+     * Note: 这里不需要delete 因为会item 会在clear中被delete。
+     * 这里的delete可能会导致不可预知的问题。(?)
+     * 但还没有找到重现的方法？？？
+     * -Gim
+     */
     _deletingItems.clear();
 }
 
@@ -261,7 +263,13 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
          *      -Gim
          */
         for(auto idx: _deletingItems){
-            delete idx;
+            if(idx->toolType() == BBTT_Text){
+                auto text = dynamic_cast<BbItemText*>(idx);
+                text->deleteLater();
+            }
+            else{
+                delete idx;
+            }
         }
         _deletingItems.clear();
     }
@@ -750,7 +758,13 @@ void BbScene::remove(IItemIndex *index)
         if(_mouseLeftButtonDown){
             _deletingItems << index;
         }else{
-            delete index;
+            if(index->toolType() == BBTT_Text){
+                auto text = dynamic_cast<BbItemText*>(index);
+                text->deleteLater();
+            }
+            else{
+                delete index;
+            }
         }
     }
     else
