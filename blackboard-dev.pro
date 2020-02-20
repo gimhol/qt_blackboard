@@ -9,3 +9,7 @@ include(blackboard.pri)
 include(dev/dev.pri)
 include(info.pri)
 CONFIG += c++11
+
+HEADERS +=
+
+SOURCES +=

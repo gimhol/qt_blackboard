@@ -1,5 +1,8 @@
 ﻿#ifndef BLACKBOARDTESTWINDOW_H
 #define BLACKBOARDTESTWINDOW_H
+#include "BlackboardClient.h"
+#include "BlackboardConnector.h"
+
 #include <QWidget>
 #include <Blackboard.h>
 namespace Ui {
@@ -16,16 +19,14 @@ class BlackboardTestWindow : public QWidget
     BbItemEllipseData *ellipseSettings;
     BbItemTriangleData *triangleSettings;
 
+public:
     explicit BlackboardTestWindow(QWidget *parent = nullptr);
 
     static void bindBlackboard(Blackboard * blackboard0,Blackboard *blackboard1);
 
     Blackboard * blackboard();
-public:
 
     ~BlackboardTestWindow();
-
-    static void start();
 
     static void loadImage(BbItemImage *item);
 
@@ -86,13 +87,15 @@ private slots:
 
     void on_btn_clear_background_clicked();
 
-
     void on_btn_make_sure_show_all_backgrouns_clicked();
 
     void on_btn_remove_one_background_clicked();
 
+    void on_btnConnectionToggle_clicked();
+
 private:
     Ui::BlackboardTestWindow *ui;
+    QPointer<BlackboardConnector> _connector;
 };
 
 #endif // BLACKBOARDTESTWINDOW_H

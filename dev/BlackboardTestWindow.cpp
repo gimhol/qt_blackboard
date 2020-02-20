@@ -9,6 +9,7 @@
 #include "ColorPanel.h"
 #include "ui_BlackboardTestWindow.h"
 #include "BbItemImage.h"
+#include "BlackboardConnector.h"
 #include <QDebug>
 #include <QFileDialog>
 #include <QDateTime>
@@ -19,6 +20,15 @@
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QHostAddress>
+#include <QMenu>
+#include <QAction>
+#include <QPointer>
+#include <QHostAddress>
+#include <QHostAddress>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 static QNetworkAccessManager *networkManager()
 {
@@ -51,6 +61,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->blackboardHeight->setValue(1000);
     QButtonGroup * buttonGroup = new QButtonGroup(this);
     buttonGroup->addButton(ui->picker);
     buttonGroup->addButton(ui->pen);
@@ -226,10 +237,18 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 
     connect(ui->graphicsView,&Blackboard::itemSelected,[&](IItemIndex *index, bool selected){
         if(selected)
-        {
             ui->textBrowser->append(QString(QStringLiteral("选择: %1")).arg(index->id()));
-        }
     });
+
+    QPixmap pm(5,5);
+    pm.fill("red");
+    ui->graphicsView->setCanvasSize(ui->graphicsView->width(),
+                                    1000);
+    ui->graphicsView->setPointerPixmap(pm);
+    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    _connector = new BlackboardConnector(ui->graphicsView);
 }
 
 BlackboardTestWindow::~BlackboardTestWindow()
@@ -237,66 +256,9 @@ BlackboardTestWindow::~BlackboardTestWindow()
     delete ui;
 }
 
-void BlackboardTestWindow::start()
-{
-    static BlackboardTestWindow win0, win1;
-    win0.setWindowTitle(QStringLiteral("测试窗口0"));
-    win1.setWindowTitle(QStringLiteral("测试窗口1"));
-    win0.show();
-    win1.show();
-    win0.move(0,0);
-    win1.move(win0.width(),0);
-    bindBlackboard(win0.blackboard(),win1.blackboard());
-    bindBlackboard(win1.blackboard(),win0.blackboard());
-    win0.ui->blackboardHeight->setValue(win0.blackboard()->width());
-    win1.ui->blackboardHeight->setValue(win1.blackboard()->width());
-}
-
 void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *blackboard1)
 {
-    static QPixmap * pm;
-    if(!pm)
-    {
-        pm = new QPixmap(5,5);
-        pm->fill("red");
-    }
-
-    blackboard0->setCanvasSize(blackboard0->width(),blackboard0->width());
-    blackboard0->setPointerPixmap(*pm);
-    blackboard0->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    blackboard0->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 #define TOINT(_NUM_) static_cast<int>(_NUM_)
-
-    connect(blackboard0,&Blackboard::scrolled,[blackboard1](float x, float y){
-        blackboard1->setScroll(TOINT(x),TOINT(y));
-    });
-    connect(blackboard0,&Blackboard::pointerShown,[blackboard1](QPoint localPoint){
-        blackboard1->addPointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::pointerMoved,[blackboard1](QPoint localPoint){
-        blackboard1->movePointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::pointerMoving,[blackboard1](QPoint localPoint){
-        blackboard1->movePointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::pointerHidden,[blackboard1](QPoint localPoint){
-        Q_UNUSED(localPoint)
-        blackboard1->hidePointer("remote_pointer");
-    });
-
-    connect(blackboard0,&Blackboard::cursorShown,[blackboard1](QPoint localPoint){
-        blackboard1->addPointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::cursorMoved,[blackboard1](QPoint localPoint){
-        blackboard1->movePointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::cursorMoving,[blackboard1](QPoint localPoint){
-        blackboard1->movePointer("remote_pointer", localPoint.x(),localPoint.y());
-    });
-    connect(blackboard0,&Blackboard::cursorHidden,[blackboard1](QPoint localPoint){
-        Q_UNUSED(localPoint)
-        blackboard1->hidePointer("remote_pointer");
-    });
     auto copyFullItem = [&](Blackboard *blackboard1, IStreamWR *itemWR,IItemIndex *itemIndex)
     {
         QByteArray byteArray;
@@ -307,42 +269,6 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
         QByteArray byteArray2(byteArray);
         QDataStream dataStream2(&byteArray2,QIODevice::ReadOnly);
         blackboard1->scene()->readItemFromStream(dataStream2);
-    };
-
-    auto itemMoving = [blackboard1](QGraphicsItem *item)
-    {
-        if(item)
-        {
-            auto index = dynamic_cast<IItemIndex*>(item);
-            if(index)
-            {
-                auto copy = blackboard1->find<IItemIndex>(index->id());
-                if(copy)
-                {
-                    copy->moveToPosition(item->pos());
-                }
-            }
-        }
-    };
-    auto itemMoved = [itemMoving](QGraphicsItem *item)
-    {
-        itemMoving(item);
-        auto index = dynamic_cast<IItemIndex*>(item);
-        if(index)
-        {
-
-            qDebug() << QString("move item %1 from (%2,%3) to (%4,%5).").
-                        arg(index->id()).
-                        arg(index->data()->prevX).arg(index->data()->prevY).
-                        arg(index->data()->x).arg(index->data()->y);
-        }
-    };
-    auto itemDelete = [blackboard1](QGraphicsItem *item){
-        if(item)
-        {
-            auto index = dynamic_cast<IItemIndex*>(item);
-            blackboard1->remove(index->id());
-        }
     };
     auto itemPaste = [&,blackboard1](QGraphicsItem *item){
         if(item)
@@ -415,279 +341,28 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     auto imageHasUrl = [blackboard1](BbItemImage *item){
         qInfo() << "imageHasUrl: " << item->url();
     };
-    auto triangleDown = [blackboard1](BbItemTriangle *item)
-    {
-        if(item)
-        {
-            auto copy = new BbItemTriangle();
-            if(copy)
-            {
-                blackboard1->scene()->add(copy);
-                copy->setZ(item->z());
-                copy->setPenColor(item->penColor());
-                copy->setWeight(item->weight());
-                copy->setBrushColor(item->brushColor());
-                copy->begin(item->point(0));
-                copy->setId(item->id());
-            }
-        }
-    };
-    auto triangleDraw = [blackboard1](BbItemTriangle *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemTriangle>(item->id());
-            if(copy)
-            {
-                copy->draw(item->point(1+item->step()));
-            }
-        }
-    };
-    auto triangleDone = [blackboard1](BbItemTriangle *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemTriangle>(item->id());
-            if(copy)
-            {
-                copy->done();
-            }
-        }
-    };
-    auto ellipseDown =[blackboard1](BbItemEllipse *item){
-        if(item)
-        {
-            auto copy = new BbItemEllipse();
-            if(copy)
-            {
-                blackboard1->scene()->add(copy);
-                copy->setZ(item->z());
-                copy->setPenColor(item->penColor());
-                copy->setWeight(item->weight());
-                copy->setBrushColor(item->brushColor());
-                copy->setId(item->id());
-
-                copy->begin(item->beginPos());
-            }
-        }
-    };
-    auto ellipseDraw = [blackboard1](BbItemEllipse *item){
-        if(item){ //
-            auto data = dynamic_cast<BbItemEllipseData*>(item->data());
-            auto copy = blackboard1->find<BbItemEllipse>(data->lid);
-            if(copy){
-                copy->begin(data->position());
-                copy->draw(QPointF(data->x+data->size.width(),
-                                   data->y+data->size.height()));
-                copy->done();
-            }
-        }
-    };
-    auto ellipseDone = [blackboard1](BbItemEllipse *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemEllipse>(item->id());
-            if(copy)
-            {
-                copy->done();
-            }
-        }
-    };
-    auto rectDown =[blackboard1](BbItemRect *item){
-        if(item)
-        {
-            auto copy = new BbItemRect();
-            if(copy)
-            {
-                blackboard1->scene()->add(copy);
-                copy->setZ(item->z());
-                copy->setPenColor(item->penColor());
-                copy->setWeight(item->weight());
-                copy->setBrushColor(item->brushColor());
-                copy->begin(item->beginPos());
-                copy->setId(item->id());
-            }
-        }
-    };
-    auto rectDraw = [blackboard1](BbItemRect *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemRect>(item->id());
-            if(copy)
-            {
-                copy->draw(item->dragPos());
-            }
-        }
-    };
-    auto rectDone = [blackboard1](BbItemRect *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemRect>(item->id());
-            if(copy)
-            {
-                copy->done();
-            }
-        }
-    };
-    auto textAdded = [blackboard1](BbItemText *item){
-        if(item)
-        {
-            auto copy = new BbItemText();
-            if(copy)
-            {
-                copy->setZ(copy->z());
-                blackboard1->scene()->add(copy);
-                copy->setFont(item->font());
-                copy->setColor(item->color());
-                copy->moveToPosition(item->pos());
-                copy->setId(item->id());
-            }
-        }
-    };
-    auto textChanged = [blackboard1](BbItemText *item){
-        auto copy = blackboard1->find<BbItemText>(item->id());
-        auto data = dynamic_cast<BbItemTextData*>(item->data());
-        if(copy)
-        {
-            copy->setText(item->text());
-        }
-    };
-    auto textDone = [blackboard1](BbItemText *item){
-        auto copy = blackboard1->find<BbItemText>(item->id());
-        auto data = dynamic_cast<BbItemTextData*>(item->data());
-        qDebug() << data->prevText << " > " << data->text;
-        if(copy)
-        {
-            copy->setText(item->text());
-        }
-    };
-    auto straightDown = [blackboard1](BbItemStraight *item){
-        if(item)
-        {
-            auto copy = new BbItemStraight();
-            if(copy)
-            {
-                blackboard1->scene()->add(copy);
-                copy->setZ(item->z());
-                copy->setColor(item->color());
-                copy->setWeight(item->weight());
-                copy->setId(item->id());
-                copy->begin(item->a());
-            }
-        }
-    };
-    auto straightDraw = [blackboard1](BbItemStraight *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemStraight>(item->id());
-            if(copy)
-            {
-                copy->draw(item->b());
-            }
-        }
-    };
-    auto straightDone = [blackboard1](BbItemStraight *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemStraight>(item->id());
-            if(copy)
-            {
-                copy->done();
-            }
-        }
-    };
-    auto penDone = [blackboard1](BbItemPen *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemPen>(item->id());
-            if(copy)
-            {
-                copy->done();
-            }
-        }
-    };
-    auto penDraw = [blackboard1](BbItemPen *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemPen>(item->id());
-            if(copy)
-            {
-                for(auto point : *item->changed())
-                {
-                    copy->penDraw(point);
-                }
-            }
-        }
-    };
-    auto penStraighting = [blackboard1](BbItemPen *item){
-        if(item)
-        {
-            auto copy = blackboard1->find<BbItemPen>(item->id());
-            if(copy)
-            {
-                copy->penStraighting(item->straightTo());
-            }
-        }
-    };
-    auto penDown = [blackboard1](BbItemPen *item){
-        if(item)
-        {
-            BbItemPen *copy = new BbItemPen();
-            if(copy)
-            {
-                copy->setZ(item->z());
-                copy->setColor(item->color());
-                copy->setWeight(item->weight());
-                copy->setId(item->id());
-                blackboard1->scene()->add(copy);
-                copy->penDown(item->changed()->first());
-            }
-        }
-    };
 
 #define HANDLE_ITEM_EVENT(_EVENT_TYPE_,_ITEM_TYPE_) \
     case BBIET_##_EVENT_TYPE_: \
         _EVENT_TYPE_(dynamic_cast<_ITEM_TYPE_*>(index)); \
         break
 
-    connect(blackboard0,&Blackboard::multipleItemChanged,[=](BBItemEventType eventType,IItemIndex *index){
+    connect(blackboard0,&Blackboard::multipleItemChanged,blackboard1,[=](BBItemEventType eventType,IItemIndex *index){
         while(index)
         {
             auto next = index->next;
             switch(eventType)
             {
-                HANDLE_ITEM_EVENT(itemMoving,QGraphicsItem);
-                HANDLE_ITEM_EVENT(itemMoved,QGraphicsItem);
-                HANDLE_ITEM_EVENT(itemDelete,QGraphicsItem);
                 HANDLE_ITEM_EVENT(itemPaste,QGraphicsItem);
-                case BBIET_none:
                 default:
                     break;
             }
             index = next;
         }
     });
-    connect(blackboard0,&Blackboard::itemChanged,[=](BBItemEventType eventType,IItemIndex *index){
+    connect(blackboard0,&Blackboard::itemChanged,blackboard1,[=](BBItemEventType eventType,IItemIndex *index){
         switch(eventType)
         {
-            HANDLE_ITEM_EVENT(itemMoved,QGraphicsItem);
-            HANDLE_ITEM_EVENT(penStraighting,BbItemPen);
-            HANDLE_ITEM_EVENT(penDown,BbItemPen);
-            HANDLE_ITEM_EVENT(penDraw,BbItemPen);
-            HANDLE_ITEM_EVENT(penDone,BbItemPen);
-            HANDLE_ITEM_EVENT(straightDown,BbItemStraight);
-            HANDLE_ITEM_EVENT(straightDraw,BbItemStraight);
-            HANDLE_ITEM_EVENT(straightDone,BbItemStraight);
-            HANDLE_ITEM_EVENT(textAdded,BbItemText);
-            HANDLE_ITEM_EVENT(textChanged,BbItemText);
-            HANDLE_ITEM_EVENT(textDone,BbItemText);
-            HANDLE_ITEM_EVENT(rectDown,BbItemRect);
-            HANDLE_ITEM_EVENT(rectDraw,BbItemRect);
-            HANDLE_ITEM_EVENT(rectDone,BbItemRect);
-            HANDLE_ITEM_EVENT(ellipseDown,BbItemEllipse);
-            HANDLE_ITEM_EVENT(ellipseDraw,BbItemEllipse);
-            HANDLE_ITEM_EVENT(ellipseDone,BbItemEllipse);
-            HANDLE_ITEM_EVENT(triangleDown,BbItemTriangle);
-            HANDLE_ITEM_EVENT(triangleDraw,BbItemTriangle);
-            HANDLE_ITEM_EVENT(triangleDone,BbItemTriangle);
             HANDLE_ITEM_EVENT(imageAdded,BbItemImage);
             HANDLE_ITEM_EVENT(imageResizing,BbItemImage);
             HANDLE_ITEM_EVENT(imageResized,BbItemImage);
@@ -946,9 +621,6 @@ void BlackboardTestWindow::on_btn_make_sure_show_all_backgrouns_clicked()
                 (std::max)(canvasH,int(bgRect.bottom()))
                 );
 }
-#include <QMenu>
-#include <QAction>
-#include <QPointer>
 void BlackboardTestWindow::on_btn_remove_one_background_clicked()
 {
     auto menu = new QMenu(ui->btn_remove_one_background);
@@ -962,8 +634,19 @@ void BlackboardTestWindow::on_btn_remove_one_background_clicked()
         bb->removeBackground(action->text());
     });
     connect(menu,&QMenu::aboutToHide,menu,&QObject::deleteLater);
-
     menu->move(ui->btn_remove_one_background->mapTo(this,QPoint(0,0)));
     menu->show();
+}
 
+void BlackboardTestWindow::on_btnConnectionToggle_clicked()
+{
+    if(_connector->isConnected()){
+        ui->btnConnectionToggle->setText(QStringLiteral("进入"));
+        _connector->disconnectFromServer();
+    }else{
+        ui->btnConnectionToggle->setText(QStringLiteral("退出"));
+        _connector->connectToServer(
+                    ui->leAddress->text(),
+                    ui->lePort->text().toInt());
+    }
 }
