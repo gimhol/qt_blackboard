@@ -539,12 +539,10 @@ void BbScene::pickingItems(const QPointF &mousePos)
         if(!itemIndex)
             continue;
 
-        // 排除已selected的item
-        if(item->collidesWithItem(_pickerRect) == item->isSelected())
-            continue;
+        bool collided = item->collidesWithItem(_pickerRect);
+        item->setSelected(collided);
 
-        item->setSelected(true);
-        emit blackboard()->itemSelected(itemIndex,true);
+        emit blackboard()->itemSelected(itemIndex,collided);
     }
 }
 
