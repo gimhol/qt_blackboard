@@ -573,6 +573,7 @@ Qt::KeyboardModifiers BbScene::modifiers()
     所以这里直接使用win32的api来获取功能键状态。
     - Gim
     */
+    _modifiers = Qt::NoModifier;
     if(GetKeyState(VK_SHIFT) < 0 ||
             GetKeyState(VK_LSHIFT) < 0 ||
             GetKeyState(VK_RSHIFT) < 0)
