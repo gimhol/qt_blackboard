@@ -10,6 +10,7 @@
 #include "ui_BlackboardTestWindow.h"
 #include "BbItemImage.h"
 #include "BlackboardConnector.h"
+#include "BbMenu.h"
 #include <QDebug>
 #include <QFileDialog>
 #include <QDateTime>
@@ -130,20 +131,30 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     ui->triangleBrushColor->setProperty("WhichColor",WhichColor_TriangleBrush);
     connect(ui->triangleBrushColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
 
-    connect(ui->graphicsView,&Blackboard::itemSelected,[&](IItemIndex *index, bool selected){
+    connect(ui->blackboard,&Blackboard::itemSelected,[&](IItemIndex *index, bool selected){
         if(selected)
             ui->textBrowser->append(QString(QStringLiteral("选择: %1")).arg(index->id()));
     });
 
     QPixmap pm(5,5);
     pm.fill("red");
-    ui->graphicsView->setCanvasSize(ui->graphicsView->width(),
-                                    1000);
-    ui->graphicsView->setPointerPixmap(pm);
-    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->blackboard->setCanvasSize(ui->blackboard->baseSize().width(),1000);
+    ui->blackboard->setPointerPixmap(pm);
+    ui->blackboard->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->blackboard->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->blackboard->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    _connector = new BlackboardConnector(ui->graphicsView);
+    auto blackboard = ui->blackboard;
+    connect(blackboard,&QWidget::customContextMenuRequested,this,[blackboard](const QPoint &pos){
+        auto menu = blackboard->findChild<BbMenu*>("right_click_menu");
+        if(!menu){
+            menu = new BbMenu(blackboard);
+            menu->setAttribute(Qt::WA_DeleteOnClose);
+        }
+        menu->move(blackboard->mapToGlobal(pos));
+        menu->show();
+    });
+    _connector = new BlackboardConnector(ui->blackboard);
 }
 
 BlackboardTestWindow::~BlackboardTestWindow()
@@ -271,7 +282,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
 
 Blackboard *BlackboardTestWindow::blackboard()
 {
-    return ui->graphicsView;
+    return ui->blackboard;
 }
 
 void BlackboardTestWindow::on_pointer_clicked()
