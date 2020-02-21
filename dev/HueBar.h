@@ -6,7 +6,7 @@
 class HueBar : public QWidget
 {
     Q_OBJECT
-    qreal _hue = 0;
+    qreal _hue = 1;
 
 public:
     explicit HueBar(QWidget *parent = nullptr);

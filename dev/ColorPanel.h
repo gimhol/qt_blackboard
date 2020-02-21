@@ -11,7 +11,7 @@ class ColorPanel : public QWidget
 {
     Q_OBJECT
     int _alpha = 255;
-    int _hue = 0;
+    int _hue = 1;
     int _saturation = 255;
     int _value = 255;
     QColor _color;
@@ -26,6 +26,9 @@ public slots:
     void setAlpha(int alpha);
     void setSaturationValue(int saturation,int value);
     void setHue(int hue);
+private slots:
+    void on_lineEditColor_editingFinished();
+
 private:
     Ui::ColorPanel *ui;
 };

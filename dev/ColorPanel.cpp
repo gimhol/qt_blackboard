@@ -23,6 +23,11 @@ ColorPanel::~ColorPanel()
 
 void ColorPanel::setColor(const QColor &color)
 {
+    ui->spinBoxR->setValue(color.red());
+    ui->spinBoxG->setValue(color.green());
+    ui->spinBoxB->setValue(color.blue());
+    ui->spinBoxA->setValue(color.alpha());
+
     _color = color.toHsv();
     _alpha = _color.alpha();
     _saturation = _color.hsvSaturation();
@@ -40,6 +45,7 @@ void ColorPanel::setColor(const QColor &color)
 void ColorPanel::setAlpha(int alpha)
 {
     _alpha = alpha;
+    ui->spinBoxA->setValue(_alpha);
     _color = QColor::fromHsv(_hue,_saturation,_value,_alpha);
     emit colorChanged(_color.toRgb());
 }
@@ -49,13 +55,30 @@ void ColorPanel::setSaturationValue(int saturation, int value)
     _saturation = saturation;
     _value = value;
     _color = QColor::fromHsv(_hue,_saturation,_value,_alpha);
-
-    emit colorChanged(_color.toRgb());
+    auto color = _color.toRgb();
+    ui->spinBoxR->setValue(color.red());
+    ui->spinBoxG->setValue(color.green());
+    ui->spinBoxB->setValue(color.blue());
+    ui->spinBoxA->setValue(color.alpha());
+    emit colorChanged(color);
 }
 
 void ColorPanel::setHue(int hue)
 {
     _hue = hue;
     _color = QColor::fromHsv(_hue,_saturation,_value,_alpha);
-    emit colorChanged(_color.toRgb());
+    auto color = _color.toRgb();
+    ui->spinBoxR->setValue(color.red());
+    ui->spinBoxG->setValue(color.green());
+    ui->spinBoxB->setValue(color.blue());
+    ui->spinBoxA->setValue(color.alpha());
+    emit colorChanged(color);
+}
+
+void ColorPanel::on_lineEditColor_editingFinished()
+{
+    setColor(QColor(ui->spinBoxR->value(),
+                    ui->spinBoxG->value(),
+                    ui->spinBoxB->value(),
+                    ui->spinBoxA->value()));
 }
