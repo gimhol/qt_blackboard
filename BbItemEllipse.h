@@ -44,10 +44,6 @@ public:
 
     void done();
 
-    QPointF beginPos();
-
-    QPointF dragPos();
-
     bool isCircular();
     bool isStartFromCenter();
     bool isPointcut();
