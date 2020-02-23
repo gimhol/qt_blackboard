@@ -291,8 +291,10 @@ void BlackboardConnector::onLocalRectDown(IItemIndex *index)
     jobj["brushColor"] = int(item->data()->brush.color().rgba());
     jobj["weight"] = item->data()->weight();
     jobj["z"] = item->z();
-    jobj["ax"] = item->beginPos().x()/_bb->canvasWidth();
-    jobj["ay"] = item->beginPos().y()/_bb->canvasWidth();
+    jobj["x"] = item->data()->x/_bb->canvasWidth();
+    jobj["y"] = item->data()->y/_bb->canvasWidth();
+    jobj["w"] = item->data()->size.width()/_bb->canvasWidth();
+    jobj["h"] = item->data()->size.height()/_bb->canvasWidth();
     _me->send(BBIET_rectDown,QJsonDocument(jobj).toBinaryData());
 }
 
@@ -303,8 +305,10 @@ void BlackboardConnector::onLocalRectDraw(IItemIndex *index)
         return;
     QJsonObject jobj;
     jobj["id"] = item->id();
-    jobj["bx"] = item->dragPos().x()/_bb->canvasWidth();
-    jobj["by"] = item->dragPos().y()/_bb->canvasWidth();
+    jobj["x"] = item->data()->x/_bb->canvasWidth();
+    jobj["y"] = item->data()->y/_bb->canvasWidth();
+    jobj["w"] = item->data()->size.width()/_bb->canvasWidth();
+    jobj["h"] = item->data()->size.height()/_bb->canvasWidth();
     _me->send(BBIET_rectDraw,QJsonDocument(jobj).toBinaryData());
 }
 
@@ -329,8 +333,10 @@ void BlackboardConnector::onLocalEllipseDown(IItemIndex *index)
     jobj["brushColor"] = int(item->data()->brush.color().rgba());
     jobj["weight"] = item->data()->weight();
     jobj["z"] = item->z();
-    jobj["ax"] = item->beginPos().x()/_bb->canvasWidth();
-    jobj["ay"] = item->beginPos().y()/_bb->canvasWidth();
+    jobj["x"] = item->data()->x/_bb->canvasWidth();
+    jobj["y"] = item->data()->y/_bb->canvasWidth();
+    jobj["w"] = item->data()->size.width()/_bb->canvasWidth();
+    jobj["h"] = item->data()->size.height()/_bb->canvasWidth();
     _me->send(BBIET_ellipseDown,QJsonDocument(jobj).toBinaryData());
 }
 
@@ -341,8 +347,10 @@ void BlackboardConnector::onLocalEllipseDraw(IItemIndex *index)
         return;
     QJsonObject jobj;
     jobj["id"] = item->id();
-    jobj["bx"] = item->dragPos().x()/_bb->canvasWidth();
-    jobj["by"] = item->dragPos().y()/_bb->canvasWidth();
+    jobj["x"] = item->data()->x/_bb->canvasWidth();
+    jobj["y"] = item->data()->y/_bb->canvasWidth();
+    jobj["w"] = item->data()->size.width()/_bb->canvasWidth();
+    jobj["h"] = item->data()->size.height()/_bb->canvasWidth();
     _me->send(BBIET_ellipseDraw,QJsonDocument(jobj).toBinaryData());
 }
 
@@ -634,13 +642,9 @@ void BlackboardConnector::onRemoteRectDown()
     copy->data()->setWeight(jobj["weight"].toDouble());
     copy->data()->pen.setColor(QColor::fromRgba(QRgb(jobj["penColor"].toInt())));
     copy->data()->brush.setColor(QColor::fromRgba(QRgb(jobj["brushColor"].toInt())));
-
-    auto a = QColor::fromRgba(QRgb(jobj["brushColor"].toInt()));
-    qInfo() << "remote brushColor:" << a;
-
-    QPointF dot(jobj["ax"].toDouble()*_bb->canvasWidth(),
-                jobj["ay"].toDouble()*_bb->canvasWidth());
-    copy->begin(dot);
+    QPointF a(jobj["x"].toDouble()*_bb->canvasWidth(),
+              jobj["y"].toDouble()*_bb->canvasWidth());
+    copy->begin(a);
 }
 
 void BlackboardConnector::onRemoteRectDraw()
@@ -649,9 +653,12 @@ void BlackboardConnector::onRemoteRectDraw()
     auto copy = _bb->find<BbItemRect>(jobj["id"].toString());
     if(!copy)
         return;
-    QPointF dot(jobj["bx"].toDouble()*_bb->canvasWidth(),
-                jobj["by"].toDouble()*_bb->canvasWidth());
-    copy->draw(dot);
+    QPointF a(jobj["x"].toDouble()*_bb->canvasWidth(),
+              jobj["y"].toDouble()*_bb->canvasWidth());
+    copy->begin(a);
+    QPointF b(jobj["w"].toDouble()*_bb->canvasWidth(),
+              jobj["h"].toDouble()*_bb->canvasWidth());
+    copy->draw(a+b);
 }
 
 void BlackboardConnector::onRemoteRectDone()
@@ -672,9 +679,9 @@ void BlackboardConnector::onRemoteEllipseDown()
     copy->data()->setWeight(jobj["weight"].toDouble());
     copy->data()->pen.setColor(QColor::fromRgba(QRgb(jobj["penColor"].toInt())));
     copy->data()->brush.setColor(QColor::fromRgba(QRgb(jobj["brushColor"].toInt())));
-    QPointF dot(jobj["ax"].toDouble()*_bb->canvasWidth(),
-                jobj["ay"].toDouble()*_bb->canvasWidth());
-    copy->begin(dot);
+    QPointF a(jobj["x"].toDouble()*_bb->canvasWidth(),
+              jobj["y"].toDouble()*_bb->canvasWidth());
+    copy->begin(a);
 }
 
 void BlackboardConnector::onRemoteEllipseDraw()
@@ -683,9 +690,12 @@ void BlackboardConnector::onRemoteEllipseDraw()
     auto copy = _bb->find<BbItemEllipse>(jobj["id"].toString());
     if(!copy)
         return;
-    QPointF dot(jobj["bx"].toDouble()*_bb->canvasWidth(),
-                jobj["by"].toDouble()*_bb->canvasWidth());
-    copy->draw(dot);
+    QPointF a(jobj["x"].toDouble()*_bb->canvasWidth(),
+              jobj["y"].toDouble()*_bb->canvasWidth());
+    copy->begin(a);
+    QPointF b(jobj["w"].toDouble()*_bb->canvasWidth(),
+              jobj["h"].toDouble()*_bb->canvasWidth());
+    copy->draw(a+b);
 }
 
 void BlackboardConnector::onRemoteEllipseDone()

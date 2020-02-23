@@ -42,10 +42,6 @@ public:
 
     void done();
 
-    QPointF beginPos();
-
-    QPointF dragPos();
-
     bool square();
 
     void setSquare(const bool square);

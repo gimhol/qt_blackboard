@@ -2,7 +2,6 @@
 #include "BbItemRectData.h"
 #include "Blackboard.h"
 #include "BbScene.h"
-
 #include <QPainter>
 
 BbItemRect::BbItemRect():
@@ -29,6 +28,7 @@ BbItemRect::~BbItemRect()
 
 void BbItemRect::init()
 {
+    Q_ASSERT(nullptr != _data);
     if(!_data)
     {
         _data = new BbItemRectData();
@@ -92,7 +92,11 @@ void BbItemRect::draw(const QPointF &point)
     qreal t = std::min(_dragY,_beginY);
     setPos(l,t);
     _data->updatePostion(this);
-    setRect(0,0,std::abs(_dragX-_beginX),std::abs(_dragY-_beginY));
+    setRect(0,0,
+            std::abs(_dragX-_beginX),
+            std::abs(_dragY-_beginY));
+    _data->size.setWidth(std::abs(_dragX-_beginX));
+    _data->size.setHeight(std::abs(_dragY-_beginY));
     _data->updatePostion(this);
     _data->updatePrevPostion();
     _data->empty = !rect().size().isEmpty();
@@ -102,17 +106,9 @@ void BbItemRect::done()
 {
     _data->updatePostion(this);
     _data->updatePrevPostion();
+    _data->updatePrevSize();
     _editing = false;
-}
-
-QPointF BbItemRect::beginPos()
-{
-    return QPointF(_beginX,_beginY);
-}
-
-QPointF BbItemRect::dragPos()
-{
-    return QPointF(_dragX,_dragY);
+    update();
 }
 
 BbItemData *BbItemRect::data()

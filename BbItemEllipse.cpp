@@ -152,18 +152,9 @@ void BbItemEllipse::done()
 {
     _data->updatePostion(this);
     _data->updatePrevPostion();
+    _data->updatePrevSize();
     _editing = false;
     update();
-}
-
-QPointF BbItemEllipse::beginPos()
-{
-    return QPointF(_beginX,_beginY);
-}
-
-QPointF BbItemEllipse::dragPos()
-{
-    return QPointF(_dragX,_dragY);
 }
 
 BbItemData *BbItemEllipse::data()
