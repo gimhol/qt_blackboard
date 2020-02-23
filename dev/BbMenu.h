@@ -12,14 +12,16 @@ public:
     BbMenu(Blackboard *parent = nullptr);
     void init();
     void initToolMenu();
-
     void saveItemsToPicture(QList<QGraphicsItem*> items);
-
+signals:
+    void saveSelectedItemsToPicutre();
+    void saveAllItemsToPicutre();
 private slots:
     void onToolMenuTriggered(QAction *action);
     void onSaveSelectedItemsToPicutreAction();
     void onSaveAllItemsToPicutreAction();
     void onSelectedAllActionTriggered();
+    void onBlackboardCustomContextMenuRequested(const QPoint &pos);
 private:
     QPointer<Blackboard> _blackboard;
 };

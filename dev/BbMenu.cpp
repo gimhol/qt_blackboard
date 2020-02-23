@@ -11,7 +11,8 @@ BbMenu::BbMenu(Blackboard *parent):
     setStyleSheet("QMenu{background-color:#333333;border:1px solid black;border-radius:2px;}"
                   "QMenu::item:selected{background-color:#555555;}"
                   "QMenu::item:disabled{background-color:#333333;color:#888888;}");
-    init();
+    connect(_blackboard,&QWidget::customContextMenuRequested,
+            this,&BbMenu::onBlackboardCustomContextMenuRequested);
 }
 
 void BbMenu::initToolMenu()
@@ -48,6 +49,10 @@ void BbMenu::init(){
             &QAction::triggered,
             this,
             &BbMenu::onSelectedAllActionTriggered);
+    connect(addAction(QStringLiteral("取消选择")),
+            &QAction::triggered,
+            _blackboard,
+            &Blackboard::deselectAll);
     connect(addAction(QStringLiteral("删除")),
             &QAction::triggered,
             _blackboard,
@@ -133,6 +138,13 @@ void BbMenu::onSaveAllItemsToPicutreAction()
 
 void BbMenu::onSelectedAllActionTriggered()
 {
-    _blackboard->setToolType(BBTT_Picker);
+//    _blackboard->setToolType(BBTT_Picker);
     _blackboard->selectedAll();
+}
+
+void BbMenu::onBlackboardCustomContextMenuRequested(const QPoint &pos)
+{
+    init();
+    move(_blackboard->mapToGlobal(pos));
+    show();
 }

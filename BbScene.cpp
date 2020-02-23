@@ -25,6 +25,8 @@
 #include <QMimeData>
 
 #ifdef WIN32
+#include <QDateTime>
+#include <QTimer>
 #include <Windows.h>
 #pragma comment(lib, "user32")
 #endif
@@ -33,8 +35,11 @@
 
 BbScene::BbScene(Blackboard *parent):
     QGraphicsScene(parent),
-    _backgroundRect(0,0,0,0)
+    _backgroundRect(0,0,0,0),
+    _pickerTimer(new QTimer(this))
 {
+    _pickerTimer->setInterval(1000/30);
+    connect(_pickerTimer,&QTimer::timeout,this,&BbScene::onPicking);
     _pickerRect = new QGraphicsRectItem();
     _pickerRect->hide();
     _pickerRect->setPen(QPen(QColor(100,100,255),
@@ -168,16 +173,23 @@ void BbScene::remove(QString lid)
     if(index)
         remove(index);
 }
-
 void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    QGraphicsScene::mousePressEvent(event);
-    if(event->button() == Qt::MouseButton::LeftButton)
-    {
-        _mouseLeftButtonDown = true;
-        _mouseBeginPos = event->scenePos();
-        _mousePos = event->scenePos();
-        if(_toolType != BBTT_Picker){
+    _mouseButtons |= event->button();
+    _mousePos = event->scenePos();
+    _pickerBeginPos = event->scenePos();
+    if(event->button() == Qt::LeftButton){
+        if(_toolType == BBTT_Picker){
+            QGraphicsScene::mousePressEvent(event);
+            if(!event->isAccepted()){
+                startPicking();
+            }
+            if(_curItemIndex){
+                _curItemIndex->toolDone(_mousePos);
+            }
+        }else{
+            stopPicking();
+            deselectAll();
             if(!_curItemIndex){
                 auto item = blackboard()->factory()->createItemWhenToolDown(_toolType);
                 if(item){
@@ -189,14 +201,20 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
+    else if(event->button() == Qt::RightButton){
+        if(_curItemIndex){
+            _curItemIndex->toolDone(_mousePos);
+        }
+        startPicking();
+    }
 }
 
 void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    QGraphicsScene::mouseMoveEvent(event);
     _mousePos = event->scenePos();
-    if(_mouseLeftButtonDown){
+    if(_mouseButtons & Qt::LeftButton){
         if(BBTT_Picker == _toolType){
+            QGraphicsScene::mouseMoveEvent(event);
             /*
              * NOTE:
              *      拖动item会使得此event被Accepted，故在此发出移动信号。
@@ -206,31 +224,30 @@ void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             if(event->isAccepted())
                 emitItemMovingSignals();
             else
-                pickingItems(_mousePos);
+                updatePickerRect();
         }
-        else if(_curItemIndex && _mouseLeftButtonDown){
+        else if(_curItemIndex){
             _curItemIndex->toolDraw(_mousePos);
         }
+    }else if(_mouseButtons & Qt::RightButton){
+        updatePickerRect();
     }
-
-
 }
 
 void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    QGraphicsScene::mouseReleaseEvent(event);
+    _mouseButtons ^= event->button();
     _mousePos = event->scenePos();
-    if(event->button() == Qt::MouseButton::LeftButton)
-    {
-        _mouseLeftButtonDown = false;
+    QGraphicsScene::mouseReleaseEvent(event);
+    if(event->button() == Qt::LeftButton){
         if(BBTT_Picker == _toolType){
+            if(isPicking())
+                stopPicking();
             emitItemMovedSignals();
-            _pickerRect->hide();
         }
         else if(_curItemIndex){
             _curItemIndex->toolDone(_mousePos);
         }
-
         /*
          * NOTE:
          * 在拖动item时移除item。会导致后面新出现的item拖动动时发生跳至其他位置的BUG，故在这里特殊处理。
@@ -247,12 +264,16 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             }
         }
         _deletingItems.clear();
+    }else if(event->button() == Qt::RightButton){
+        if(isPicking())
+            stopPicking();
     }
 }
 
 void BbScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-    QGraphicsScene::mouseDoubleClickEvent(event);
+//    QGraphicsScene::mouseDoubleClickEvent(event);
+    // Note: 不要响应，否则快速画画的时候可能导致框选到新画的笔迹！-Gim
 }
 
 void BbScene::keyPressEvent(QKeyEvent *e)
@@ -520,30 +541,21 @@ QList<QPair<QString, QGraphicsItem *> > BbScene::backgrounds()
     return _backgrounds;
 }
 
-void BbScene::pickingItems(const QPointF &mousePos)
+void BbScene::updatePickerRect()
 {
     _pickerRect->setRect(
-                (std::min)(mousePos.x(),_mouseBeginPos.x()),
-                (std::min)(mousePos.y(),_mouseBeginPos.y()),
-                (std::abs)(mousePos.x()-_mouseBeginPos.x()),
-                (std::abs)(mousePos.y()-_mouseBeginPos.y())
+                (std::min)(_mousePos.x(),_pickerBeginPos.x()),
+                (std::min)(_mousePos.y(),_pickerBeginPos.y()),
+                (std::abs)(_mousePos.x()-_pickerBeginPos.x()),
+                (std::abs)(_mousePos.y()-_pickerBeginPos.y())
                 );
-    _pickerRect->show();
-    for(auto item: items()){
+}
 
-        // 忽略正在被移除的item。
-        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
-            continue;
-
-        IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
-        if(!itemIndex)
-            continue;
-
-        bool collided = item->collidesWithItem(_pickerRect);
-        item->setSelected(collided);
-
-        emit blackboard()->itemSelected(itemIndex,collided);
-    }
+void BbScene::checkItemsPicking()
+{
+    QPainterPath path;
+    path.addRect(_pickerRect->sceneBoundingRect());
+    setSelectionArea(path);
 }
 
 IItemIndex *BbScene::currentItem()
@@ -597,6 +609,32 @@ Qt::KeyboardModifiers BbScene::modifiers()
 
 }
 
+bool BbScene::isPicking()
+{
+    return _pickerTimer->isActive();
+}
+
+void BbScene::startPicking()
+{
+    updatePickerRect();
+    checkItemsPicking();
+    _pickerTimer->start();
+    _pickerRect->show();
+}
+
+void BbScene::onPicking()
+{
+    checkItemsPicking();
+}
+
+void BbScene::stopPicking()
+{
+    updatePickerRect();
+    checkItemsPicking();
+    _pickerTimer->stop();
+    _pickerRect->hide();
+}
+
 void BbScene::setItemPicking(bool picking)
 {
     for(auto item: items())
@@ -608,21 +646,21 @@ void BbScene::setItemPicking(bool picking)
         auto idx = dynamic_cast<IItemIndex*>(item);
         if(idx && !idx->isEditing())
         {
-            item->setFlag(QGraphicsItem::ItemIsMovable,picking);
-            item->setFlag(QGraphicsItem::ItemIsSelectable,picking);
-            item->setFlag(QGraphicsItem::ItemIsFocusable,picking);
+//            item->setFlag(QGraphicsItem::ItemIsMovable,picking);
+//            item->setFlag(QGraphicsItem::ItemIsSelectable,picking);
+//            item->setFlag(QGraphicsItem::ItemIsFocusable,picking);
         }
     }
 }
 
 void BbScene::onToolChanged(BbToolType previous)
 {
-    if(BBTT_Picker == previous)
-        setItemPicking(false);
+//    if(BBTT_Picker == previous)
+//        setItemPicking(false);
     if(_curItemIndex)
         _curItemIndex->toolDone(_mousePos);
-    if(BBTT_Picker == _toolType)
-        setItemPicking(true);
+//    if(BBTT_Picker == _toolType)
+//        setItemPicking(true);
 }
 
 IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
@@ -644,21 +682,20 @@ IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
 
 void BbScene::selectedAll()
 {
-    if(_toolType == BBTT_Picker){
+//    if(_toolType == BBTT_Picker){
+    for(auto item: items()){
 
-        for(auto item: items()){
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+            continue;
 
-            // 忽略正在被移除的item。
-            if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
-                continue;
+        IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
+        if(!itemIndex)
+            continue;
 
-            IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
-            if(!itemIndex)
-                continue;
-
-            item->setSelected(true);
-        }
+        item->setSelected(true);
     }
+//    }
 }
 
 void BbScene::deselectAll()
@@ -689,9 +726,9 @@ void BbScene::remove(IItemIndex *index)
         {
             item->clearFocus();
             item->setSelected(false);
-            item->setFlag(QGraphicsItem::ItemIsMovable,false);
-            item->setFlag(QGraphicsItem::ItemIsSelectable,false);
-            item->setFlag(QGraphicsItem::ItemIsFocusable,false);
+//            item->setFlag(QGraphicsItem::ItemIsMovable,false);
+//            item->setFlag(QGraphicsItem::ItemIsSelectable,false);
+//            item->setFlag(QGraphicsItem::ItemIsFocusable,false);
             item->setOpacity(0);
             item->setScale(0);
             item->setData(GRAPHICS_ITEM_DATA_KEY_DELETING,true);
@@ -707,7 +744,7 @@ void BbScene::remove(IItemIndex *index)
          * 鼠标是按下状态时，先加入待移除的列。在鼠标抬起时再移除。
          *      -Gim
          */
-        if(_mouseLeftButtonDown){
+        if(_mouseButtons != Qt::NoButton){
             _deletingItems << index;
         }else{
             if(index->toolType() == BBTT_Text){
@@ -732,9 +769,9 @@ void BbScene::add(IItemIndex *index)
         QGraphicsItem *item = dynamic_cast<QGraphicsItem *>(index);
         if(item)
         {
-            item->setFlag(QGraphicsItem::ItemIsMovable,_toolType == BBTT_Picker);
-            item->setFlag(QGraphicsItem::ItemIsSelectable,_toolType == BBTT_Picker);
-            item->setFlag(QGraphicsItem::ItemIsFocusable,_toolType == BBTT_Picker);
+            item->setFlag(QGraphicsItem::ItemIsMovable,true);
+            item->setFlag(QGraphicsItem::ItemIsSelectable,true);
+            item->setFlag(QGraphicsItem::ItemIsFocusable,true);
             QGraphicsScene::addItem(item);
             index->absolutize();
         }
@@ -799,7 +836,7 @@ void BbScene::readStream(QDataStream &stream)
 
 bool BbScene::isMouseLeftButtonDown()
 {
-    return _mouseLeftButtonDown;
+    return _mouseButtons & Qt::LeftButton;
 }
 
 BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height)

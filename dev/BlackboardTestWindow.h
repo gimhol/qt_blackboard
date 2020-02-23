@@ -112,6 +112,8 @@ private slots:
 
     void on_btnConnectionToggle_clicked();
 
+    void on_deselectedAll_clicked();
+
 private:
     Ui::BlackboardTestWindow *ui;
     QPointer<BlackboardConnector> _connector;

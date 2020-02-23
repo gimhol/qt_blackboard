@@ -256,7 +256,7 @@ signals:
     void moved();
     void resized(float scale);
     void scrolled(float x, float y);
-    void itemSelected(IItemIndex *index, bool selected);
+//    void itemSelected(IItemIndex *index, bool selected);
 
     void itemChanged(BBItemEventType eventType,IItemIndex *index);
     void multipleItemChanged(BBItemEventType eventType,IItemIndex *first);

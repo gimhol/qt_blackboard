@@ -851,12 +851,12 @@ border:none;
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="remove">
+            <widget class="QPushButton" name="deselectedAll">
              <property name="text">
-              <string>移除</string>
+              <string>取消选择</string>
              </property>
              <property name="shortcut">
-              <string>Del</string>
+              <string>Ctrl+D</string>
              </property>
             </widget>
            </item>
@@ -892,6 +892,16 @@ border:none;
             <widget class="QPushButton" name="repaint">
              <property name="text">
               <string>重绘</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="remove">
+             <property name="text">
+              <string>移除</string>
+             </property>
+             <property name="shortcut">
+              <string>Del</string>
              </property>
             </widget>
            </item>

@@ -31,15 +31,16 @@ protected:
     friend class Blackboard;
 
     BbToolType _toolType = BBTT_Pen;     // 当前工具类型
-    QPointF _mouseBeginPos;
+    QPointF _pickerBeginPos;
     QPointF _mousePos;
-    bool _mouseLeftButtonDown = false;
+    Qt::MouseButtons _mouseButtons;
     QGraphicsRectItem * _pickerRect = nullptr;
     IItemIndex * _curItemIndex = nullptr;
     Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
     QRectF _backgroundRect;
     QList<QPair<QString,QGraphicsItem*>> _backgrounds;
     QList<IItemIndex*> _deletingItems;
+    QTimer *_pickerTimer;
 public:
     BbScene(Blackboard *parent = Q_NULLPTR);
 
@@ -143,6 +144,11 @@ public:
 
     Qt::KeyboardModifiers modifiers();
 
+    bool isPicking();
+    void startPicking();
+    void onPicking();
+    void stopPicking();
+
     template<typename T>
     inline T *find(const std::string &lid)
     {
@@ -176,11 +182,7 @@ protected:
 
     virtual void keyReleaseEvent(QKeyEvent *e) override;
 
-    /**
-     * @brief pickingItems 框选画板上的item
-     * @param mousePos 鼠标位置
-     */
-    void pickingItems(const QPointF &mousePos);
+    void checkItemsPicking();
 
     void onToolChanged(BbToolType previous);
 
@@ -195,6 +197,7 @@ public:
     void emitItemMovedSignals();
 
     void setItemPicking(bool picking);
+    void updatePickerRect();
 };
 
 #endif // CANVASSCENE3_H

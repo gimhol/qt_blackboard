@@ -131,11 +131,6 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     ui->triangleBrushColor->setProperty("WhichColor",WhichColor_TriangleBrush);
     connect(ui->triangleBrushColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
 
-    connect(ui->blackboard,&Blackboard::itemSelected,[&](IItemIndex *index, bool selected){
-        if(selected)
-            ui->textBrowser->append(QString(QStringLiteral("选择: %1")).arg(index->id()));
-    });
-
     QPixmap pm(5,5);
     pm.fill("red");
     ui->blackboard->setCanvasSize(ui->blackboard->baseSize().width(),1000);
@@ -144,16 +139,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     ui->blackboard->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->blackboard->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    auto blackboard = ui->blackboard;
-    connect(blackboard,&QWidget::customContextMenuRequested,this,[blackboard](const QPoint &pos){
-        auto menu = blackboard->findChild<BbMenu*>("right_click_menu");
-        if(!menu){
-            menu = new BbMenu(blackboard);
-            menu->setAttribute(Qt::WA_DeleteOnClose);
-        }
-        menu->move(blackboard->mapToGlobal(pos));
-        menu->show();
-    });
+    new BbMenu(ui->blackboard);
     _connector = new BlackboardConnector(ui->blackboard);
 }
 
@@ -393,7 +379,6 @@ void BlackboardTestWindow::on_paste_clicked()
 
 void BlackboardTestWindow::on_selectedAll_clicked()
 {
-    blackboard()->setToolType(BBTT_Picker);
     blackboard()->selectedAll();
 }
 
@@ -612,4 +597,9 @@ void BlackboardTestWindow::on_btnConnectionToggle_clicked()
                     ui->leAddress->text(),
                     ui->lePort->text().toInt());
     }
+}
+
+void BlackboardTestWindow::on_deselectedAll_clicked()
+{
+    ui->blackboard->deselectAll();
 }
