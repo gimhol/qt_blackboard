@@ -57,18 +57,6 @@ public:
 
     void done();
 
-    QColor color();
-
-    void setColor(const QColor &color);
-
-    qreal penWidth();
-
-    qreal weight();
-
-    void setPenWidth(qreal width);
-
-    void setWeight(qreal weight);
-
     void repaint() override;
 
     bool straight();

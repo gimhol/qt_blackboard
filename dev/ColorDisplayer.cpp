@@ -7,6 +7,11 @@ ColorDisplayer::ColorDisplayer(QWidget *parent) : QWidget(parent)
 
 }
 
+QColor ColorDisplayer::color()
+{
+    return _color;
+}
+
 void ColorDisplayer::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
@@ -43,3 +48,4 @@ void ColorDisplayer::setColor(const QColor &color)
     _color = color;
     update();
 }
+

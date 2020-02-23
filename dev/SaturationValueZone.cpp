@@ -25,36 +25,40 @@ void SaturationValueZone::paintEvent(QPaintEvent *)
     QPainter painter(this);
 
     QColor baseColor = QColor::fromHsv(_hue,255,255);
-
+    painter.setPen(Qt::NoPen);
     painter.setBrush(baseColor);
-    painter.drawRect(0,0,width()-1,height());
+    painter.drawRect(0,0,width()-1,height()-1);
 
     QLinearGradient saturation(0,0,width(),height());
     saturation.setStart(0,0);
-    saturation.setFinalStop(width(),0);
+    saturation.setFinalStop(width()-1,0);
     saturation.setColorAt(1,QColor(255,255,255,255));
     saturation.setColorAt(0,QColor(255,255,255,0));
     painter.setBrush(saturation);
-    painter.drawRect(0,0,width()-1,height());
+    painter.drawRect(0,0,width()-1,height()-1);
 
-    QLinearGradient value(0,0,width()-1,height());
+    QLinearGradient value(0,0,width(),height());
     value.setStart(0,0);
-    value.setFinalStop(0,height());
+    value.setFinalStop(0,height()-1);
     value.setColorAt(0,QColor(0,0,0,0));
     value.setColorAt(1,QColor(0,0,0,255));
     painter.setBrush(value);
-    painter.drawRect(0,0,width()-1,height());
-
+    painter.drawRect(0,0,width()-1,height()-1);
 
     auto x = _cursorPos.x()*width();
     auto y = _cursorPos.y()*height();
 
+    painter.setPen(Qt::black);
     painter.setBrush(Qt::white);
     painter.drawEllipse(x-7,y-7,14,14);
 
     QColor color = QColor::fromHsv(_hue,255*(1-_cursorPos.x()),255*(1-_cursorPos.y()));
     painter.setBrush(color);
     painter.drawEllipse(x-5,y-5,10,10);
+
+    painter.setPen(Qt::black);
+    painter.setBrush(Qt::NoBrush);
+    painter.drawRect(0,0,width()-1,height()-1);
 }
 
 void SaturationValueZone::mousePressEvent(QMouseEvent *event)

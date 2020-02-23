@@ -55,51 +55,6 @@ BbItemTextData::BbItemTextData(BbItemData::CoordMode mode):
     tooltype = BBTT_Text;
 }
 
-void BbItemTextData::writeStream(QDataStream &stream)
-{
-    //先写入基础数据
-    BbItemData::writeStream(stream);
-
-    //再写入文本数据
-    stream << font.family()
-           << font.pointSizeF()
-           << font.weight()
-           << font.italic()
-           << font.bold()
-           << color.rgba()
-           << text << prevText;
-}
-
-void BbItemTextData::readStream(QDataStream &stream)
-{
-    //先读取基础数据
-    BbItemData::readStream(stream);
-
-    //再读取文本数据
-    QString fontFamily;
-    qreal pointSizeF;
-    int weight;
-    bool italic, bold;
-    QRgb rgba;
-
-    stream >> fontFamily
-            >> pointSizeF
-            >> weight
-            >> italic
-            >> bold
-            >> rgba
-            >> text
-            >> prevText;
-
-    empty = text.length() == 0;
-
-    font.setFamily(fontFamily);
-    font.setPointSizeF(pointSizeF);
-    font.setWeight(weight);
-    font.setItalic(italic);
-    font.setBold(bold);
-    color.setRgb(rgba);
-}
 void BbItemTextData::setPointWeight(qreal weight)
 {
     qreal pointSize = minPointSize + weight * (maxPointSize - minPointSize);
@@ -109,4 +64,32 @@ void BbItemTextData::setPointWeight(qreal weight)
 qreal BbItemTextData::pointWeight()
 {
     return (font.pointSizeF()-minPointSize)/(maxPointSize-minPointSize);
+}
+
+QJsonObject BbItemTextData::toJsonObject()
+{
+    auto jobj = BbItemData::toJsonObject();
+    jobj["family"]      = font.family();
+    jobj["point_size"]  = font.pointSizeF();
+    jobj["weight"]      = font.weight();
+    jobj["italic"]      = font.italic();
+    jobj["bold"]        = font.bold();
+    jobj["color"]       = int(color.rgba());
+    jobj["text"]        = text;
+    jobj["prev_text"]   = prevText;
+    return jobj;
+}
+
+void BbItemTextData::fromJsonObject(QJsonObject jobj)
+{
+    BbItemData::fromJsonObject(jobj);
+    font.setFamily(jobj["family"].toString());
+    font.setPointSizeF(jobj["point_size"].toDouble());
+    font.setWeight(jobj["weight"].toInt());
+    font.setItalic(jobj["italic"].toBool());
+    font.setBold(jobj["bold"].toBool());
+    color.setRgba(QRgb(jobj["color"].toInt()));
+    text = jobj["text"].toString();
+    prevText = jobj["prev_text"].toString();
+    empty = text.length() == 0;
 }

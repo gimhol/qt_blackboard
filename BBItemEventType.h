@@ -40,5 +40,7 @@ enum BBItemEventType
     BBIET_ellipseResized,  // TODO: 支持对椭圆进行编辑，支持八方向拉伸
     BBIET_triangleChanging, // TODO: 支持对三角形进行编辑，允许拖动三个顶点的任意一个
     BBIET_triangleChanged,  // TODO: 支持对三角形进行编辑，允许拖动三个顶点的任意一个
+
+    BBIET_max
 };
 #endif // BBITEMEVENTTYPE_H

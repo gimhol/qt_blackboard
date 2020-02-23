@@ -6,7 +6,10 @@ static qreal minPenWidth = 1.1;
 
 static qreal maxPenWidth = 30;
 
-static QPen defaultPen = QPen(defaultPenColor,minPenWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+static QPen defaultPen = QPen(defaultPenColor,minPenWidth,
+                              Qt::SolidLine,
+                              Qt::SquareCap,
+                              Qt::MiterJoin);
 
 static QColor defaultBrushColor = Qt::transparent;
 
@@ -73,11 +76,14 @@ void BbItemRectData::setDefaultBrush(const QBrush &value)
 }
 
 BbItemRectData::BbItemRectData(CoordMode mode):
-    BbItemData(mode),
-    pen(defaultPen),
-    brush(defaultBrush)
+    BbItemData(mode)
 {
     tooltype = BBTT_Rectangle;
+    needPen = true;
+    needBrush = true;
+    needSize = true;
+    pen = defaultPen;
+    brush = defaultBrush;
 }
 
 qreal BbItemRectData::weight()
@@ -90,34 +96,8 @@ void BbItemRectData::setWeight(qreal weight)
     pen.setWidthF(minPenWidth + weight * (maxPenWidth - minPenWidth));
 }
 
-void BbItemRectData::writeStream(QDataStream &stream)
+void BbItemRectData::fromJsonObject(QJsonObject jobj)
 {
-    BbItemData::writeStream(stream);
-
-    stream << pen.widthF()
-           << pen.color().rgba()
-           << static_cast<short>(pen.style())
-           << brush.color().rgba()
-           << size.width()
-           << size.height();
-}
-
-void BbItemRectData::readStream(QDataStream &stream)
-{
-    BbItemData::readStream(stream);
-    qreal penWidth;
-    QRgb penRgba,brushRgba;
-    short penStyle;
-    qreal width,height;
-
-    stream >> penWidth >> penRgba >> penStyle >> brushRgba >> width >> height;
-
-    pen.setWidthF(penWidth);
-    pen.setStyle(static_cast<Qt::PenStyle>(penStyle));
-    pen.setColor(QColor::fromRgba(penRgba));
-
-    brush.setColor(QColor::fromRgba(brushRgba));
-    size.setHeight(height);
-    size.setWidth(width);
-    empty = !size.isEmpty();
+    BbItemData::fromJsonObject(jobj);
+    empty = size.isNull();
 }

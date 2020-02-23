@@ -138,7 +138,6 @@ public:
     virtual QPointF position();
     virtual qreal positionX();
     virtual qreal positionY();
-
     /**
      * @brief last 前一个item
      *      仅应该在BbScene的enumSelected与enumAll中被重置，

@@ -31,48 +31,11 @@ void BbItemStraightData::setDefaultPen(const QPen &value)
 }
 
 BbItemStraightData::BbItemStraightData(CoordMode mode):
-    BbItemData(mode),
-    pen(defaultPen)
+    BbItemData(mode)
 {
     tooltype = BBTT_Straight;
-}
-
-void BbItemStraightData::writeStream(QDataStream &stream)
-{
-    BbItemData::writeStream(stream);
-
-    stream << pen.widthF()
-           << pen.color().rgba()
-           << static_cast<short>(pen.style())
-           << a.x() << a.y()
-           << b.x() << b.y();
-}
-
-void BbItemStraightData::readStream(QDataStream &stream)
-{
-    BbItemData::readStream(stream);
-
-    qreal penWidth;
-    QRgb rgba;
-    short penStyle;
-    qreal ax,ay,bx,by;
-
-    stream >> penWidth
-           >> rgba
-           >> penStyle
-           >> ax >> ay
-           >> bx >> by;
-
-    empty = false;
-
-    pen.setWidthF(penWidth);
-    pen.setStyle(static_cast<Qt::PenStyle>(penStyle));
-    pen.setColor(rgba);
-
-    a.setX(ax);
-    a.setY(ay);
-    b.setX(bx);
-    b.setY(by);
+    needPen = true;
+    pen = defaultPen;
 }
 
 void BbItemStraightData::setWeight(qreal weight)
@@ -83,4 +46,24 @@ void BbItemStraightData::setWeight(qreal weight)
 qreal BbItemStraightData::weight()
 {
     return (pen.widthF() - minWidth) / (maxWidth - minWidth);
+}
+
+QJsonObject BbItemStraightData::toJsonObject()
+{
+    auto jobj = BbItemData::toJsonObject();
+    jobj["a_x"] = a.x();
+    jobj["a_y"] = a.y();
+    jobj["b_x"] = b.x();
+    jobj["b_y"] = b.y();
+    return jobj;
+}
+
+void BbItemStraightData::fromJsonObject(QJsonObject jobj)
+{
+    BbItemData::fromJsonObject(jobj);
+    a.setX(jobj["a_x"].toDouble());
+    a.setY(jobj["a_y"].toDouble());
+    b.setX(jobj["b_x"].toDouble());
+    b.setY(jobj["b_y"].toDouble());
+    empty = false;
 }

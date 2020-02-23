@@ -49,7 +49,7 @@ background-color:#888888;
 border-radius:3px;
 padding:2px 0px;
 }
-#graphicsView{
+#blackboard{
 background-color:#555557;
 border-radius:3px;
 border:none;
@@ -1010,7 +1010,14 @@ border:none;
       <number>3</number>
      </property>
      <item>
-      <widget class="Blackboard" name="graphicsView"/>
+      <widget class="Blackboard" name="blackboard">
+       <property name="baseSize">
+        <size>
+         <width>619</width>
+         <height>602</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QTextBrowser" name="textBrowser">

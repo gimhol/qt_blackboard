@@ -1,5 +1,6 @@
 INCLUDEPATH += $$PWD
 HEADERS += \
+    $$PWD/BbMenu.h \
     $$PWD/BlackboardClient.h \
     $$PWD/BlackboardConnector.h \
     $$PWD/BlackboardNetwork.h \
@@ -14,6 +15,7 @@ HEADERS += \
     $$PWD/AlphaBar.h \
     $$PWD/ColorDisplayer.h
 SOURCES += \
+    $$PWD/BbMenu.cpp \
     $$PWD/BlackboardClient.cpp \
     $$PWD/BlackboardConnector.cpp \
     $$PWD/BlackboardServer.cpp \

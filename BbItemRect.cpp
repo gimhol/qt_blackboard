@@ -7,63 +7,61 @@
 
 BbItemRect::BbItemRect():
     QGraphicsRectItem(),
-    _myData(new BbItemRectData())
+    _data(new BbItemRectData())
 {
    init();
 }
 
 BbItemRect::BbItemRect(BbItemData *data):
     QGraphicsRectItem(),
-    _myData(dynamic_cast<BbItemRectData*>(data))
+    _data(dynamic_cast<BbItemRectData*>(data))
 {
     init();
 }
 
 BbItemRect::~BbItemRect()
 {
-    if(_myData){
-        delete _myData;
-        _myData = nullptr;
+    if(_data){
+        delete _data;
+        _data = nullptr;
     }
 }
 
 void BbItemRect::init()
 {
-    if(!_myData)
+    if(!_data)
     {
-        _myData = new BbItemRectData();
+        _data = new BbItemRectData();
     }
-    setPen(_myData->pen);
-    setBrush(_myData->brush);
+    setPen(Qt::NoPen);
+    setBrush(Qt::NoBrush);
 }
 
 void BbItemRect::repaint()
 {
-    setPen(_myData->pen);
-    setBrush(_myData->brush);
-    qreal x = _myData->x;
-    qreal y = _myData->y;
-    QSizeF size = _myData->size;
+    qreal x = _data->x;
+    qreal y = _data->y;
+    QSizeF size = _data->size;
     setPos(x,y);
     setRect(0,0,size.width(),size.height());
     setSelected(false);
     setEnabled(true);
-    setZValue(_myData->z);
+    setZValue(_data->z);
     update();
 }
 
 void BbItemRect::writeStream(QDataStream &stream)
 {
-    _myData->x = x();
-    _myData->y = y();
-    _myData->z = z();
-    _myData->size = rect().size();
-    _myData->writeStream(stream);
+    _data->x = x();
+    _data->y = y();
+    _data->z = z();
+    _data->size = rect().size();
+    _data->writeStream(stream);
 }
 
 void BbItemRect::readStream(QDataStream &stream)
 {
-    _myData->readStream(stream);
+    _data->readStream(stream);
     absolutize();
     repaint();
 }
@@ -75,8 +73,8 @@ void BbItemRect::begin(const QPointF &point)
     _beginX = point.x();
     _beginY = point.y();
     setPos(point);
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
 }
 void BbItemRect::draw(const QPointF &point)
 {
@@ -93,56 +91,18 @@ void BbItemRect::draw(const QPointF &point)
     qreal l = std::min(_dragX,_beginX);
     qreal t = std::min(_dragY,_beginY);
     setPos(l,t);
-    _myData->updatePostion(this);
+    _data->updatePostion(this);
     setRect(0,0,std::abs(_dragX-_beginX),std::abs(_dragY-_beginY));
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
-    _myData->empty = !size().isEmpty();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
+    _data->empty = !rect().size().isEmpty();
 }
 
 void BbItemRect::done()
 {
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
     _editing = false;
-}
-
-void BbItemRect::setPenColor(const QColor &color)
-{
-    _myData->pen.setColor(color);
-    setPen(_myData->pen);
-}
-
-void BbItemRect::setWeight(const qreal &weight)
-{
-    _myData->setWeight(weight);
-    setPen(_myData->pen);
-}
-
-void BbItemRect::setBrushColor(const QColor &color)
-{
-    _myData->brush.setColor(color);
-    setBrush(_myData->brush);
-}
-
-QSizeF BbItemRect::size()
-{
-    return rect().size();
-}
-
-QColor BbItemRect::penColor()
-{
-    return _myData->pen.color();
-}
-
-QColor BbItemRect::brushColor()
-{
-    return _myData->brush.color();
-}
-
-qreal BbItemRect::weight()
-{
-    return _myData->weight();
 }
 
 QPointF BbItemRect::beginPos()
@@ -157,7 +117,7 @@ QPointF BbItemRect::dragPos()
 
 BbItemData *BbItemRect::data()
 {
-    return _myData;
+    return _data;
 }
 
 void BbItemRect::toolDown(const QPointF &pos)
@@ -167,9 +127,9 @@ void BbItemRect::toolDown(const QPointF &pos)
     updatePrevZ();
 
     auto settings = blackboard()->toolSettings<BbItemRectData>(BBTT_Rectangle);
-    setPenColor(settings->pen.color());
-    setBrushColor(settings->brush.color());
-    setWeight(settings->weight());
+    _data->pen = settings->pen;
+    _data->brush = settings->brush;
+    _data->setWeight(settings->weight());
 
     bbScene()->setCurrentItem(this);
     begin(pos);
@@ -202,23 +162,23 @@ void BbItemRect::modifiersChanged(Qt::KeyboardModifiers modifiers)
 
 void BbItemRect::absolutize()
 {
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    if(_data->mode == BbItemData::CM_PERCENTAGE)
     {
-        _myData->mode = BbItemData::CM_ABSOLUTE;
+        _data->mode = BbItemData::CM_ABSOLUTE;
         qreal ratio = bbScene()->width() / 100;
-        if(_myData->isPositionValid())
+        if(_data->isPositionValid())
         {
-            _myData->x *= ratio;
-            _myData->y *= ratio;
+            _data->x *= ratio;
+            _data->y *= ratio;
         }
-        if(_myData->isPrevPositionValid())
+        if(_data->isPrevPositionValid())
         {
-            _myData->prevX *= ratio;
-            _myData->prevY *= ratio;
+            _data->prevX *= ratio;
+            _data->prevY *= ratio;
         }
-        if(_myData->size.isValid())
+        if(_data->size.isValid())
         {
-            _myData->size *= ratio;
+            _data->size *= ratio;
         }
     }
 }
@@ -268,8 +228,23 @@ void BbItemRect::toNinety(const QPointF &point, qreal &outX, qreal &outY)
 
 void BbItemRect::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    auto penW = _data->pen.widthF();
+    auto w = rect().width();
+    auto h = rect().height();
+    QRectF r;
     painter->setRenderHint(QPainter::Antialiasing, true);
-    QGraphicsRectItem::paint(painter,option,widget);
+    if(w > penW*2 && h > penW*2){
+        painter->setPen(_data->pen);
+        painter->setBrush(_data->brush);
+        r.setRect(penW/2, penW/2, w-penW, h-penW);
+    }else{
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(_data->pen.color());
+        r.setRect(0,0,w,h);
+    }
+    painter->drawRect(r);
+
+    QGraphicsRectItem::paint(painter,option,widget); // 仅用于绘制选取的虚线。
 }
 
 

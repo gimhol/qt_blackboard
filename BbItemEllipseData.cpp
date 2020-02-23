@@ -72,11 +72,14 @@ void BbItemEllipseData::setDefaultBrush(const QBrush &value)
     defaultBrush = value;
 }
 BbItemEllipseData::BbItemEllipseData(CoordMode mode):
-    BbItemData(mode),
-    pen(defaultPen),
-    brush(defaultBrush)
+    BbItemData(mode)
 {
     tooltype = BBTT_Ellipse;
+    needPen = true;
+    needBrush = true;
+    needSize = true;
+    pen = defaultPen;
+    brush = defaultBrush;
 }
 
 qreal BbItemEllipseData::weight()
@@ -89,34 +92,8 @@ void BbItemEllipseData::setWeight(qreal weight)
     pen.setWidthF(minPenWidth + weight * (maxPenWidth - minPenWidth));
 }
 
-void BbItemEllipseData::writeStream(QDataStream &stream)
+void BbItemEllipseData::fromJsonObject(QJsonObject jobj)
 {
-    BbItemData::writeStream(stream);
-
-    stream << pen.widthF()
-           << pen.color().rgba()
-           << static_cast<short>(pen.style())
-           << brush.color().rgba()
-           << size.width()
-           << size.height();
-}
-
-void BbItemEllipseData::readStream(QDataStream &stream)
-{
-    BbItemData::readStream(stream);
-    qreal penWidth;
-    QRgb penRgba,brushRgba;
-    short penStyle;
-    qreal width,height;
-
-    stream >> penWidth >> penRgba >> penStyle >> brushRgba >> width >> height;
-
-    pen.setWidthF(penWidth);
-    pen.setStyle(static_cast<Qt::PenStyle>(penStyle));
-    pen.setColor(QColor::fromRgba(penRgba));
-
-    brush.setColor(QColor::fromRgba(brushRgba));
-    size.setHeight(height);
-    size.setWidth(width);
-    empty = !size.isEmpty();
+    BbItemData::fromJsonObject(jobj);
+    empty = size.isNull();
 }

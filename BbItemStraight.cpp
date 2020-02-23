@@ -47,8 +47,8 @@ void BbItemStraight::toolDown(const QPointF &pos)
     updatePrevZ();
 
     auto settings = blackboard()->toolSettings<BbItemStraightData>(BBTT_Straight);
-    setColor(settings->pen.color());
-    setWeight(settings->weight());
+    _myData->pen = settings->pen;
+    _myData->setWeight(settings->weight());
 
     begin(pos);
     setFortyFive(bbScene()->modifiers()&Qt::ShiftModifier);
@@ -152,17 +152,14 @@ void BbItemStraight::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     QGraphicsRectItem::paint(painter,option,widget);
     if(!_myData->empty)
     {
-        painter->setBrush(Qt::NoBrush);
-        painter->setPen(_myData->pen);
         painter->setRenderHint(QPainter::Antialiasing);
-
         if(_myData->a == _myData->b)
         {
             qreal halfPenW = 0.5 * _myData->pen.widthF();
             painter->setBrush(QBrush(_myData->pen.color()));
             painter->setPen(Qt::NoPen);
-            painter->drawEllipse(int(halfPenW),
-                                 int(halfPenW),
+            painter->drawEllipse(int(-halfPenW),
+                                 int(-halfPenW),
                                  int(2*halfPenW),
                                  int(2*halfPenW));
         }
@@ -254,29 +251,6 @@ QPointF BbItemStraight::a()
 QPointF BbItemStraight::b()
 {
     return _myData->b;
-}
-
-QColor BbItemStraight::color(){
-    return _myData->pen.color();
-}
-
-void BbItemStraight::setColor(const QColor &color){
-    _myData->pen.setColor(color);
-}
-
-qreal BbItemStraight::penWidth()
-{
-    return _myData->pen.widthF();
-}
-
-qreal BbItemStraight::weight()
-{
-    return _myData->weight();
-}
-
-void BbItemStraight::setWeight(qreal weight)
-{
-    _myData->setWeight(weight);
 }
 
 void BbItemStraight::writeStream(QDataStream &stream)

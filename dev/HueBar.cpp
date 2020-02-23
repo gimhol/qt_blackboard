@@ -8,12 +8,11 @@ HueBar::HueBar(QWidget *parent) : QWidget(parent)
 
 }
 
-void HueBar::paintEvent(QPaintEvent *event)
+void HueBar::paintEvent(QPaintEvent *)
 {
-    Q_UNUSED(event);
-
     QPainter painter(this);
 
+    painter.setPen(Qt::NoPen);
     QLinearGradient linearGradient(0,0,width(),height());
     linearGradient.setStart(0,0);
     linearGradient.setFinalStop(0,height());
@@ -27,8 +26,12 @@ void HueBar::paintEvent(QPaintEvent *event)
     painter.setBrush(linearGradient);
     painter.drawRect(0,0,width()-1,height()-1);
 
+    painter.setPen(Qt::black);
     painter.setBrush(QColor::fromHsv(_hue,255,255));
     painter.drawRect(1,height()*_hue/360-3,width()-3,6);
+
+    painter.setBrush(Qt::NoBrush);
+    painter.drawRect(0,0,width()-1,height()-1);
 }
 
 void HueBar::mousePressEvent(QMouseEvent *event)

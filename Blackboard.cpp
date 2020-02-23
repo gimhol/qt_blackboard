@@ -230,30 +230,19 @@ void Blackboard::resizeEvent(QResizeEvent *event)
     if(dptr->orginalSize.width() == -1)
     {
         dptr->orginalSize = event->size();
-        scene()->setSceneRect(0,0, dptr->canvasSize.width(), dptr->canvasSize.height());
+//        scene()->setSceneRect(0,0, dptr->canvasSize.width(), dptr->canvasSize.height());
     }
     else
     {
-        qreal orginalSizeRatio = qreal(dptr->orginalSize.width()) / dptr->orginalSize.height();
-
-        qreal eventSizeRatio = qreal(event->size().width()) / event->size().height();
-
-        if(eventSizeRatio > orginalSizeRatio)
-        {  // 被拉宽
-            dptr->scaleRatio = qreal(event->size().height()) / dptr->orginalSize.height();
-        }
-        else
-        {  // 被拉高
-            dptr->scaleRatio = qreal(event->size().width()) / dptr->orginalSize.width();
-        }
+        dptr->scaleRatio = qreal(event->size().width()) / dptr->orginalSize.width();
 
         resetTransform();
 
         scale(dptr->scaleRatio,dptr->scaleRatio);
 
-        scene()->setSceneRect(0,0, dptr->canvasSize.width(), dptr->canvasSize.height());
+//        scene()->setSceneRect(0,0, dptr->canvasSize.width(), dptr->canvasSize.height());
 
-        setScroll(dptr->scrollValue.x(),dptr->scrollValue.y());
+//        setScroll(dptr->scrollValue.x(),dptr->scrollValue.y());
 
         emit resized(float(dptr->scaleRatio));
     }
@@ -353,13 +342,6 @@ void Blackboard::setCanvasSize(int width, int height)
 
     dptr->canvasSize.setWidth(width);
     dptr->canvasSize.setHeight(height);
-}
-
-void Blackboard::setControlEnable(bool enable)
-{
-    scene()->setControlEnable(enable);
-
-    setAttribute(Qt::WA_TransparentForMouseEvents, !enable);
 }
 
 void Blackboard::removeSelectedItems()

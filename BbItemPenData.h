@@ -2,7 +2,6 @@
 #define CITEMPENDATA_H
 
 #include "BbItemData.h"
-#include <QPen>
 
 /**
  * @brief The BbItemPenData class
@@ -19,11 +18,6 @@ public:
     static void setDefaultPen(const QPen &value);
 
     /**
-     * @brief pen 笔的样式
-     */
-    QPen pen;
-
-    /**
      * @brief coords 轨迹的点，[x0,y0,x1,y1...]
      */
     QList<qreal> coords;
@@ -34,23 +28,15 @@ public:
      */
     explicit BbItemPenData(CoordMode mode = CM_ABSOLUTE);
 
-    /**
-     * @brief writeStream 从数据流读取
-     * @param stream 数据流
-     */
-    virtual void writeStream(QDataStream &stream) override;
-
-    /**
-     * @brief readStream 写入数据流
-     * @param stream 数据流
-     */
-    virtual void readStream(QDataStream &stream) override;
-
     void setColor(const QColor &color);
 
-    void setWeight(qreal weight);
+    void setWeight(qreal weight) override;
 
-    qreal weight();
+    qreal weight() override;
+
+    virtual QJsonObject toJsonObject() override;
+
+    virtual void fromJsonObject(QJsonObject jobj) override;
 };
 
 #endif // CITEMPENDATA_H

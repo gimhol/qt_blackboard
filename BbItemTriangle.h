@@ -11,7 +11,7 @@ class NSB_BLACKBOARD_EXPORT BbItemTriangle: public QGraphicsRectItem, public ISt
 {
     BB_HIDE_POS_SETTER
 protected:
-    BbItemTriangleData * _myData;
+    BbItemTriangleData * _data;
 
     QRectF _rect;
 
@@ -39,20 +39,6 @@ public:
     unsigned char step();
 
     QPointF point(int index);
-
-    QColor penColor();
-
-    void setPenColor(const QColor &penColor);
-
-    QColor brushColor();
-
-    void setBrushColor(const QColor &color);
-
-    qreal penWidth();
-
-    qreal weight();
-
-    void setWeight(qreal weight);
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) override;
 
