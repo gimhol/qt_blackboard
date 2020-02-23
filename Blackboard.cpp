@@ -721,6 +721,10 @@ void Blackboard::tabletEvent(QTabletEvent *event)
     }
     case QEvent::TabletMove:
     {
+        static QPoint p;
+        if(p == event->pos())
+            break;
+        p = event->pos();
         onMouseMove(event->pos());
         QMouseEvent mouseEvent(QEvent::MouseMove,
                     event->pos(),
