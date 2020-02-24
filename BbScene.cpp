@@ -272,8 +272,10 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 void BbScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-//    QGraphicsScene::mouseDoubleClickEvent(event);
-    // Note: 不要响应，否则快速画画的时候可能导致框选到新画的笔迹！-Gim
+    // Note: 在非选择器状态下，不要响应，否则快速画画的时候可能导致框选到新画的笔迹！-Gim
+    if(toolType() == BBTT_Picker) // Picker双击文本实现文本再次编辑。
+        QGraphicsScene::mouseDoubleClickEvent(event);
+
 }
 
 void BbScene::keyPressEvent(QKeyEvent *e)
