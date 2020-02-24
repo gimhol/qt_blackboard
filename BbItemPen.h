@@ -11,8 +11,8 @@ class BbItemPenData;
 class NSB_BLACKBOARD_EXPORT BbItemPen : public QGraphicsRectItem, public IStreamWR, public IItemIndex{
     BB_HIDE_POS_SETTER
 protected:
-#ifdef SAVE_TO_PIXMAP_WHEN_DONE
-    QPixmap *_pixmap = nullptr;
+#ifdef NSB_SAVE_PEN_TO_PIXMAP_WHEN_DONE
+    QPixmap _pixmap;
 #endif
 
 #ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
@@ -21,7 +21,7 @@ protected:
     float _distances[3];
 #endif
 
-    QPainterPath *_path = nullptr;
+    QPainterPath _path;
 
     QList<QPointF> _changed;
 
@@ -32,8 +32,8 @@ protected:
     /*直线相关的变量*/
     bool _straight = false;     // 是否开启了直线模式。
 
-    QPointF _straightLineFrom = QPointF(-999999,-999999);    // 直线的终点。
-    QPointF _straightLineTo = QPointF(-999999,-999999);    // 直线的终点。
+    QPointF _straightFrom = QPointF(-999999,-999999);  // 直线的起点。
+    QPointF _straightTo = QPointF(-999999,-999999);    // 直线的终点。
     QPointF _mousePos;
     bool _editing = false;
 public:

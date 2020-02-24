@@ -54,18 +54,6 @@ BbItemPen::~BbItemPen()
         delete _data;
         _data = nullptr;
     }
-
-    if(_path){
-        delete _path;
-        _path = nullptr;
-    }
-
-#ifdef SAVE_TO_PIXMAP_WHEN_DONE
-    if(_pixmap){
-        delete _pixmap;
-        _pixmap = nullptr;
-    }
-#endif
 }
 
 QList<QPointF> *BbItemPen::changed(){ return &_changed ;}
@@ -73,51 +61,52 @@ QList<QPointF> *BbItemPen::changed(){ return &_changed ;}
 bool BbItemPen::isEmpty() { return _data->empty; }
 
 void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
-    if(_path != nullptr){
+    if(!_path.isEmpty()){
         painter->setRenderHint(QPainter::Antialiasing, true);
-        if((!_straight || _straightLineFrom == _straightLineTo) &&
-            _data->coords.length() == 2){
-            auto halfPenW = 0.5 * _data->pen.widthF();
-            painter->setPen(Qt::NoPen);
-            painter->setBrush(_data->pen.color());
-            QRectF rect(-halfPenW,-halfPenW,2*halfPenW,2*halfPenW);
-            painter->drawEllipse(rect);
-        }else{
-            painter->setPen(_data->pen);
-            painter->setBrush(Qt::NoBrush);
-            painter->drawPath(*_path);
-        }
-        if(_straight && _straightLineFrom.x() > -999998){
-            painter->drawLine(_straightLineFrom, _straightLineTo);
-        }
+        painter->setPen(_data->pen);
+        painter->setBrush(Qt::NoBrush);
+        painter->drawPath(_path);
     }
-#ifdef SAVE_TO_PIXMAP_WHEN_DONE
-    if(_pixmap != nullptr){
-        int width = rect().width();
-        int height = rect().height();
-        painter->setRenderHint(QPainter::HighQualityAntialiasing, true);
-        painter->drawPixmap(0,0,width,height,*_pixmap);
+    else if(!_straight || (_straight && _straightFrom == _straightTo)){ // draw a dot.
+        auto halfPenW = 0.5 * _data->pen.widthF();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(_data->pen.color());
+        QRectF rect(-halfPenW,-halfPenW,2*halfPenW,2*halfPenW);
+        painter->drawEllipse(rect);
+    }
+    if(_straight && _straightFrom != _straightTo){ // draw a straight line
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setPen(_data->pen);
+        painter->setBrush(Qt::NoBrush);
+        painter->drawLine(_straightFrom, _straightTo);
+    }
+#ifdef NSB_SAVE_PEN_TO_PIXMAP_WHEN_DONE
+    if(!_pixmap.isNull()){  // draw a finished pixmap
+        auto w = int(rect().width());
+        auto h = int(rect().height());
+        auto halfPenW = int(_data->pen.widthF()/2);
+        painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+        painter->drawPixmap(-halfPenW,-halfPenW,w,h,_pixmap);
     }
 #endif
-
     QGraphicsRectItem::paint(painter,option,widget);
 }
 
 void BbItemPen::penDown(const QPointF &point){
+#ifdef QT_DEBUG
+    qInfo() << __FUNCTION__ << point;
+#endif
     _editing = true;
     setPos(point);
     _data->empty = false;
-    if(_path == nullptr)
-    {
-        _path = new QPainterPath();
-    }
-    _path->moveTo(0,0);
+    _path.moveTo(0,0);
     _mousePos = point;
     addPointToPath(point);
     setRect(_rect);
     if(_straight){
-        _straightLineFrom = _mousePos - point;
-        _straightLineTo = _straightLineFrom;
+        _straightFrom = _mousePos - point;
+        _straightTo = _straightFrom;
     }
     update();
     _data->updatePostion(this);
@@ -126,6 +115,9 @@ void BbItemPen::penDown(const QPointF &point){
 
 void BbItemPen::penDraw(const QPointF &point)
 {
+#ifdef QT_DEBUG
+    qInfo() << __FUNCTION__ << point;
+#endif
     setStraight(false);
 
     _changed.clear();
@@ -144,6 +136,9 @@ void BbItemPen::penDraw(const QPointF &point)
 
 void BbItemPen::penStraighting(const QPointF &point)
 {
+#ifdef QT_DEBUG
+    qInfo() << __FUNCTION__ << point;
+#endif
     setStraight(true);
     _changed.clear();
     straightLineDragging(point);
@@ -153,66 +148,55 @@ void BbItemPen::penStraighting(const QPointF &point)
 
 void BbItemPen::done()
 {
+#ifdef QT_DEBUG
+    qInfo() << __FUNCTION__;
+#endif
+
     _editing = false;
     _data->updatePostion(this);
     _data->updatePrevPostion();
-#ifdef SAVE_TO_PIXMAP_WHEN_DONE
 
+#ifdef NSB_SAVE_PEN_TO_PIXMAP_WHEN_DONE
     do{
-        if(_path == nullptr){
+        if(!blackboard())
             break;
-        }
-        BlackboardScene *canvasScene = dynamic_cast<BlackboardScene *>(scene());
-        if(!canvasScene){
-
-            qDebug() << "not a cavnasScene!";
-            break;
-        }
-        QList <QGraphicsView *> views = canvasScene->views();
-
-        if(views.isEmpty()){
-            break;
-        }
-
-        Blackboard *canvasView = dynamic_cast<Blackboard *>(views[0]);
-
-        if( !canvasView ){
-            qDebug() << "not a canvasView!";
-            break;
-        }
-        float pixmapScale = canvasView->scaleRatio();
-
-        int width = (int)(pixmapScale * rect().width());
-        int height = (int)(pixmapScale * rect().height());
-
-        _pixmap = new QPixmap(width,height);
-
-        _pixmap->fill(Qt::transparent);
-
-        QPainter painter(_pixmap);
-
-        painter.scale(pixmapScale,pixmapScale);
-
-        painter.setPen(_myData->pen);
-        painter.setBrush(Qt::NoBrush);
+        auto scale = 4; // 倍数绘制, 保证放大后没那么模糊。但在放得过大得情况下无效。
+        auto width = int(scale * rect().width());
+        auto height = int(scale * rect().height());
+        auto halfPenW = _data->pen.widthF()/2;
+        _pixmap = QPixmap(width,height);
+        _pixmap.fill(Qt::transparent);
+        QPainter painter(&_pixmap);
         painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
-        painter.drawPath(*_path);
+        painter.translate(scale*halfPenW,
+                          scale*halfPenW);
+        painter.scale(scale,scale);
 
-        delete _path;
-        _path = nullptr;
+        if(_path.isEmpty()){
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(_data->pen.color());
+            QRectF rect(-halfPenW,-halfPenW,2*halfPenW,2*halfPenW);
+            painter.drawEllipse(rect);
+        }
+        else{
+            painter.setPen(_data->pen);
+            painter.setBrush(Qt::NoBrush);
+            painter.drawPath(_path);
+        }
+        _path.clear();
         update();
-
     }while(false);
 #endif
+
 }
 
 void BbItemPen::straightLineDragging(const QPointF &point)
 {
-    _straightLineTo.setX(point.x() - pos().x());
-    _straightLineTo.setY(point.y() - pos().y());
-    if(_straightLineFrom.x() < -999998)
+    _straightTo.setX(point.x() - pos().x());
+    _straightTo.setY(point.y() - pos().y());
+    if(_straightFrom.x() < -999998)
     {
-        _straightLineFrom = _mousePos - pos();
+        _straightFrom = _mousePos - pos();
     }
 
     qreal halfPenW = 0.5 * _data->pen.widthF();
@@ -222,17 +206,17 @@ void BbItemPen::straightLineDragging(const QPointF &point)
     qreal newTop = std::min(point.y(), oldTop);
 
 
-    _straightLineTo += QPointF(oldLeft - newLeft,oldTop - newTop);
-    _straightLineFrom += QPointF(oldLeft - newLeft,oldTop - newTop);
-    _path->translate(oldLeft - newLeft,oldTop - newTop);
+    _straightTo += QPointF(oldLeft - newLeft,oldTop - newTop);
+    _straightFrom += QPointF(oldLeft - newLeft,oldTop - newTop);
+    _path.translate(oldLeft - newLeft,oldTop - newTop);
     setPos(newLeft, newTop);
 
-    QRectF pathRect = _path->boundingRect();
+    QRectF pathRect = _path.boundingRect();
 
-    qreal x = std::min(pathRect.left(), _straightLineTo.x());
-    qreal y = std::min(pathRect.top(), _straightLineTo.y());
-    qreal w = std::max(pathRect.right(), _straightLineTo.x()) - x;
-    qreal h = std::max(pathRect.bottom(), _straightLineTo.y()) - y;
+    qreal x = std::min(pathRect.left(), _straightTo.x());
+    qreal y = std::min(pathRect.top(), _straightTo.y());
+    qreal w = std::max(pathRect.right(), _straightTo.x()) - x;
+    qreal h = std::max(pathRect.bottom(), _straightTo.y()) - y;
 
     _rect.setX(x - halfPenW);
     _rect.setY(y - halfPenW);
@@ -246,10 +230,6 @@ void BbItemPen::straightLineDragging(const QPointF &point)
 
 void BbItemPen::addPointToPath(const QPointF &point)
 {
-    if(_path == nullptr)
-    {
-        return;
-    }
     _changed.append(point);
     _data->coords.append(point.x());
     _data->coords.append(point.y());
@@ -259,12 +239,12 @@ void BbItemPen::addPointToPath(const QPointF &point)
     qreal newLeft = std::min(point.x(), oldLeft);
     qreal newTop = std::min(point.y(), oldTop);
 
-    _path->translate(oldLeft-newLeft,oldTop-newTop);    // 重新计算左上角位置
-    _path->lineTo(point - QPointF(newLeft, newTop));
+    _path.translate(oldLeft-newLeft,oldTop-newTop);    // 重新计算左上角位置
+    _path.lineTo(point - QPointF(newLeft, newTop));
 
      setPos(newLeft, newTop);
 
-    _rect = _path->boundingRect();
+    _rect = _path.boundingRect();
     _rect.setX(_rect.x()-halfPenW);
     _rect.setY(_rect.y()-halfPenW);
     _rect.setWidth(_rect.width()+halfPenW);
@@ -276,7 +256,7 @@ void BbItemPen::addPointToPath(const QPointF &point)
 #ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
 void BbItemPen::appendPointSmoothing(const QPointF &point)
 {
-    qreal halfPenW = 0.5 * _myData->pen.widthF();
+    qreal halfPenW = 0.5 * _data->pen.widthF();
     _temp.append(point - QPointF(halfPenW,halfPenW));
     if(_temp.length() == 4){
         // 曲线圆滑
@@ -287,12 +267,12 @@ void BbItemPen::appendPointSmoothing(const QPointF &point)
         const QPointF *d = &_temp.at(3);
 
         static int cutting = 0;
-        static float t, tt, ttt, tt2, tt3, ttt2 = 0;
+        static qreal t, tt, ttt, tt2, tt3, ttt2 = 0;
 
         if(_distances[1] < 0){
             _distances[0] = penSqrt(
-                                    std::powf(b->x()-a->x(),2) +
-                                    std::powf(b->y()-a->y(),2)
+                                    std::powf(float(b->x()-a->x()),2) +
+                                    std::powf(float(b->y()-a->y()),2)
                                     );
         }
         else{
@@ -301,32 +281,32 @@ void BbItemPen::appendPointSmoothing(const QPointF &point)
 
         if(_distances[2] < 0){
             _distances[1] = penSqrt(
-                        std::powf(b->x()-c->x(),2) +
-                        std::powf(b->y()-c->y(),2)
+                        std::powf(float(b->x()-c->x()),2) +
+                        std::powf(float(b->y()-c->y()),2)
                         );
         }else{
             _distances[1] = _distances[2];
         }
         _distances[2] = penSqrt(
-                    std::powf(d->x()-c->x(),2) +
-                    std::powf(d->y()-c->y(),2)
+                    std::powf(float(d->x()-c->x()),2) +
+                    std::powf(float(d->y()-c->y()),2)
                     );
 
-        cutting = _distances[1] / NSB_BLACKBOARD_PEN_SMOOTHING_UNIT;
-
+        cutting = int(_distances[1] / NSB_BLACKBOARD_PEN_SMOOTHING_UNIT);
         if (cutting > 0 && _distances[0] * 2 > 0.1f * (_distances[1] + _distances[2])) {
 
             for (int i = 0; i < cutting; ++i) {
-                t = (float)i / (cutting);
+                t = qreal(i) / (cutting);
                 tt = t*t;
                 ttt = tt*t;
                 tt2 = tt*2;
                 tt3 = tt*3;
                 ttt2 = ttt*2;
-                QPointF p = (*b) * (ttt2 - tt3 + 1.0f) +
+                QPointF p =
+                        (*b) * (ttt2 - tt3 + 1) +
                         (*c) * (-ttt2 + tt3 ) +
-                        0.5f * ((*c)-(*a)) * (ttt - tt2 + t) +
-                        0.5f * ((*d)-(*b))  * (ttt - tt);
+                        0.5 * ((*c)-(*a)) * (ttt - tt2 + t) +
+                        0.5 * ((*d)-(*b))  * (ttt - tt);
 
                 addPointToPath(p);
             }
@@ -345,26 +325,24 @@ void BbItemPen::appendPointSmoothing(const QPointF &point)
 
 void BbItemPen::repaint()
 {
-    if(_path){
-        delete _path;
-    }
+    _path.clear();
     qreal halfPenW = 0.5 * _data->pen.widthF();
     for(int i = 0; i < _data->coords.length(); i+=2)
     {
         QPointF point(_data->coords[i],_data->coords[i+1]);
         if(i == 0){
-            _path = new QPainterPath();
-            _path->moveTo(0,0);
+            _path = QPainterPath();
+            _path.moveTo(0,0);
             setPos(point);
         }
         qreal oldLeft = pos().x();
         qreal oldTop = pos().y();
         qreal newLeft = std::min(point.x(), oldLeft);
         qreal newTop = std::min(point.y(), oldTop);
-        _path->translate(oldLeft-newLeft,oldTop-newTop);    // 重新计算左上角位置
-        _path->lineTo(point - QPointF(newLeft, newTop));
+        _path.translate(oldLeft-newLeft,oldTop-newTop);    // 重新计算左上角位置
+        _path.lineTo(point - QPointF(newLeft, newTop));
          setPos(newLeft, newTop);
-        _rect = _path->boundingRect();
+        _rect = _path.boundingRect();
         _rect.setX(_rect.x()-halfPenW);
         _rect.setY(_rect.y()-halfPenW);
         _rect.setWidth(_rect.width()+halfPenW);
@@ -395,12 +373,12 @@ void BbItemPen::setStraight(const bool & straight)
     // 开/关直线模式
     if(straight)
     {
-        _straightLineFrom = QPointF(-999999, -999999);
-        _straightLineTo = QPointF(-999999, -999999);
+        _straightFrom = QPointF(-999999, -999999);
+        _straightTo = QPointF(-999999, -999999);
     }
-    else if(_straightLineTo.x() > -999998)
+    else if(_straightTo.x() > -999998)
     {
-        _mousePos = _straightLineTo + pos();
+        _mousePos = _straightTo + pos();
         _changed.clear();
         addPointToPath(_mousePos);
     }
@@ -409,7 +387,7 @@ void BbItemPen::setStraight(const bool & straight)
 
 QPointF BbItemPen::straightTo()
 {
-    return _straightLineTo + pos();
+    return _straightTo + pos();
 }
 
 void BbItemPen::writeStream(QDataStream &stream)
@@ -433,6 +411,9 @@ BbItemData *BbItemPen::data()
 
 void BbItemPen::toolDown(const QPointF &pos)
 {
+#ifdef QT_DEBUG
+    qDebug() << __FUNCTION__ << pos;
+#endif
     setId(blackboard()->factory()->makeItemId());
     setZ(blackboard()->factory()->makeItemZ());
     updatePrevZ();
@@ -448,9 +429,27 @@ void BbItemPen::toolDown(const QPointF &pos)
 
 void BbItemPen::toolDraw(const QPointF &pos)
 {
+#ifdef QT_DEBUG
+    qDebug() << __FUNCTION__ << pos;
+#endif
     setStraight(bbScene()->modifiers()==Qt::ShiftModifier);
     if(!straight())
     {
+        /*
+         * Note:
+         * 当黑板按下鼠标右键弹出某个菜单，然后点击左键其他地方取消菜单。
+         * 会触发一个与mouseDown事件，一个mouseMove事件。
+         * 他们的鼠标坐标是相同的，在会让paint事件的逻辑会画不出任何东西。
+         * 这里排除掉次坐标
+         *  -Gim
+         */
+//        if(_data->coords.size() >= 2){
+//            auto itr = _data->coords.rbegin();
+//            auto y = *itr;
+//            auto x = *(++itr);
+//            if(pos == QPointF(x,y))
+//                return;
+//        }
         penDraw(pos);
         emit blackboard()->itemChanged(BBIET_penDraw,this);
     }
@@ -463,7 +462,9 @@ void BbItemPen::toolDraw(const QPointF &pos)
 
 void BbItemPen::toolDone(const QPointF &pos)
 {
-    Q_UNUSED(pos)
+#ifdef QT_DEBUG
+    qDebug() << __FUNCTION__ << pos;
+#endif
     if(straight())
     {
         setStraight(false);
