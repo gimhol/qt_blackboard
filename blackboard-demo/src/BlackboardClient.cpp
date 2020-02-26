@@ -93,7 +93,7 @@ void BlackboardClient::init()
     auto signal = static_cast<void(QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error);
     connect(_socket,signal,this,&BlackboardClient::onSocketError);
 }
-#define fallThrough [[clang::fallthrough]]
+#define fallThrough // [[clang::fallthrough]]
 void BlackboardClient::onSocketReadyRead()
 {
     while(1){

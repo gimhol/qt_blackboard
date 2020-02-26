@@ -34,6 +34,3 @@ FORMS += \
     $$PWD/ColorPanel.ui \
     $$PWD/BlackboardTestWindow.ui \
     $$PWD/MainWindow.ui
-
-OTHER_FILES += $$PWD/app.rc
-RC_FILE += $$PWD/app.rc
