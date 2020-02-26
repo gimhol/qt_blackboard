@@ -49,5 +49,3 @@ SOURCES += \
     $$PWD/BbItemImage.cpp \
     $$PWD/BbPointer.cpp \
     $$PWD/IItemIndex.cpp
-
-FORMS +=
