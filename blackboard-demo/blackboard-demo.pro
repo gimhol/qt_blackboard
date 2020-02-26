@@ -21,3 +21,6 @@ win32
 LIBS += -L$$OUT_PWD/../ -lNsbBlackboardd
 INCLUDEPATH += $$PWD/../blackboard-shared
 DEPENDPATH += $$PWD/../blackboard-shared
+
+RESOURCES += \
+    resource.qrc

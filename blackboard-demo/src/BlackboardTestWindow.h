@@ -10,19 +10,15 @@ namespace Ui {
     class BlackboardTestWindow;
 }
 class Blackboard;
+
 enum WhichColor{
     WhichColor_Invalid,
     WhichColor_Pen,
+    WhichColor_Brush,
     WhichColor_Text,
-    WhichColor_Straight,
-    WhichColor_RectPen,
-    WhichColor_RectBrush,
-    WhichColor_EllipsePen,
-    WhichColor_EllipseBrush,
-    WhichColor_TrianglePen,
-    WhichColor_TriangleBrush,
     WhichColor_Max
 };
+
 class BlackboardTestWindow : public QWidget
 {
     Q_OBJECT
@@ -45,42 +41,19 @@ public:
     static void loadImage(BbItemImage *item);
 
 private slots:
-//    void openColorPanel();
     void onColorChanged(const QColor &color);
 
     void onColorDisplayerClicked();
-
-    void on_pointer_clicked();
-
-    void on_pen_clicked();
 
     void on_clear_clicked();
 
     void on_remove_clicked();
 
-    void on_picker_clicked();
-
-    void on_straight_clicked();
-
-    void on_text_clicked();
-
     void on_repaint_clicked();
 
     void on_penWeight_valueChanged(int arg1);
 
-    void on_straightWeight_valueChanged(int arg1);
-
     void on_textWeight_valueChanged(int arg1);
-
-    void on_rect_clicked();
-
-    void on_ellipse_clicked();
-
-    void on_ellipseWeight_valueChanged(int arg1);
-
-    void on_triangle_clicked();
-
-    void on_triangleWeight_valueChanged(int arg1);
 
     void on_onlineImage_clicked();
 
@@ -89,8 +62,6 @@ private slots:
     void on_paste_clicked();
 
     void on_selectedAll_clicked();
-
-    void on_rectWeight_valueChanged(int arg1);
 
     void on_imagePick_clicked();
 
