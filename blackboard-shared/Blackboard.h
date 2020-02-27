@@ -252,6 +252,8 @@ public:
     template<class Cls> Cls* toolSettings(const BbToolType &toolType);
     template<class Cls> Cls* find(const std::string &lid);
     template<class Cls> Cls* find(const QString &lid);
+    QPointF tabletPenPos();
+    bool tabletActive();
 signals:
     void moved();
     void resized(float scale);

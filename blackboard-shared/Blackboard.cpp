@@ -24,6 +24,7 @@ public:
     QMap<QString, QPoint> lazerPenPositions;
     bool tabletActive = false;
     BbFactory *factory = nullptr;
+    QPointF tabletPenPos;
 };
 
 static BbFactory *_defaultFactory = new BbFactory();
@@ -601,6 +602,16 @@ QList<QPair<QString, QGraphicsItem *> > Blackboard::backgrounds()
     return scene()->backgrounds();
 }
 
+QPointF Blackboard::tabletPenPos()
+{
+    return dptr->tabletPenPos;
+}
+
+bool Blackboard::tabletActive()
+{
+    return dptr->tabletActive;
+}
+
 void Blackboard::writeStream(QDataStream &stream)
 {
     scene()->writeStream(stream);
@@ -711,8 +722,10 @@ void Blackboard::tabletEvent(QTabletEvent *event)
     case QEvent::TabletPress:
     {
         onMousePress(event->pos(),event->button());
+        qInfo() << mapFromScene(0,0);
+        dptr->tabletPenPos = mapToScene(((event->posF()-mapFromScene(0,0))*100).toPoint())/100;
         QMouseEvent mouseEvent(QEvent::MouseMove,
-                    event->pos(),
+                    event->posF(),
                     event->button(),
                     event->buttons(),
                     event->modifiers());
@@ -726,6 +739,7 @@ void Blackboard::tabletEvent(QTabletEvent *event)
             break;
         }
         p = event->posF();
+        dptr->tabletPenPos = mapToScene(((event->posF()-mapFromScene(0,0))*100).toPoint())/100;
         onMouseMove(event->pos());
         QMouseEvent mouseEvent(QEvent::MouseMove,
                     event->posF(),
@@ -737,9 +751,10 @@ void Blackboard::tabletEvent(QTabletEvent *event)
     }
     case QEvent::TabletRelease:
     {
+        dptr->tabletPenPos = mapToScene(((event->posF()-mapFromScene(0,0))*100).toPoint())/100;
         onMouseRelease(event->pos(),event->button());
         QMouseEvent mouseEvent(QEvent::MouseButtonRelease,
-                    event->pos(),
+                    event->posF(),
                     event->button(),
                     event->buttons(),
                     event->modifiers());

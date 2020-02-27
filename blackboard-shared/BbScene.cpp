@@ -176,7 +176,9 @@ void BbScene::remove(QString lid)
 void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     _mouseButtons |= event->button();
-    _mousePos = event->scenePos();
+    _mousePos = blackboard()->tabletActive()?
+                blackboard()->tabletPenPos():
+                event->scenePos();
     _pickerBeginPos = event->scenePos();
     if(event->button() == Qt::LeftButton){
         if(_toolType == BBTT_Picker){
@@ -211,7 +213,9 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    _mousePos = event->scenePos();
+    _mousePos = blackboard()->tabletActive()?
+                blackboard()->tabletPenPos():
+                event->scenePos();
     if(_mouseButtons & Qt::LeftButton){
         if(BBTT_Picker == _toolType){
             QGraphicsScene::mouseMoveEvent(event);
@@ -237,7 +241,9 @@ void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     _mouseButtons ^= event->button();
-    _mousePos = event->scenePos();
+    _mousePos = blackboard()->tabletActive()?
+                blackboard()->tabletPenPos():
+                event->scenePos();
     QGraphicsScene::mouseReleaseEvent(event);
     if(event->button() == Qt::LeftButton){
         if(BBTT_Picker == _toolType){
