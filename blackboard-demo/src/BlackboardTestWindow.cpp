@@ -282,6 +282,13 @@ void BlackboardTestWindow::on_penWeight_valueChanged(int arg1)
 void BlackboardTestWindow::on_textWeight_valueChanged(int arg1)
 {
     textSettings->setPointWeight(arg1 * 0.01);
+    ui->blackboard->scene()->enumSelected([&](IItemIndex *index,int num){
+        if(index->toolType() == BBTT_Text){
+            auto text = static_cast<BbItemText*>(index);
+            text->setWeight(arg1 * 0.01);
+        }
+        return false;
+    });
 }
 
 void BlackboardTestWindow::on_onlineImage_clicked()
@@ -392,6 +399,13 @@ void BlackboardTestWindow::onColorChanged(const QColor &color)
     case WhichColor_Text:
         textSettings->color = color;
         ui->textColor->setColor(color);
+        ui->blackboard->scene()->enumSelected([&](IItemIndex *index,int num){
+            if(index->toolType() == BBTT_Text){
+                auto text = static_cast<BbItemText*>(index);
+                text->setColor(color);
+            }
+            return false;
+        });
         break;
     case WhichColor_Max:
     case WhichColor_Invalid:
