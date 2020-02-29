@@ -23,16 +23,12 @@ class BlackboardTestWindow : public QWidget
 {
     Q_OBJECT
     WhichColor _whichColor = WhichColor_Invalid;
-    BbItemPenData *penSettings;
-    BbItemStraightData *straightSettings;
-    BbItemTextData *textSettings;
-    BbItemRectData *rectSettings;
-    BbItemEllipseData *ellipseSettings;
-    BbItemTriangleData *triangleSettings;
+    QMap<BbToolType,BbItemData*> itemSettings;
 public:
     explicit BlackboardTestWindow(QWidget *parent = nullptr);
 
-    static void bindBlackboard(Blackboard * blackboard0,Blackboard *blackboard1);
+    static void bindBlackboard(Blackboard * blackboard0,
+                               Blackboard *blackboard1);
 
     Blackboard * blackboard();
 
@@ -84,6 +80,12 @@ private slots:
     void on_btnConnectionToggle_clicked();
 
     void on_deselectedAll_clicked();
+
+    void on_cb_pen_join_activated(int index);
+
+    void on_cb_pen_style_activated(int index);
+
+    void on_cb_pen_cap_activated(int index);
 
 private:
     Ui::BlackboardTestWindow *ui;

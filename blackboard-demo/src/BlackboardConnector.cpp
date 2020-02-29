@@ -165,13 +165,28 @@ void BlackboardConnector::onLocalItemChanged(BBItemEventType eventType, IItemInd
     }
 }
 
+static void setPenToJsonObject(BbItemData* data, QJsonObject &jobj){
+    jobj["pen_color"] = int(data->pen.color().rgba());
+    jobj["pen_style"] = int(data->pen.style());
+    jobj["pen_cap"] = int(data->pen.capStyle());
+    jobj["pen_join"] = int(data->pen.joinStyle());
+    jobj["pen_weight"] = data->weight();
+}
+static void readPenFromJsonObject(BbItemData* data, const QJsonObject &jobj){
+
+    data->pen.setColor(QColor::fromRgba(QRgb(jobj["pen_color"].toInt())));
+    data->pen.setStyle(Qt::PenStyle(jobj["pen_style"].toInt()));
+    data->pen.setCapStyle(Qt::PenCapStyle(jobj["pen_cap"].toInt()));
+    data->pen.setJoinStyle(Qt::PenJoinStyle(jobj["pen_join"].toInt()));
+    data->setWeight(jobj["pen_weight"].toDouble());
+}
+
 void BlackboardConnector::onLocalPenDown(IItemIndex *index){
     auto item = dynamic_cast<BbItemPen*>(index);
     QJsonObject jobj;
     jobj["id"] = item->id();
     jobj["z"] = item->z();
-    jobj["color"] = int(item->data()->pen.color().rgba());
-    jobj["weight"] = item->data()->weight();
+    setPenToJsonObject(item->data(),jobj);
     auto dot = item->changed()->first();
     jobj["x"] = qreal(dot.x())/_bb->canvasWidth();
     jobj["y"] = qreal(dot.y())/_bb->canvasWidth();
@@ -249,8 +264,7 @@ void BlackboardConnector::onLocalStraightDown(IItemIndex *index)
     QJsonObject jobj;
     jobj["id"] = item->id();
     jobj["z"] = item->z();
-    jobj["color"] = int(item->data()->pen.color().rgba());
-    jobj["weight"] = item->data()->weight();
+    setPenToJsonObject(item->data(),jobj);
     jobj["ax"] = item->a().x()/_bb->canvasWidth();
     jobj["ay"] = item->a().y()/_bb->canvasWidth();
     _me->send(BBIET_straightDown,QJsonDocument(jobj).toBinaryData());
@@ -285,11 +299,8 @@ void BlackboardConnector::onLocalRectDown(IItemIndex *index)
         return;
     QJsonObject jobj;
     jobj["id"] = item->id();
-    jobj["penColor"] = int(item->data()->pen.color().rgba());
-    auto a = item->data()->brush.color();
-    qInfo() << a;
+    setPenToJsonObject(item->data(),jobj);
     jobj["brushColor"] = int(item->data()->brush.color().rgba());
-    jobj["weight"] = item->data()->weight();
     jobj["z"] = item->z();
     jobj["x"] = item->data()->x/_bb->canvasWidth();
     jobj["y"] = item->data()->y/_bb->canvasWidth();
@@ -329,9 +340,8 @@ void BlackboardConnector::onLocalEllipseDown(IItemIndex *index)
         return;
     QJsonObject jobj;
     jobj["id"] = item->id();
-    jobj["penColor"] = int(item->data()->pen.color().rgba());
+    setPenToJsonObject(item->data(),jobj);
     jobj["brushColor"] = int(item->data()->brush.color().rgba());
-    jobj["weight"] = item->data()->weight();
     jobj["z"] = item->z();
     jobj["x"] = item->data()->x/_bb->canvasWidth();
     jobj["y"] = item->data()->y/_bb->canvasWidth();
@@ -371,9 +381,8 @@ void BlackboardConnector::onLocalTriangleDown(IItemIndex *index)
         return;
     QJsonObject jobj;
     jobj["id"] = item->id();
-    jobj["penColor"] = int(item->data()->pen.color().rgba());
+    setPenToJsonObject(item->data(),jobj);
     jobj["brushColor"] = int(item->data()->brush.color().rgba());
-    jobj["weight"] = item->data()->weight();
     jobj["z"] = item->z();
     jobj["ax"] = item->point(0).x()/_bb->canvasWidth();
     jobj["ay"] = item->point(0).y()/_bb->canvasWidth();
@@ -519,13 +528,12 @@ void BlackboardConnector::onRemoteItemsDelete()
 }
 
 void BlackboardConnector::onRemotePenDown(){
-    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody()).object();
     BbItemPen *item = new BbItemPen();
     _bb->add(item);
     item->setId(jobj["id"].toString());
     item->setZ(jobj["z"].toDouble());
-    item->data()->pen.setColor(QColor::fromRgba(QRgb(jobj["color"].toInt())));
-    item->data()->setWeight(jobj["weight"].toDouble());
+    readPenFromJsonObject(item->data(),jobj);
     QPointF dot(jobj["x"].toDouble()*_bb->canvasWidth(),
                 jobj["y"].toDouble()*_bb->canvasWidth());
     item->penDown(dot);
@@ -600,13 +608,12 @@ void BlackboardConnector::onRemoteTextDone()
 
 void BlackboardConnector::onRemoteStraightDown()
 {
-    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody()).object();
     auto copy = new BbItemStraight();
     _bb->add(copy);
     copy->setId(jobj["id"].toString());
     copy->setZ(jobj["z"].toDouble());
-    copy->data()->pen.setColor(QColor::fromRgba(QRgb(jobj["color"].toInt())));
-    copy->data()->setWeight(jobj["weight"].toDouble());
+    readPenFromJsonObject(copy->data(),jobj);
     QPointF dot(jobj["ax"].toDouble()*_bb->canvasWidth(),
                 jobj["ay"].toDouble()*_bb->canvasWidth());
     copy->begin(dot);
@@ -634,13 +641,12 @@ void BlackboardConnector::onRemoteStraightDone()
 
 void BlackboardConnector::onRemoteRectDown()
 {
-    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody()).object();
     auto copy = new BbItemRect();
     _bb->add(copy);
     copy->setId(jobj["id"].toString());
     copy->setZ(jobj["z"].toDouble());
-    copy->data()->setWeight(jobj["weight"].toDouble());
-    copy->data()->pen.setColor(QColor::fromRgba(QRgb(jobj["penColor"].toInt())));
+    readPenFromJsonObject(copy->data(),jobj);
     copy->data()->brush.setColor(QColor::fromRgba(QRgb(jobj["brushColor"].toInt())));
     QPointF a(jobj["x"].toDouble()*_bb->canvasWidth(),
               jobj["y"].toDouble()*_bb->canvasWidth());
@@ -671,13 +677,12 @@ void BlackboardConnector::onRemoteRectDone()
 
 void BlackboardConnector::onRemoteEllipseDown()
 {
-    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody()).object();
     auto copy = new BbItemEllipse();
     _bb->add(copy);
     copy->setId(jobj["id"].toString());
     copy->setZ(jobj["z"].toDouble());
-    copy->data()->setWeight(jobj["weight"].toDouble());
-    copy->data()->pen.setColor(QColor::fromRgba(QRgb(jobj["penColor"].toInt())));
+    readPenFromJsonObject(copy->data(),jobj);
     copy->data()->brush.setColor(QColor::fromRgba(QRgb(jobj["brushColor"].toInt())));
     QPointF a(jobj["x"].toDouble()*_bb->canvasWidth(),
               jobj["y"].toDouble()*_bb->canvasWidth());
@@ -708,13 +713,12 @@ void BlackboardConnector::onRemoteEllipseDone()
 
 void BlackboardConnector::onRemoteTriangleDown()
 {
-    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody()).object();
     auto copy = new BbItemTriangle();
     _bb->add(copy);
     copy->setId(jobj["id"].toString());
     copy->setZ(jobj["z"].toDouble());
-    copy->data()->setWeight(jobj["weight"].toDouble());
-    copy->data()->pen.setColor(QColor::fromRgba(QRgb(jobj["penColor"].toInt())));
+    readPenFromJsonObject(copy->data(),jobj);
     copy->data()->brush.setColor(QColor::fromRgba(QRgb(jobj["brushColor"].toInt())));
     QPointF dot(jobj["ax"].toDouble()*_bb->canvasWidth(),
                 jobj["ay"].toDouble()*_bb->canvasWidth());

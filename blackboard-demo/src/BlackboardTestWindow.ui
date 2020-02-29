@@ -56,7 +56,27 @@ padding:2px 0px;
 background-color:#555557;
 border-radius:3px;
 border:none;
-}</string>
+}
+QComboBox{
+background-color:#888888;
+border-radius:3px;
+}
+QComboBox:hover{
+background-color:#888888;
+}
+QComboBox::drop-down{
+border:none;
+}
+QComboBox QAbstractItemView{
+background-color:#888888;
+border-radius:3px;
+outline: 0px;
+}
+QComboBox QAbstractItemView::Item{
+border-radius:3px;
+outline: 0px;
+}
+</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -532,6 +552,94 @@ border:none;
             </widget>
            </item>
           </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <property name="spacing">
+            <number>3</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_9">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>描边样式</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cb_pen_style"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <property name="spacing">
+            <number>3</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_11">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>描边关节</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cb_pen_join">
+             <item>
+              <property name="text">
+               <string>a</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>b</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>c</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <property name="spacing">
+            <number>3</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_12">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>描边笔帽</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cb_pen_cap"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_7"/>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
