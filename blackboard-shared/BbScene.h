@@ -196,7 +196,6 @@ public:
 
     void emitItemMovedSignals();
 
-    void setItemPicking(bool picking);
     void updatePickerRect();
 };
 

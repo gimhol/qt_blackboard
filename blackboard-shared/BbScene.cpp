@@ -183,23 +183,36 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if(event->button() == Qt::LeftButton){
         if(_toolType == BBTT_Picker){
             QGraphicsScene::mousePressEvent(event);
-            if(!event->isAccepted()){
+            if(!event->isAccepted()) // 点中一个item，就不框选了。
                 startPicking();
-            }
-            if(_curItemIndex){
+            if(_curItemIndex)
                 _curItemIndex->toolDone(_mousePos);
-            }
         }else{
             stopPicking();
             deselectAll();
+            if(_curItemIndex)
+                _curItemIndex->toolDown(_mousePos);
+
+            /*
+             * Note:
+             *      比如BbItemText，某些_curItemIndex的toolDown，
+             *      会使得 _curItemIndex == nullptr。
+             *      调用mousePressEvent：
+             *          焦点text的文字才能被鼠标框选。
+             *          如果点击的不是焦点text，焦点text将会失去焦点，
+             *          然后toolDone，使_curItemIndex=nullptr，
+             *          以实现点击其他地方立刻创建一个text。
+             *      -Gim
+             */
+            if(_curItemIndex && _curItemIndex->toolType() == BBTT_Text)
+                QGraphicsScene::mousePressEvent(event);
+
             if(!_curItemIndex){
                 auto item = blackboard()->factory()->createItemWhenToolDown(_toolType);
                 if(item){
                     add(item);
                     item->toolDown(_mousePos);
                 }
-            }else{
-                _curItemIndex->toolDown(_mousePos);
             }
         }
     }
@@ -207,7 +220,24 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         if(_curItemIndex){
             _curItemIndex->toolDone(_mousePos);
         }
-        startPicking();
+
+        /*
+         * NOTE:
+         * 情况1：右键没点中任何item时，开始框选模式。
+         * 情况2：右键没点中没选择的item时，此item.selected=true,其他item.selected=false
+         *  -Gim
+         */
+        auto item = itemAt(_mousePos,QTransform());
+        auto idx = dynamic_cast<IItemIndex*>(item);
+        auto situation1 = idx == nullptr;
+        auto situation2 = idx && !item->isSelected();
+        if(situation1){
+            startPicking();
+        }
+        else if(situation2){
+            deselectAll();
+            item->setSelected(true);
+        }
     }
 }
 
@@ -232,6 +262,15 @@ void BbScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
         else if(_curItemIndex){
             _curItemIndex->toolDraw(_mousePos);
+
+            /*
+             * Note:
+             *      就怕日后某个item的toolDraw会让_curItemIndex==nullptr；
+             *      调用mouseMoveEvent，文字的内容才能被鼠标框选。
+             *      -Gim
+             */
+            if(_curItemIndex && _curItemIndex->toolType() == BBTT_Text)
+                QGraphicsScene::mouseMoveEvent(event);
         }
     }else if(_mouseButtons & Qt::RightButton){
         updatePickerRect();
@@ -641,24 +680,6 @@ void BbScene::stopPicking()
     checkItemsPicking();
     _pickerTimer->stop();
     _pickerRect->hide();
-}
-
-void BbScene::setItemPicking(bool picking)
-{
-    for(auto item: items())
-    {
-        // 忽略正在被移除的item。
-        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
-            continue;
-
-        auto idx = dynamic_cast<IItemIndex*>(item);
-        if(idx && !idx->isEditing())
-        {
-//            item->setFlag(QGraphicsItem::ItemIsMovable,picking);
-//            item->setFlag(QGraphicsItem::ItemIsSelectable,picking);
-//            item->setFlag(QGraphicsItem::ItemIsFocusable,picking);
-        }
-    }
 }
 
 void BbScene::onToolChanged(BbToolType previous)
