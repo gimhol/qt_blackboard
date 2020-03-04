@@ -8,10 +8,8 @@
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QGraphicsScene>
-#include <functional>
 
 class BbItemText;
-typedef std::function<void()> onTextChangedCallback;
 class BbItemTextData;
 class NSB_BLACKBOARD_EXPORT BbItemText : public QGraphicsTextItem, public IStreamWR, public IItemIndex
 {
@@ -31,7 +29,7 @@ public:
 
     void keyPressEvent(QKeyEvent *event) override;
 
-    void keyReleaseEvent(QKeyEvent *event) override;
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
     void repaint() override;
 
@@ -70,7 +68,6 @@ public:
     void toolDown(const QPointF &pos) override;
     void toolDraw(const QPointF &pos) override;
     void toolDone(const QPointF &pos) override;
-    void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void removed() override;
     void absolutize() override;
 protected:
