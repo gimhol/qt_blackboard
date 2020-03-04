@@ -17,6 +17,7 @@
    <string notr="true">*{font-family:&quot;Microsoft YaHei&quot;}
 #ColorPanel{
 background-color:#333333;
+border:1px black solid;
 }
 #labelARGB{
 color:white;
@@ -246,6 +247,12 @@ color:white;
  </widget>
  <customwidgets>
   <customwidget>
+   <class>ColorDisplayer</class>
+   <extends>QWidget</extends>
+   <header>ColorDisplayer.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>SaturationValueZone</class>
    <extends>QWidget</extends>
    <header>SaturationValueZone.h</header>
@@ -261,12 +268,6 @@ color:white;
    <class>AlphaBar</class>
    <extends>QWidget</extends>
    <header>AlphaBar.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ColorDisplayer</class>
-   <extends>QWidget</extends>
-   <header>ColorDisplayer.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

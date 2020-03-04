@@ -30,6 +30,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QListView>
+#include <QGraphicsDropShadowEffect>
 
 static QNetworkAccessManager *networkManager()
 {
@@ -66,70 +68,48 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 
     ui->blackboardHeight->setValue(1000);
     QButtonGroup * buttonGroup = new QButtonGroup(this);
-    buttonGroup->addButton(ui->picker);
-    buttonGroup->addButton(ui->pen);
-    buttonGroup->addButton(ui->text);
-    buttonGroup->addButton(ui->pointer);
-    buttonGroup->addButton(ui->straight);
-    buttonGroup->addButton(ui->rect);
-    buttonGroup->addButton(ui->ellipse);
-    buttonGroup->addButton(ui->triangle);
+    buttonGroup->addButton(ui->picker,BBTT_Picker);
+    buttonGroup->addButton(ui->pen,BBTT_Pen);
+    buttonGroup->addButton(ui->text,BBTT_Text);
+    buttonGroup->addButton(ui->pointer,BBTT_Pointer);
+    buttonGroup->addButton(ui->straight,BBTT_Straight);
+    buttonGroup->addButton(ui->rect,BBTT_Rectangle);
+    buttonGroup->addButton(ui->ellipse,BBTT_Ellipse);
+    buttonGroup->addButton(ui->triangle,BBTT_Triangle);
+    ui->blackboard->setFactory(new Factory(this));
+    ui->blackboard->setToolType(BBTT_Pointer);
+    ui->pointer->setChecked(true);
+    auto signal = static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked);
+    connect(buttonGroup,signal,this,[&](int id){
+        blackboard()->setToolType(BbToolType(id));
+    });
 
-    for(auto blackboard : findChildren<Blackboard*>())
-    {
-        blackboard->setToolType(BBTT_Pointer);
-        blackboard->setFactory(new Factory(this));
-    }
+    auto bbtts = QList<BbToolType>({BBTT_Pen,
+                                    BBTT_Straight,
+                                    BBTT_Text,
+                                    BBTT_Rectangle,
+                                    BBTT_Ellipse,
+                                    BBTT_Triangle});
+    for(auto bbtt: bbtts)
+        itemSettings[bbtt] = blackboard()->toolSettings(bbtt);
 
-    penSettings = blackboard()->toolSettings<BbItemPenData>(BBTT_Pen);
-    straightSettings = blackboard()->toolSettings<BbItemStraightData>(BBTT_Straight);
-    textSettings = blackboard()->toolSettings<BbItemTextData>(BBTT_Text);
-    rectSettings = blackboard()->toolSettings<BbItemRectData>(BBTT_Rectangle);
-    ellipseSettings = blackboard()->toolSettings<BbItemEllipseData>(BBTT_Ellipse);
-    triangleSettings = blackboard()->toolSettings<BbItemTriangleData>(BBTT_Triangle);
 
-    ui->penWeight->setValue(int(penSettings->weight() * 100));
-    ui->penColor->setColor(penSettings->pen.color());
+    auto penSetting = blackboard()->toolSettings(BBTT_Pen);
+    ui->penWeight->setValue(int(penSetting->weight()*100));
+    ui->penColor->setColor(penSetting->pen.color());
     ui->penColor->setProperty("WhichColor",WhichColor_Pen);
-    connect(ui->penColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
+    connect(ui->penColor,&ColorDisplayer::clicked,
+            this,&BlackboardTestWindow::onColorDisplayerClicked);
 
-    ui->straightWeight->setValue(int(straightSettings->weight() * 100));
-    ui->straightColor->setColor(straightSettings->pen.color());
-    ui->straightColor->setProperty("WhichColor",WhichColor_Straight);
-    connect(ui->straightColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
+    ui->brushColor->setColor(blackboard()->toolSettings(BBTT_Rectangle)->brush.color());
+    ui->brushColor->setProperty("WhichColor",WhichColor_Brush);
+    connect(ui->brushColor,&ColorDisplayer::clicked,
+            this,&BlackboardTestWindow::onColorDisplayerClicked);
 
-    ui->textWeight->setValue(int(textSettings->pointWeight() * 100));
-    ui->textColor->setColor(textSettings->color);
+    ui->textColor->setColor(blackboard()->toolSettings<BbItemTextData>(BBTT_Text)->color);
     ui->textColor->setProperty("WhichColor",WhichColor_Text);
-    connect(ui->textColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
-
-    ui->rectWeight->setValue(int(rectSettings->weight() * 100));
-    ui->rectPenColor->setColor(rectSettings->pen.color());
-    ui->rectPenColor->setProperty("WhichColor",WhichColor_RectPen);
-    connect(ui->rectPenColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
-
-    ui->rectBrushColor->setColor(rectSettings->brush.color());
-    ui->rectBrushColor->setProperty("WhichColor",WhichColor_RectBrush);
-    connect(ui->rectBrushColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
-
-    ui->ellipseWeight->setValue(int(ellipseSettings->weight() * 100));
-    ui->ellipsePenColor->setColor(ellipseSettings->pen.color());
-    ui->ellipsePenColor->setProperty("WhichColor",WhichColor_EllipsePen);
-    connect(ui->ellipsePenColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
-
-    ui->ellipseBrushColor->setColor(ellipseSettings->brush.color());
-    ui->ellipseBrushColor->setProperty("WhichColor",WhichColor_EllipseBrush);
-    connect(ui->ellipseBrushColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
-
-
-    ui->triangleWeight->setValue(int(triangleSettings->weight() * 100));
-    ui->trianglePenColor->setColor(triangleSettings->pen.color());
-    ui->trianglePenColor->setProperty("WhichColor",WhichColor_TrianglePen);
-    connect(ui->trianglePenColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
-
-    ui->triangleBrushColor->setColor(triangleSettings->brush.color());
-    ui->triangleBrushColor->setProperty("WhichColor",WhichColor_TriangleBrush);
-    connect(ui->triangleBrushColor,&ColorDisplayer::clicked,this,&BlackboardTestWindow::onColorDisplayerClicked);
+    connect(ui->textColor,&ColorDisplayer::clicked,
+            this,&BlackboardTestWindow::onColorDisplayerClicked);
 
     QPixmap pm(5,5);
     pm.fill("red");
@@ -141,6 +121,56 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 
     new BbMenu(ui->blackboard);
     _connector = new BlackboardConnector(ui->blackboard);
+
+
+    QMap<Qt::PenStyle,QString> penStyles = {
+        {Qt::NoPen,"NoPen"},
+        {Qt::SolidLine,"SolidLine"},
+        {Qt::DashLine,"DashLine"},
+        {Qt::DotLine,"DotLine"},
+        {Qt::DashDotDotLine,"DashDotDotLine"},
+        {Qt::CustomDashLine,"CustomDashLine"},
+        {Qt::MPenStyle,"MPenStyle"},
+    };
+    QMap<Qt::PenCapStyle,QString> penCapStyles = {
+        {Qt::FlatCap,"FlatCap"},
+        {Qt::SquareCap,"SquareCap"},
+        {Qt::RoundCap,"RoundCap"},
+        {Qt::MPenCapStyle,"MPenCapStyle"},
+    };
+    QMap<Qt::PenJoinStyle,QString> penJoinStyles = {
+        {Qt::MiterJoin,"MiterJoin"},
+        {Qt::BevelJoin,"BevelJoin"},
+        {Qt::RoundJoin,"RoundJoin"},
+        {Qt::SvgMiterJoin,"SvgMiterJoin"},
+        {Qt::MPenJoinStyle,"MPenJoinStyle"},
+    };
+
+    auto initComboBox = [](QComboBox *cb){
+        cb->clear();
+        auto listView = new QListView(cb);
+        auto shadowEffect = new QGraphicsDropShadowEffect(listView);
+        shadowEffect->setOffset(-5, 5);
+        shadowEffect->setColor(Qt::black);
+        shadowEffect->setBlurRadius(10);
+        listView->setGraphicsEffect(shadowEffect);
+        cb->setView(listView);
+    };
+
+    initComboBox(ui->cb_pen_style);
+    for(auto itr=penStyles.begin();itr!=penStyles.end();++itr)
+        ui->cb_pen_style->addItem(itr.value(),int(itr.key()));
+    ui->cb_pen_style->setCurrentText(penStyles[penSetting->pen.style()]);
+
+    initComboBox(ui->cb_pen_cap);
+    for(auto itr=penCapStyles.begin();itr!=penCapStyles.end();++itr)
+        ui->cb_pen_cap->addItem(itr.value(),int(itr.key()));
+    ui->cb_pen_cap->setCurrentText(penCapStyles[penSetting->pen.capStyle()]);
+
+    initComboBox(ui->cb_pen_join);
+    for(auto itr=penJoinStyles.begin();itr!=penJoinStyles.end();++itr)
+        ui->cb_pen_join->addItem(itr.value(),int(itr.key()));
+    ui->cb_pen_join->setCurrentText(penJoinStyles[penSetting->pen.joinStyle()]);
 }
 
 BlackboardTestWindow::~BlackboardTestWindow()
@@ -271,16 +301,6 @@ Blackboard *BlackboardTestWindow::blackboard()
     return ui->blackboard;
 }
 
-void BlackboardTestWindow::on_pointer_clicked()
-{
-    blackboard()->setToolType(BBTT_Pointer);
-}
-
-void BlackboardTestWindow::on_pen_clicked()
-{
-     blackboard()->setToolType(BBTT_Pen);
-}
-
 void BlackboardTestWindow::on_clear_clicked()
 {
     blackboard()->clearItems();
@@ -289,21 +309,6 @@ void BlackboardTestWindow::on_clear_clicked()
 void BlackboardTestWindow::on_remove_clicked()
 {
     blackboard()->removeSelectedElement();
-}
-
-void BlackboardTestWindow::on_picker_clicked()
-{
-    blackboard()->setToolType(BBTT_Picker);
-}
-
-void BlackboardTestWindow::on_straight_clicked()
-{
-    blackboard()->setToolType(BBTT_Straight);
-}
-
-void BlackboardTestWindow::on_text_clicked()
-{
-    blackboard()->setToolType(BBTT_Text);
 }
 
 void BlackboardTestWindow::on_repaint_clicked()
@@ -322,42 +327,21 @@ void BlackboardTestWindow::on_repaint_clicked()
 
 void BlackboardTestWindow::on_penWeight_valueChanged(int arg1)
 {
-    penSettings->setWeight(arg1 * 0.01);
-}
-
-void BlackboardTestWindow::on_straightWeight_valueChanged(int arg1)
-{
-    straightSettings->setWeight(arg1 * 0.01);
+    for(auto settings: itemSettings){
+        settings->setWeight(arg1 * 0.01);
+    }
 }
 
 void BlackboardTestWindow::on_textWeight_valueChanged(int arg1)
 {
-    textSettings->setPointWeight(arg1 * 0.01);
-}
-
-void BlackboardTestWindow::on_rect_clicked()
-{
-    blackboard()->setToolType(BBTT_Rectangle);
-}
-
-void BlackboardTestWindow::on_ellipse_clicked()
-{
-    blackboard()->setToolType(BBTT_Ellipse);
-}
-
-void BlackboardTestWindow::on_ellipseWeight_valueChanged(int arg1)
-{
-    ellipseSettings->setWeight(arg1 * 0.01);
-}
-
-void BlackboardTestWindow::on_triangle_clicked()
-{
-    blackboard()->setToolType(BBTT_Triangle);
-}
-
-void BlackboardTestWindow::on_triangleWeight_valueChanged(int arg1)
-{
-    triangleSettings->setWeight(arg1 * 0.01);
+    blackboard()->toolSettings<BbItemTextData>(BBTT_Text)->setPointWeight(arg1 * 0.01);
+    ui->blackboard->scene()->enumSelected([&](IItemIndex *index,int num){
+        if(index->toolType() == BBTT_Text){
+            auto text = static_cast<BbItemText*>(index);
+            text->setWeight(arg1 * 0.01);
+        }
+        return false;
+    });
 }
 
 void BlackboardTestWindow::on_onlineImage_clicked()
@@ -380,11 +364,6 @@ void BlackboardTestWindow::on_paste_clicked()
 void BlackboardTestWindow::on_selectedAll_clicked()
 {
     blackboard()->selectedAll();
-}
-
-void BlackboardTestWindow::on_rectWeight_valueChanged(int arg1)
-{
-    rectSettings->setWeight(arg1 * 0.01);
 }
 
 void BlackboardTestWindow::on_imagePick_clicked()
@@ -457,43 +436,28 @@ void BlackboardTestWindow::onColorChanged(const QColor &color)
 {
     switch(_whichColor){
     case WhichColor_Pen:
-        penSettings->setColor(color);
+        for(auto setting: itemSettings)
+            setting->pen.setColor(color);
         ui->penColor->setColor(color);
         break;
+    case WhichColor_Brush:
+        ui->brushColor->setColor(color);
+        for(auto setting: itemSettings)
+            setting->brush.setColor(color);
+        break;
     case WhichColor_Text:
-        textSettings->color = color;
+        blackboard()->toolSettings<BbItemTextData>(BBTT_Text)->color = color;
         ui->textColor->setColor(color);
+        ui->blackboard->scene()->enumSelected([&](IItemIndex *index,int){
+            if(index->toolType() == BBTT_Text){
+                auto text = static_cast<BbItemText*>(index);
+                text->setColor(color);
+            }
+            return false;
+        });
         break;
-    case WhichColor_Straight:
-        straightSettings->pen.setColor(color);
-        ui->straightColor->setColor(color);
-        break;
-    case WhichColor_RectPen:
-        rectSettings->pen.setColor(color);
-        ui->rectPenColor->setColor(color);
-        break;
-    case WhichColor_RectBrush:
-        rectSettings->brush.setColor(color);
-        ui->rectBrushColor->setColor(color);
-        break;
-    case WhichColor_EllipsePen:
-        ellipseSettings->pen.setColor(color);
-        ui->ellipsePenColor->setColor(color);
-        break;
-    case WhichColor_EllipseBrush:
-        ellipseSettings->brush.setColor(color);
-        ui->ellipseBrushColor->setColor(color);
-        break;
-    case WhichColor_TrianglePen:
-        triangleSettings->pen.setColor(color);
-        ui->trianglePenColor->setColor(color);
-        break;
-    case WhichColor_TriangleBrush:
-        triangleSettings->brush.setColor(color);
-        ui->triangleBrushColor->setColor(color);
-        break;
-    case WhichColor_Invalid:
     case WhichColor_Max:
+    case WhichColor_Invalid:
         break;
     }
 }
@@ -602,4 +566,26 @@ void BlackboardTestWindow::on_btnConnectionToggle_clicked()
 void BlackboardTestWindow::on_deselectedAll_clicked()
 {
     ui->blackboard->deselectAll();
+}
+
+void BlackboardTestWindow::on_cb_pen_join_activated(int index)
+{
+    auto style = static_cast<Qt::PenJoinStyle>(ui->cb_pen_join->currentData().toInt());
+    for(auto setting:itemSettings)
+        setting->pen.setJoinStyle(style);
+}
+
+void BlackboardTestWindow::on_cb_pen_style_activated(int index)
+{
+    auto style = static_cast<Qt::PenStyle>(ui->cb_pen_style->currentData().toInt());
+    for(auto setting:itemSettings)
+        setting->pen.setStyle(style);
+}
+
+void BlackboardTestWindow::on_cb_pen_cap_activated(int index)
+{
+    auto style = static_cast<Qt::PenCapStyle>(ui->cb_pen_cap->currentData().toInt());
+    for(auto setting:itemSettings)
+        setting->pen.setCapStyle(style);
+
 }

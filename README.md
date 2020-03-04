@@ -6,11 +6,8 @@
 #### 软件架构
 基于Qt图形视图框架（The QGraphics View Framework）开发。
 
-#### 运行实例
-通过Qt Creator 打开blackboard.pro 构建运行。
-
-#### 构建动态库
-通过Qt Creator 打开blackboard.pro在Debug与Release下分别构建，可以在项目目录的上一层目录见到qt_blackboard_shared目录。
+#### 运行实例、构建动态库
+blackboard.pro在Debug与Release下分别构建运行，可以在项目目录的上一层目录见到qt_blackboard_shared目录。
 
 #### 参与贡献
 1. Fork 本项目

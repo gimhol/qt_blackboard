@@ -2,8 +2,8 @@
 #include "BbItemTextData.h"
 #include "Blackboard.h"
 #include "BbScene.h"
-
 #include <QKeyEvent>
+#include<QDebug>
 
 BbItemText::BbItemText():
     QGraphicsTextItem(),
@@ -100,7 +100,21 @@ void BbItemText::keyPressEvent(QKeyEvent *event)
      *      否則會獲取到修改前的。
      */
     QGraphicsTextItem::keyPressEvent(event);
+#ifdef QT_DEBUG
+    qInfo() << modifiers << key;
+    qInfo() << text();
+#endif
     updateContent();
+
+    // Note: 移除粘贴来的文本的格式。若还有其他粘贴的路径呢？-Gim
+    if(Qt::ControlModifier == modifiers && key == Qt::Key_V){
+        auto a = textCursor();
+        auto p = a.position();
+        // 不能直接QGraphicsTextItem::setPlainText，会带颜色的。
+        document()->setPlainText(text());
+        a.setPosition(p);
+        setTextCursor(a);
+    }
 }
 
 void BbItemText::keyReleaseEvent(QKeyEvent *event)

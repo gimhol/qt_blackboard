@@ -18,6 +18,12 @@ win32
     QMAKE_LFLAGS_RELEASE += /debug /opt:ref
     DESTDIR = $$OUT_PWD/../
 }
+CONFIG(debug, debug|release) {
 LIBS += -L$$OUT_PWD/../ -lNsbBlackboardd
+}else{
+LIBS += -L$$OUT_PWD/../ -lNsbBlackboard
+}
 INCLUDEPATH += $$PWD/../blackboard-shared
 DEPENDPATH += $$PWD/../blackboard-shared
+RESOURCES += \
+    resource.qrc
