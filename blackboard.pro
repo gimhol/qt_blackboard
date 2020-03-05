@@ -3,6 +3,7 @@ CONFIG += ordered
 SUBDIRS = \
     blackboard-shared \
     blackboard-demo
+include(info.pri)
 
 win32{
     DISTFILES = \

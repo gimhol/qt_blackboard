@@ -35,9 +35,9 @@ void BbItemText::init()
     setDefaultTextColor(_myData->color);
     setAcceptedMouseButtons(Qt::LeftButton);
 }
-void BbItemText::focusOutEvent(QFocusEvent *event)
+
+void BbItemText::focusOutEvent(QFocusEvent *)
 {
-    Q_UNUSED(event);
     // NOTE: 文本编辑状态下失焦，才去done。
     if(textInteractionFlags() == Qt::TextEditorInteraction)
     {
@@ -117,9 +117,19 @@ void BbItemText::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void BbItemText::keyReleaseEvent(QKeyEvent *event)
+QVariant BbItemText::itemChange(GraphicsItemChange change,
+                                const QVariant &value)
 {
-    QGraphicsTextItem::keyReleaseEvent(event);
+    if(ItemSelectedChange == change && value == 0){
+        blackboard()->revertToolCursor();
+        // NOTE: 由于会修改光标样式，所以里需要还原
+        setTextInteractionFlags(Qt::NoTextInteraction);
+        // NOTE: 如果框选了一些，然后失焦，会导致保持这个状态，所以需要清除选择
+        auto cursor = textCursor();
+        cursor.clearSelection();
+        setTextCursor(cursor);
+    }
+    return QGraphicsTextItem::itemChange(change,value);
 }
 
 void BbItemText::repaint()
@@ -286,26 +296,17 @@ void BbItemText::toolDown(const QPointF &pos)
     }
 }
 
-void BbItemText::toolDraw(const QPointF &pos)
+void BbItemText::toolDraw(const QPointF &)
 {
-    Q_UNUSED(pos)
     // do nothing.
 }
 
-void BbItemText::toolDone(const QPointF &pos)
+void BbItemText::toolDone(const QPointF &)
 {
-    Q_UNUSED(pos)
-    // do nothing.
     if(bbScene()->toolType() != BBTT_Text)
     {
         clearFocus();
     }
-}
-
-void BbItemText::modifiersChanged(Qt::KeyboardModifiers modifiers)
-{
-    Q_UNUSED(modifiers)
-    // do nothing.
 }
 
 void BbItemText::removed()
