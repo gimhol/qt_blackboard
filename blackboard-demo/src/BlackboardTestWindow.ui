@@ -1191,8 +1191,8 @@ outline: 0px;
       <widget class="Blackboard" name="blackboard">
        <property name="baseSize">
         <size>
-         <width>619</width>
-         <height>602</height>
+         <width>668</width>
+         <height>671</height>
         </size>
        </property>
       </widget>
