@@ -717,15 +717,20 @@ bool Blackboard::eventFilter(QObject *object, QEvent *event)
 
 void Blackboard::tabletEvent(QTabletEvent *event)
 {
+    auto updateTabletPenPos = [&](){
+        auto p = event->posF();
+        p.rx() += horizontalScrollBar()->value();
+        p.ry() += verticalScrollBar()->value();
+        dptr->tabletPenPos = transform().inverted().map(p);
+    };
     switch(event->type())
     {
     case QEvent::TabletPress:
     {
         onMousePress(event->pos(),event->button());
-        qInfo() << mapFromScene(0,0);
-        dptr->tabletPenPos = mapToScene(((event->posF()-mapFromScene(0,0))*100).toPoint())/100;
+        updateTabletPenPos();
         QMouseEvent mouseEvent(QEvent::MouseMove,
-                    event->posF(),
+                    event->pos(),
                     event->button(),
                     event->buttons(),
                     event->modifiers());
@@ -735,14 +740,13 @@ void Blackboard::tabletEvent(QTabletEvent *event)
     case QEvent::TabletMove:
     {
         static QPointF p;
-        if(p == event->posF()){
+        if(p == event->posF())
             break;
-        }
         p = event->posF();
-        dptr->tabletPenPos = mapToScene(((event->posF()-mapFromScene(0,0))*100).toPoint())/100;
+        updateTabletPenPos();
         onMouseMove(event->pos());
         QMouseEvent mouseEvent(QEvent::MouseMove,
-                    event->posF(),
+                    event->pos(),
                     event->button(),
                     event->buttons(),
                     event->modifiers());
@@ -751,10 +755,10 @@ void Blackboard::tabletEvent(QTabletEvent *event)
     }
     case QEvent::TabletRelease:
     {
-        dptr->tabletPenPos = mapToScene(((event->posF()-mapFromScene(0,0))*100).toPoint())/100;
+        updateTabletPenPos();
         onMouseRelease(event->pos(),event->button());
         QMouseEvent mouseEvent(QEvent::MouseButtonRelease,
-                    event->posF(),
+                    event->pos(),
                     event->button(),
                     event->buttons(),
                     event->modifiers());
