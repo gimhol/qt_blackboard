@@ -1,4 +1,4 @@
-VERSION=1.0.6.10
+VERSION=1.0.6.11
 RC_ICONS = ../logo.ico
 QMAKE_TARGET_COMPANY = "卓越牛师帮在线一对一"
 QMAKE_TARGET_PRODUCT = "牛师帮教师"
