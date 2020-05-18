@@ -300,6 +300,11 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
          *      -Gim
          */
         for(auto idx: _deletingItems){
+            auto item = dynamic_cast<QGraphicsItem*>(idx);
+            if(item){
+                //This line trigger the bug.
+                //QGraphicsScene::removeItem(item);
+            }
             if(idx->toolType() == BBTT_Text){
                 auto text = dynamic_cast<BbItemText*>(idx);
                 text->deleteLater();
@@ -749,7 +754,6 @@ void BbScene::remove(IItemIndex *index)
         index->removed();
         if(_curItemIndex == index)
             _curItemIndex = nullptr;
-
         auto item = dynamic_cast<QGraphicsItem*>(index);
         if(item)
         {
@@ -766,7 +770,6 @@ void BbScene::remove(IItemIndex *index)
         {
             qWarning() << "[BlackboardScene::remove] item is not a 'QGraphicsItem'! what happen?!";
         }
-
         /*
          * NOTE:
          * 在拖动item时移除item。会导致后面新出现的item拖动动时发生跳至其他位置的BUG，故在这里特殊处理。
@@ -776,6 +779,9 @@ void BbScene::remove(IItemIndex *index)
         if(_mouseButtons != Qt::NoButton){
             _deletingItems << index;
         }else{
+            if(item){
+                QGraphicsScene::removeItem(item);
+            }
             if(index->toolType() == BBTT_Text){
                 auto text = dynamic_cast<BbItemText*>(index);
                 text->deleteLater();
