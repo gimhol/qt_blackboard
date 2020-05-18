@@ -3,6 +3,7 @@
 #include "Blackboard.h"
 #include "BbItemPenData.h"
 #include <QDebug>
+#include <QMessageBox>
 
 #ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
 float penSqrt(float number)
@@ -50,9 +51,23 @@ void BbItemPen::init()
 }
 BbItemPen::~BbItemPen()
 {
+    if(flags==0xdeadbeef){
+        QMessageBox::critical(nullptr, QStringLiteral("黑板故障"), QStringLiteral(
+                                  "二次析构笔迹。"
+                                  "如果您是老师，请记住前几秒的使用在线课堂上课的操作并将本错误拍照告知牛师帮在线课堂。\n"
+                                  "如果您是学生，请拍照并告诉老师。"));
+        qFatal(__FUNCTION__"0xdeadbeef");
+    }
+    if(flags!=0x900dbeef){
+        QMessageBox::critical(nullptr, QStringLiteral("黑板故障"), QStringLiteral(
+                                 "析构野指针笔迹。"
+                                 "如果您是老师，请记住前几秒的使用在线课堂上课的操作并将本错误拍照告知牛师帮在线课堂。\n"
+                                 "如果您是学生，请拍照并告诉老师。"));
+        qFatal(__FUNCTION__"no 0x900dbeef");
+    }
+    flags=0xdeadbeef;
     if(_data){
         delete _data;
-        _data = nullptr;
     }
 }
 
