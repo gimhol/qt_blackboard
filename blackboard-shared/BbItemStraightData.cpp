@@ -58,7 +58,7 @@ QJsonObject BbItemStraightData::toJsonObject()
     return jobj;
 }
 
-void BbItemStraightData::fromJsonObject(QJsonObject jobj)
+void BbItemStraightData::fromJsonObject(const QJsonObject &jobj)
 {
     BbItemData::fromJsonObject(jobj);
     a.setX(jobj["a_x"].toDouble());

@@ -49,3 +49,18 @@ void BbItemImageData::readStream(QDataStream &stream)
     url = jobj["url"].toString();
 
 }
+
+QJsonObject BbItemImageData::toJsonObject()
+{
+    QJsonObject ret = BbItemData::toJsonObject();
+    ret["path"] = path;
+    ret["url"] = url;
+    return ret;
+}
+
+void BbItemImageData::fromJsonObject(const QJsonObject &jobj)
+{
+    BbItemData::fromJsonObject(jobj);
+    path = jobj["path"].toString();
+    url = jobj["url"].toString();
+}

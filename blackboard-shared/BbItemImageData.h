@@ -24,6 +24,13 @@ public:
     void writeStream(QDataStream &stream) override;
 
     void readStream(QDataStream &stream) override;
+
+    // IJsonWR interface
+public:
+    virtual QJsonObject toJsonObject() override;
+
+    virtual void fromJsonObject(const QJsonObject &jobj) override;
+
 };
 
 #endif // BBITEMIMAGEDATA_H

@@ -4,6 +4,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsItem>
 #include <functional>
+#include <cmath>
 #include "BbToolType.h"
 #include "IStreamWR.h"
 #include "IItemIndex.h"
@@ -24,9 +25,18 @@ class BbItemTriangleData;
 class BbItemImage;
 class BbItemImageData;
 class Blackboard;
-class NSB_BLACKBOARD_EXPORT BbScene: public QGraphicsScene, public IStreamWR
+class NSB_BLACKBOARD_EXPORT BbScene:
+        public QGraphicsScene,
+        public IStreamWR,
+        public IJsonWR
 {
     Q_OBJECT
+public:
+    enum PageSplitterPosition{
+        PSP_NOWHERE,
+        PSP_BACKGROUND,
+        PSP_FOREGROUND
+    };
 protected:
     friend class Blackboard;
 
@@ -41,6 +51,10 @@ protected:
     QList<QPair<QString,QGraphicsItem*>> _backgrounds;
     QList<IItemIndex*> _deletingItems;
     QTimer *_pickerTimer;
+
+    QPen _pageSplitterPen = QPen(QColor(255,255,255,100),1,Qt::DashLine);
+    PageSplitterPosition _pageSplitterPosition = PSP_FOREGROUND;
+    qreal _pageAspectRatio = 1.414285714285714;
 public:
     BbScene(Blackboard *parent = Q_NULLPTR);
 
@@ -92,6 +106,8 @@ public:
     IItemIndex *copyItemFromStream(QDataStream &stream);
 
     IItemIndex *readItemFromStream(QDataStream &stream);
+
+    IItemIndex *readItemFromJsonObject(const QJsonObject &jobj);
 
     void selectedAll();
 
@@ -149,6 +165,18 @@ public:
     void onPicking();
     void stopPicking();
 
+    PageSplitterPosition pageSplitterPosition() { return _pageSplitterPosition; }
+
+    QPen pageSplitterPen(){ return _pageSplitterPen; }
+
+    qreal pageAspectRatio(){ return _pageAspectRatio; }
+
+    void setPageSplitterPosition(PageSplitterPosition value) { _pageSplitterPosition = value; }
+
+    void setPageSplitterPen(QPen value){ _pageSplitterPen = value; }
+
+    void setPageAspectRatio(qreal value){ _pageAspectRatio = (std::max)(value,0.01); }
+
     template<typename T>
     inline T *find(const std::string &lid)
     {
@@ -186,6 +214,12 @@ protected:
 
     void onToolChanged(BbToolType previous);
 
+    void drawPageSplitterWhenNeeded(QPainter *painter, const QRectF &rect);
+
+    void drawBackground(QPainter *painter, const QRectF &rect) override;
+
+    void drawForeground(QPainter *painter, const QRectF &rect) override;
+
     // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;
@@ -197,6 +231,13 @@ public:
     void emitItemMovedSignals();
 
     void updatePickerRect();
+
+    // IJsonWR interface
+public:
+    virtual QJsonObject toJsonObject() override;
+
+    virtual void fromJsonObject(const QJsonObject &jobj) override;
+
 };
 
 #endif // CANVASSCENE3_H

@@ -68,7 +68,7 @@ QJsonObject BbItemPenData::toJsonObject()
     return jobj;
 }
 
-void BbItemPenData::fromJsonObject(QJsonObject jobj)
+void BbItemPenData::fromJsonObject(const QJsonObject &jobj)
 {
     BbItemData::fromJsonObject(jobj);
     for(auto jval: jobj["coords"].toArray())

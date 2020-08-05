@@ -116,7 +116,7 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
     ui->blackboard->setCanvasSize(ui->blackboard->baseSize().width(),1000);
     ui->blackboard->setPointerPixmap(pm);
     ui->blackboard->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->blackboard->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    ui->blackboard->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->blackboard->setContextMenuPolicy(Qt::CustomContextMenu);
 
     new BbMenu(ui->blackboard);
@@ -263,7 +263,10 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
     auto imageHasUrl = [blackboard1](BbItemImage *item){
         qInfo() << "imageHasUrl: " << item->url();
     };
-
+    auto imageHasPath = [blackboard1](BbItemImage *item){
+        qInfo() << "imageHasPath: " << item->path();
+        item->setPixmap(item->path());
+    };
 #define HANDLE_ITEM_EVENT(_EVENT_TYPE_,_ITEM_TYPE_) \
     case BBIET_##_EVENT_TYPE_: \
         _EVENT_TYPE_(dynamic_cast<_ITEM_TYPE_*>(index)); \
@@ -289,6 +292,7 @@ void BlackboardTestWindow::bindBlackboard(Blackboard *blackboard0, Blackboard *b
             HANDLE_ITEM_EVENT(imageResizing,BbItemImage);
             HANDLE_ITEM_EVENT(imageResized,BbItemImage);
             HANDLE_ITEM_EVENT(imageHasUrl,BbItemImage);
+            HANDLE_ITEM_EVENT(imageHasPath,BbItemImage);
             case BBIET_none:
             default:
                 break;

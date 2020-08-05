@@ -3,6 +3,7 @@
 #include "Blackboard.h"
 #include "BbScene.h"
 
+#include <cmath>
 #include <QPainter>
 #include <QDebug>
 #include <QStyleOptionGraphicsItem>
@@ -264,6 +265,21 @@ void BbItemStraight::writeStream(QDataStream &stream)
 void BbItemStraight::readStream(QDataStream &stream)
 {
     _myData->readStream(stream);
+    absolutize();
+    repaint();
+}
+
+QJsonObject BbItemStraight::toJsonObject()
+{
+    _myData->x = x();
+    _myData->y = y();
+    _myData->z = zValue();
+    return _myData->toJsonObject();
+}
+
+void BbItemStraight::fromJsonObject(const QJsonObject &jobj)
+{
+    _myData->fromJsonObject(jobj);
     absolutize();
     repaint();
 }

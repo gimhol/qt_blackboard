@@ -246,6 +246,22 @@ void BbItemText::readStream(QDataStream &stream)
     repaint();
 }
 
+QJsonObject BbItemText::toJsonObject()
+{
+    _myData->text = text();
+    _myData->x = x();
+    _myData->y = y();
+    _myData->z = zValue();
+    return _myData->toJsonObject();
+}
+
+void BbItemText::fromJsonObject(const QJsonObject &jobj)
+{
+    _myData->fromJsonObject(jobj);
+    absolutize();
+    repaint();
+}
+
 BbItemData *BbItemText::data()
 {
     return _myData;

@@ -5,6 +5,7 @@ HEADERS += \
     $$PWD/BbHeader.h \
     $$PWD/BbHelper.h \
     $$PWD/BbScene.h \
+    $$PWD/IJsonWR.h \
     $$PWD/IStreamWR.h \
     $$PWD/Blackboard.h \
     $$PWD/BbItemPen.h \

@@ -30,6 +30,6 @@ public:
 
     QJsonObject toJsonObject() override;
 
-    void fromJsonObject(QJsonObject jobj) override;
+    void fromJsonObject(const QJsonObject &jobj) override;
 };
 #endif // BBITEMTRIANGLEDATA_H

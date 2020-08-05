@@ -104,7 +104,7 @@ QJsonObject BbItemTriangleData::toJsonObject()
     return jobj;
 }
 
-void BbItemTriangleData::fromJsonObject(QJsonObject jobj)
+void BbItemTriangleData::fromJsonObject(const QJsonObject &jobj)
 {
     BbItemData::fromJsonObject(jobj);
     auto jarr = jobj["coords"].toArray();

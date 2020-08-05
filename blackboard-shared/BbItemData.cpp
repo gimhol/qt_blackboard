@@ -1,6 +1,7 @@
 ﻿#include "BbItemData.h"
 #include "IItemIndex.h"
 #include "BbScene.h"
+#include <QDebug>
 
 BbItemData::BbItemData(CoordMode mode):
     mode(mode)
@@ -58,10 +59,23 @@ void BbItemData::updatePrevSize()
     prevSize = size;
 }
 
+void BbItemData::writeStream(QDataStream &stream){
+
+    stream << QJsonDocument(toJsonObject()).toBinaryData();
+}
+
+void BbItemData::readStream(QDataStream &stream){
+    QByteArray data;
+    stream >> data;
+    auto jobj = QJsonDocument::fromBinaryData(data).object();
+    fromJsonObject(jobj);
+}
+
 QJsonObject BbItemData::toJsonObject()
 {
     QJsonObject jobj;
     jobj["coord_mode"] = mode;
+    jobj["type"] = tooltype;
     jobj["id"] = lid;
     jobj["x"] = x;
     jobj["y"] = y;
@@ -93,9 +107,12 @@ QJsonObject BbItemData::toJsonObject()
     return jobj;
 }
 
-void BbItemData::fromJsonObject(QJsonObject jobj)
+void BbItemData::fromJsonObject(const QJsonObject &jobj)
 {
     mode  = CoordMode(jobj["coord_mode"].toInt());
+    if(jobj["type"] != tooltype){
+        qWarning() << "unexpected type! wanted: " << tooltype << "got: " << jobj["type"];
+    }
     lid   = jobj["id"].toString();
     x     = jobj["x"].toDouble();
     y     = jobj["y"].toDouble();
@@ -119,16 +136,4 @@ void BbItemData::fromJsonObject(QJsonObject jobj)
     size.setHeight(jobj["height"].toDouble());
     prevSize.setWidth(jobj["prev_width"].toDouble());
     prevSize.setHeight(jobj["prev_height"].toDouble());
-}
-
-void BbItemData::writeStream(QDataStream &stream){
-
-    stream << QJsonDocument(toJsonObject()).toBinaryData();
-}
-
-void BbItemData::readStream(QDataStream &stream){
-    QByteArray data;
-    stream >> data;
-    auto jobj = QJsonDocument::fromBinaryData(data).object();
-    fromJsonObject(jobj);
 }

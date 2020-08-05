@@ -36,7 +36,7 @@ public:
 
     virtual QJsonObject toJsonObject() override;
 
-    virtual void fromJsonObject(QJsonObject jobj) override;
+    virtual void fromJsonObject(const QJsonObject &jobj) override;
 };
 
 #endif // CITEMPENDATA_H

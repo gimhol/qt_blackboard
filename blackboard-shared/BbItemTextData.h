@@ -52,7 +52,7 @@ public:
 
     QJsonObject toJsonObject() override;
 
-    void fromJsonObject(QJsonObject jobj) override;
+    void fromJsonObject(const QJsonObject &jobj) override;
 };
 
 #endif // BBITEMTEXTDATA_H

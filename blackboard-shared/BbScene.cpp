@@ -598,6 +598,48 @@ void BbScene::updatePickerRect()
                 );
 }
 
+QJsonObject BbScene::toJsonObject()
+{
+    QJsonObject ret;
+    auto rect = sceneRect();
+    ret["x"] = rect.x();
+    ret["y"] = rect.y();
+    ret["width"] = rect.width();
+    ret["height"] = rect.height();
+
+    QJsonArray jItems;
+    for(auto item: items()){
+
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+            continue;
+
+        auto idx = dynamic_cast<IItemIndex *>(item);
+        auto wr = dynamic_cast<IJsonWR *>(item);
+        if(!idx || !wr)
+            continue;
+
+        jItems << wr->toJsonObject();
+    }
+    ret["items"] = jItems;
+    return ret;
+}
+
+void BbScene::fromJsonObject(const QJsonObject &jobj)
+{
+    auto rect = QRectF(
+            jobj["x"].toDouble(),
+            jobj["y"].toDouble(),
+            jobj["width"].toDouble(),
+            jobj["height"].toDouble());
+    setSceneRect(rect);
+    auto jItems = jobj["items"].toArray();
+
+    for(auto jVal: jItems){
+        readItemFromJsonObject(jVal.toObject());
+    }
+}
+
 void BbScene::checkItemsPicking()
 {
     QPainterPath path;
@@ -689,7 +731,33 @@ void BbScene::onToolChanged(BbToolType previous)
     if(_curItemIndex)
         _curItemIndex->toolDone(_mousePos);
 //    if(BBTT_Picker == _toolType)
-//        setItemPicking(true);
+    //        setItemPicking(true);
+}
+
+void BbScene::drawPageSplitterWhenNeeded(QPainter *painter, const QRectF &rect)
+{
+    painter->setPen(_pageSplitterPen);
+    auto pageHeight = _pageAspectRatio * width();
+    auto i = int(rect.bottom() / pageHeight);
+    auto y = i * pageHeight;
+    while(y > rect.top()){
+        painter->drawLine(0,y,width(),y);
+        painter->drawText(2,y-2,QString("- %1 -").arg(i));
+        --i;
+        y = i * pageHeight;
+    }
+}
+
+void BbScene::drawBackground(QPainter *painter, const QRectF &rect)
+{
+    if(_pageSplitterPosition == PSP_BACKGROUND)
+        drawPageSplitterWhenNeeded(painter,rect);
+}
+
+void BbScene::drawForeground(QPainter *painter, const QRectF &rect)
+{
+    if(_pageSplitterPosition == PSP_FOREGROUND)
+        drawPageSplitterWhenNeeded(painter,rect);
 }
 
 IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
@@ -705,6 +773,19 @@ IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
         {
             streamReader->readStream(stream);
         }
+    }
+    return index;
+}
+
+IItemIndex *BbScene::readItemFromJsonObject(const QJsonObject &jobj)
+{
+    auto type = jobj["type"].toInt();
+    auto index = blackboard()->factory()->createItem(static_cast<BbToolType>(type));
+    if(index){
+        add(index);
+        auto r = dynamic_cast<IJsonWR*>(index);
+        if(r)
+            r->fromJsonObject(jobj);
     }
     return index;
 }

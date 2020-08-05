@@ -10,7 +10,10 @@
 class BbItemData;
 class BbPointer;
 class BlackboardPrivate;
-class NSB_BLACKBOARD_EXPORT Blackboard: public QGraphicsView, public IStreamWR
+class NSB_BLACKBOARD_EXPORT Blackboard:
+        public QGraphicsView,
+        public IStreamWR,
+        public IJsonWR
 {
     Q_OBJECT
 public:
@@ -277,6 +280,9 @@ signals:
 public:
     virtual void writeStream(QDataStream &stream) override;
     virtual void readStream(QDataStream &stream) override;
+public:
+    virtual QJsonObject toJsonObject() override;
+    virtual void fromJsonObject(const QJsonObject &jobj) override;
 
 private:
     BlackboardPrivate *dptr;

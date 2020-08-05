@@ -92,7 +92,7 @@ void BbItemEllipseData::setWeight(qreal weight)
     pen.setWidthF(minPenWidth + weight * (maxPenWidth - minPenWidth));
 }
 
-void BbItemEllipseData::fromJsonObject(QJsonObject jobj)
+void BbItemEllipseData::fromJsonObject(const QJsonObject &jobj)
 {
     BbItemData::fromJsonObject(jobj);
     empty = size.isNull();

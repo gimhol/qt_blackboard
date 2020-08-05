@@ -622,6 +622,16 @@ void Blackboard::readStream(QDataStream &stream)
     scene()->readStream(stream);
 }
 
+QJsonObject Blackboard::toJsonObject()
+{
+    return scene()->toJsonObject();
+}
+
+void Blackboard::fromJsonObject(const QJsonObject &jobj)
+{
+    scene()->fromJsonObject(jobj);
+}
+
 qreal Blackboard::orginalRatio(){return static_cast<qreal>(dptr->orginalSize.width())/dptr->orginalSize.height();  }
 
 QSize Blackboard::canvasSize(){return dptr->canvasSize;}

@@ -85,7 +85,7 @@ public:
      */
     void setWeight(qreal weight) override;
 
-    void fromJsonObject(QJsonObject jobj) override;
+    void fromJsonObject(const QJsonObject &jobj) override;
 };
 
 #endif // BBITEMELLIPSEDATA_H

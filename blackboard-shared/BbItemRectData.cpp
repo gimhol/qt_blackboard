@@ -96,7 +96,7 @@ void BbItemRectData::setWeight(qreal weight)
     pen.setWidthF(minPenWidth + weight * (maxPenWidth - minPenWidth));
 }
 
-void BbItemRectData::fromJsonObject(QJsonObject jobj)
+void BbItemRectData::fromJsonObject(const QJsonObject &jobj)
 {
     BbItemData::fromJsonObject(jobj);
     empty = size.isNull();

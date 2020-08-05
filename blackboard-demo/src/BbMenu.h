@@ -13,6 +13,12 @@ public:
     void init();
     void initToolMenu();
     void saveItemsToPicture(QList<QGraphicsItem*> items);
+    void saveAreaToPicture(QRectF srcArea);
+
+    void saveBlackboardToJsonFile();
+    void readBlackboardFromFile();
+
+    QPixmap areaToPixmap(QRectF srcArea);
 signals:
     void saveSelectedItemsToPicutre();
     void saveAllItemsToPicutre();

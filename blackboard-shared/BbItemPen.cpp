@@ -404,6 +404,20 @@ void BbItemPen::readStream(QDataStream &stream)
     repaint();
 }
 
+QJsonObject BbItemPen::toJsonObject()
+{
+    _data->updatePostion(this);
+    _data->z = zValue();
+    return _data->toJsonObject();
+}
+
+void BbItemPen::fromJsonObject(const QJsonObject &jobj)
+{
+    _data->fromJsonObject(jobj);
+    absolutize();
+    repaint();
+}
+
 BbItemData *BbItemPen::data()
 {
     return _data;

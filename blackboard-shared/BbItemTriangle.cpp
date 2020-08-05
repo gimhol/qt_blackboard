@@ -259,6 +259,21 @@ void BbItemTriangle::readStream(QDataStream &stream)
     repaint();
 }
 
+QJsonObject BbItemTriangle::toJsonObject()
+{
+    _data->x = x();
+    _data->y = y();
+    _data->z = zValue();
+    return _data->toJsonObject();
+}
+
+void BbItemTriangle::fromJsonObject(const QJsonObject &jobj)
+{
+    _data->fromJsonObject(jobj);
+    absolutize();
+    repaint();
+}
+
 BbItemData *BbItemTriangle::data()
 {
     return _data;

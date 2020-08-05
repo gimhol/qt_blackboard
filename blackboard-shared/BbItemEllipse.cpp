@@ -288,3 +288,19 @@ void BbItemEllipse::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
 //    }
     QGraphicsRectItem::paint(painter,option,widget); // 仅用于绘制选取的虚线。
 }
+
+QJsonObject BbItemEllipse::toJsonObject()
+{
+    _data->x = x();
+    _data->y = y();
+    _data->z = zValue();
+    _data->size = rect().size();
+    return _data->toJsonObject();
+}
+
+void BbItemEllipse::fromJsonObject(const QJsonObject &stream)
+{
+    _data->fromJsonObject(stream);
+    absolutize();
+    repaint();
+}

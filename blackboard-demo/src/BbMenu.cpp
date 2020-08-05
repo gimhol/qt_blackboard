@@ -2,6 +2,8 @@
 
 #include <QDateTime>
 #include <QDir>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <QStandardPaths>
 
 BbMenu::BbMenu(Blackboard *parent):
@@ -58,14 +60,22 @@ void BbMenu::init(){
             _blackboard,
             &Blackboard::removeSelectedItems);
     addSeparator();
-    connect(addAction(QStringLiteral("保存选中图形为图片")),
+    connect(addAction(QStringLiteral("保存选中图形为图片（单图）")),
             &QAction::triggered,
             this,
             &BbMenu::onSaveSelectedItemsToPicutreAction);
-    connect(addAction(QStringLiteral("保存全部图形为图片")),
+    connect(addAction(QStringLiteral("保存全部非空页为图片（多图）")),
             &QAction::triggered,
             this,
             &BbMenu::onSaveAllItemsToPicutreAction);
+    connect(addAction(QStringLiteral("保存黑板内容为文件")),
+            &QAction::triggered,
+            this,
+            &BbMenu::saveBlackboardToJsonFile);
+    connect(addAction(QStringLiteral("从文件读取黑板内容")),
+            &QAction::triggered,
+            this,
+            &BbMenu::readBlackboardFromFile);
 }
 
 void BbMenu::onToolMenuTriggered(QAction *action)
@@ -106,22 +116,73 @@ void BbMenu::saveItemsToPicture(QList<QGraphicsItem*> items)
         r=(std::min)(sceneRect.width(),r+50);
         t=(std::max)(0.0,t-50);
         b=(std::min)(sceneRect.height(),b+50);
-        QPixmap pm(int(r-l),int(b-t));
-        pm.fill(_blackboard->palette().window().color());
-        QPainter painter(&pm);
-        _blackboard->scene()->render(&painter,
-                                    QRectF(0,0,r-l,b-t),
-                                    QRectF(l,t,r-l,b-t));
-        auto time = QDateTime::currentDateTime();
-        auto path =
-                QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)+
-                QStringLiteral("/牛师帮在线课堂/")+
-                time.toString("yyyyMMdd");
-        QDir d(path);
-        if(!d.exists())
-            d.mkpath(path);
-        pm.save(path+"/"+time.toString("hhmmss")+".png");
+        saveAreaToPicture(QRectF(l,t,r-l,b-t));
     }
+}
+
+void BbMenu::saveAreaToPicture(QRectF srcArea)
+{
+    auto pm = areaToPixmap(srcArea);
+    auto time = QDateTime::currentDateTime();
+    auto path =
+            QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)+
+            QStringLiteral("/牛师帮在线课堂/")+
+            time.toString("yyyyMMdd");
+    QDir d(path);
+    if(!d.exists())
+        d.mkpath(path);
+    pm.save(path+"/"+time.toString("hhMMss")+".png");
+}
+
+void BbMenu::saveBlackboardToJsonFile()
+{
+    QJsonDocument jDoc(_blackboard->toJsonObject());
+
+    auto time = QDateTime::currentDateTime();
+    auto path =
+            QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)+
+            QStringLiteral("/牛师帮在线课堂/")+
+            time.toString("yyyyMMdd");
+    QDir d(path);
+    if(!d.exists())
+        d.mkpath(path);
+
+    QFile file(path+"/"+time.toString("hhMMss")+".json");
+    file.open(QIODevice::WriteOnly);
+    file.write(jDoc.toJson());
+    file.close();
+}
+
+void BbMenu::readBlackboardFromFile()
+{
+    auto time = QDateTime::currentDateTime();
+    auto dir = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) +
+            QStringLiteral("/牛师帮在线课堂/") +
+            time.toString("yyyyMMdd");
+    auto path = QFileDialog::getOpenFileName(nullptr,u8"打开nsbbb文件",dir,"*.json");
+    QFile file(path);
+    if(!file.exists())
+        return;
+
+    if(!file.open(QIODevice::ReadOnly)){
+        return;
+    }
+    auto jDoc = QJsonDocument::fromJson(file.readAll());
+    _blackboard->clearItems();
+    _blackboard->fromJsonObject(jDoc.object());
+}
+
+QPixmap BbMenu::areaToPixmap(QRectF srcArea)
+{
+    int srcWidth = int(srcArea.width());
+    int srcHeight = int(srcArea.height());
+    int dstWidth = 2 * srcWidth;
+    int dstHeight = 2 * srcHeight;
+    QPixmap pm(dstWidth,dstHeight);
+    pm.fill(_blackboard->palette().window().color());
+    QPainter painter(&pm);
+    _blackboard->scene()->render(&painter,pm.rect(),srcArea);
+    return pm;
 }
 
 void BbMenu::onSaveSelectedItemsToPicutreAction()
@@ -132,8 +193,75 @@ void BbMenu::onSaveSelectedItemsToPicutreAction()
 
 void BbMenu::onSaveAllItemsToPicutreAction()
 {
-    auto items = _blackboard->scene()->items();
-    saveItemsToPicture(items);
+    auto beginTime = QDateTime::currentMSecsSinceEpoch();
+    if(!_blackboard){
+        // TODO: make some noise here;
+        return;
+    }
+
+    auto scene = _blackboard->scene();
+    qreal maxH = scene->height();
+    qreal w = scene->width();
+    qreal h = w * scene->pageAspectRatio();
+    qreal x = 0;
+    qreal y = 0;
+    QHash<int,QRectF> dirtyPages;
+
+    auto items = _blackboard->items();
+    if(items.empty()){
+        // TODO: make some noise here;
+        return;
+    }
+
+    auto itemCount = items.count();
+    while(!items.empty()){
+        auto item = items.takeFirst();
+        if(!item->isVisible())
+            continue;
+        item->setSelected(false);
+        auto itemRect = item->sceneBoundingRect();
+        if(itemRect.right() < 0 ||
+                itemRect.bottom() < 0 ||
+                itemRect.left() > w ||
+                itemRect.bottom() > maxH)
+            continue;
+
+        auto beginPage = int(itemRect.top()/h);
+        auto endPage = int(itemRect.bottom()/h);
+        for(auto page = beginPage; page <= endPage; ++page)
+            dirtyPages[page] = QRectF(0,h * page, w, h);
+    }
+    auto time0 = QDateTime::currentMSecsSinceEpoch();
+    if(dirtyPages.empty()){
+        // TODO: make some noise here;
+        return;
+    }
+    auto time = QDateTime::currentDateTime();
+    auto dirPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QStringLiteral("/牛师帮在线课堂/")+ time.toString("yyyyMMdd");
+    QDir d(dirPath);
+    if(!d.exists())
+        d.mkpath(dirPath);
+
+    for(auto itr = dirtyPages.begin(); itr != dirtyPages.end(); ++itr){
+        auto filePath = QString("%1/%2_%3.png")
+                .arg(dirPath)
+                .arg(time.toString("hhMMss"))
+                .arg(itr.key());
+
+        auto pm = areaToPixmap(itr.value());
+        pm.save(filePath);
+    }
+    auto time1 = QDateTime::currentMSecsSinceEpoch();
+
+    auto endTime = QDateTime::currentMSecsSinceEpoch();
+    auto title = u8"保存完成";
+    auto content = QString(u8"其中图形%1个，共%2頁，检查获取非空页耗时：%3毫秒，图片生成与保存耗时：%4毫秒，总共耗时：%5毫秒")
+            .arg(itemCount)
+            .arg(dirtyPages.count())
+            .arg(time0-beginTime)
+            .arg(time1-time0)
+            .arg(endTime-beginTime);
+    QMessageBox::information(nullptr, title,content);
 }
 
 void BbMenu::onSelectedAllActionTriggered()

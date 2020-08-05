@@ -80,7 +80,7 @@ QJsonObject BbItemTextData::toJsonObject()
     return jobj;
 }
 
-void BbItemTextData::fromJsonObject(QJsonObject jobj)
+void BbItemTextData::fromJsonObject(const QJsonObject &jobj)
 {
     BbItemData::fromJsonObject(jobj);
     font.setFamily(jobj["family"].toString());

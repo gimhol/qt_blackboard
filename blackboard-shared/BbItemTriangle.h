@@ -7,7 +7,11 @@
 #include "IItemIndex.h"
 
 class BbItemTriangleData;
-class NSB_BLACKBOARD_EXPORT BbItemTriangle: public QGraphicsRectItem, public IStreamWR, public IItemIndex
+class NSB_BLACKBOARD_EXPORT BbItemTriangle:
+        public QGraphicsRectItem,
+        public IItemIndex,
+        public IStreamWR,
+        public IJsonWR
 {
     BB_HIDE_POS_SETTER
 protected:
@@ -44,13 +48,15 @@ protected:
 
     void setupRectWithABC();
 
-    // IStreamW interface
+    // IStreamWR interface
 public:
     void writeStream(QDataStream &stream) override;
-
-    // IStreamR interface
-public:
     void readStream(QDataStream &stream) override;
+
+    // IJsonWR interface
+public:
+    virtual QJsonObject toJsonObject() override;
+    virtual void fromJsonObject(const QJsonObject &jobj) override;
 
     // IItemIndex interface
 public:

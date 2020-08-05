@@ -3,6 +3,7 @@
 
 #include "BbHeader.h"
 #include "IStreamWR.h"
+#include "IJsonWR.h"
 #include "BbToolType.h"
 #include <QDataStream>
 #include <QJsonDocument>
@@ -17,7 +18,7 @@ class IItemIndex;
  *      黑板上item的数据，
  *      位置、类型、id等基本信息。
  */
-class NSB_BLACKBOARD_EXPORT BbItemData: public IStreamWR
+class NSB_BLACKBOARD_EXPORT BbItemData: public IStreamWR, public IJsonWR
 {
 public:
     enum CoordMode
@@ -132,15 +133,17 @@ public:
 
     virtual void updatePrevSize();
 
-    virtual QJsonObject toJsonObject();
-
-    virtual void fromJsonObject(QJsonObject jobj);
-
     // IStreamWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;
 
     virtual void readStream(QDataStream &stream) override;
+
+    // IJsonWR interface
+public:
+    virtual QJsonObject toJsonObject() override;
+
+    virtual void fromJsonObject(const QJsonObject &jobj) override;
 };
 
 #endif // BBITEMDATABASE_H

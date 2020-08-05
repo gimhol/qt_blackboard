@@ -184,6 +184,22 @@ bool BbItemRect::isEditing()
     return _editing;
 }
 
+QJsonObject BbItemRect::toJsonObject()
+{
+    _data->x = x();
+    _data->y = y();
+    _data->z = z();
+    _data->size = rect().size();
+    return _data->toJsonObject();
+}
+
+void BbItemRect::fromJsonObject(const QJsonObject &jobj)
+{
+    _data->fromJsonObject(jobj);
+    absolutize();
+    repaint();
+}
+
 bool BbItemRect::square()
 {
     return _square;

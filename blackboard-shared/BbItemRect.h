@@ -6,7 +6,11 @@
 #include "IItemIndex.h"
 
 class BbItemRectData;
-class NSB_BLACKBOARD_EXPORT BbItemRect: public QGraphicsRectItem, public IStreamWR, public IItemIndex
+class NSB_BLACKBOARD_EXPORT BbItemRect:
+        public QGraphicsRectItem,
+        public IItemIndex,
+        public IStreamWR,
+        public IJsonWR
 {
     BB_HIDE_POS_SETTER
 protected:
@@ -60,6 +64,12 @@ public:
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void absolutize() override;
     bool isEditing() override;
+
+    // IJsonWR interface
+public:
+    virtual QJsonObject toJsonObject() override;
+    virtual void fromJsonObject(const QJsonObject &jobj) override;
+
 };
 
 #endif // BBITEMRECT_H

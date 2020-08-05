@@ -636,8 +636,33 @@ void BbItemImage::readStream(QDataStream &stream)
     _data->readStream(stream);
     absolutize();
     repaint();
-    if(!_data->url.isEmpty() && _data->pixmap.isNull())
-    {
-        emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
+    if(_data->pixmap.isNull()){
+        if(!_data->path.isEmpty()) // 通过信号通知外部，尝试读取本地路径
+            emit blackboard()->itemChanged(BBIET_imageHasPath,this);
+        if(!_data->url.isEmpty()) // 通过信号通知外部，尝试读取URL
+            emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
     }
+}
+
+QJsonObject BbItemImage::toJsonObject()
+{
+    _data->x = x();
+    _data->y = y();
+    _data->size = rect().size();
+    _data->z = zValue();
+    return _data->toJsonObject();
+}
+
+void BbItemImage::fromJsonObject(const QJsonObject &jobj)
+{
+    _data->fromJsonObject(jobj);
+    absolutize();
+    repaint();
+    if(_data->pixmap.isNull()){
+        if(!_data->path.isEmpty()) // 通过信号通知外部，尝试读取本地路径
+            emit blackboard()->itemChanged(BBIET_imageHasPath,this);
+        if(!_data->url.isEmpty()) // 通过信号通知外部，尝试读取URL
+            emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
+    }
+
 }

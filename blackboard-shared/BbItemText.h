@@ -11,7 +11,11 @@
 
 class BbItemText;
 class BbItemTextData;
-class NSB_BLACKBOARD_EXPORT BbItemText : public QGraphicsTextItem, public IStreamWR, public IItemIndex
+class NSB_BLACKBOARD_EXPORT BbItemText :
+        public QGraphicsTextItem,
+        public IItemIndex,
+        public IStreamWR,
+        public IJsonWR
 {
     BB_HIDE_POS_SETTER
 public:
@@ -61,6 +65,11 @@ public:
 public:
     virtual void writeStream(QDataStream &stream) override;
     virtual void readStream(QDataStream &stream) override;
+
+    // IJsonWR interface
+public:
+    virtual QJsonObject toJsonObject() override;
+    virtual void fromJsonObject(const QJsonObject &jobj) override;
 
     // IItemIndex interface
 public:

@@ -17,7 +17,6 @@ win32
     QMAKE_POST_LINK += $$PWD/copy_to_shared.cmd
 
 #    QMAKE_POST_LINK += && echo "Hello!!!"
-
     QMAKE_LFLAGS_DEBUG += /MAP
     QMAKE_CFLAGS_DEBUG += /Zi
     QMAKE_LFLAGS_DEBUG += /debug /opt:ref
@@ -25,5 +24,4 @@ win32
     QMAKE_CFLAGS_RELEASE += /Zi
     QMAKE_LFLAGS_RELEASE += /debug /opt:ref
     DESTDIR = $$OUT_PWD/../
-
 }

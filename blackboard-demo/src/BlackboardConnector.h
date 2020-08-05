@@ -50,6 +50,8 @@ public:
     void onLocalTriangleDown(IItemIndex *index);
     void onLocalTriangleDraw(IItemIndex *index);
     void onLocalTriangleDone(IItemIndex *index);
+    void onImageHasPath(IItemIndex *index);
+    void onImageHasUrl(IItemIndex *index);
 
     void onMeMsgRead();
     void onRemoteBlackboardScrolled();
