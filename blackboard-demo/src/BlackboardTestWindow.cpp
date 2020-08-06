@@ -119,7 +119,9 @@ BlackboardTestWindow::BlackboardTestWindow(QWidget *parent) :
 //    ui->blackboard->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->blackboard->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    new BbMenu(ui->blackboard);
+    auto menu = new BbMenu(ui->blackboard);
+    connect(menu,&BbMenu::toast,ui->textBrowser,&QTextBrowser::append);
+
     _connector = new BlackboardConnector(ui->blackboard);
 
 

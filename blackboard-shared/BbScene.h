@@ -52,9 +52,11 @@ protected:
     QList<IItemIndex*> _deletingItems;
     QTimer *_pickerTimer;
 
-    QPen _pageSplitterPen = QPen(QColor(255,255,255,100),1,Qt::DashLine);
-    PageSplitterPosition _pageSplitterPosition = PSP_FOREGROUND;
-    qreal _pageAspectRatio = 1.414285714285714;
+    QPen _pageSplitterPen;
+    PageSplitterPosition _pageSplitterPosition;
+    qreal _pageAspectRatio ;
+    QString _pageSplitterTextFormat;
+    QFont _pageSpliiterTextFont;
 public:
     BbScene(Blackboard *parent = Q_NULLPTR);
 
@@ -171,11 +173,21 @@ public:
 
     qreal pageAspectRatio(){ return _pageAspectRatio; }
 
+    QString pageSplitterTextFormat(){ return _pageSplitterTextFormat; }
+
+    QFont pageSpliiterTextFont(){ return _pageSpliiterTextFont; }
+
     void setPageSplitterPosition(PageSplitterPosition value) { _pageSplitterPosition = value; }
 
     void setPageSplitterPen(QPen value){ _pageSplitterPen = value; }
 
     void setPageAspectRatio(qreal value){ _pageAspectRatio = (std::max)(value,0.01); }
+
+    void setPageSplitterTextFormat(QString value){ _pageSplitterTextFormat = value; }
+
+    void setPageSpliiterTextFont(QFont value){ _pageSpliiterTextFont = value; }
+
+    QHash<int,QRectF> getNotEmptyPageAreas();
 
     template<typename T>
     inline T *find(const std::string &lid)

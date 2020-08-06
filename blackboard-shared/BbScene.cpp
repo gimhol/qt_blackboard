@@ -50,6 +50,12 @@ BbScene::BbScene(Blackboard *parent):
     _pickerRect->setEnabled(false);
     _pickerRect->setZValue(DBL_MAX);
     QGraphicsScene::addItem(_pickerRect);
+
+    _pageSplitterPen = QPen(QColor(255,255,255,100),1,Qt::DashLine);
+    _pageSplitterPosition = PSP_FOREGROUND;
+    _pageAspectRatio = 1.414285714285714;
+    _pageSplitterTextFormat = QStringLiteral("- 牛师帮在线一对一 第%1页 -");
+    _pageSpliiterTextFont = QFont("Microsoft YaHei");
 }
 
 BbScene::~BbScene()
@@ -724,6 +730,37 @@ void BbScene::stopPicking()
     _pickerRect->hide();
 }
 
+QHash<int, QRectF> BbScene::getNotEmptyPageAreas()
+{
+    QHash<int, QRectF> ret;
+    qreal maxH = height();
+    qreal w = width();
+    qreal h = w * pageAspectRatio();
+    qreal x = 0;
+    qreal y = 0;
+    auto items = this->items();
+    if(items.empty())
+        return ret;
+    while(!items.empty()){
+        auto item = items.takeFirst();
+        if(!item->isVisible())
+            continue;
+        item->setSelected(false);
+        auto itemRect = item->sceneBoundingRect();
+        if(itemRect.right() < 0 ||
+                itemRect.bottom() < 0 ||
+                itemRect.left() > w ||
+                itemRect.bottom() > maxH)
+            continue;
+
+        auto beginPage = int(itemRect.top()/h);
+        auto endPage = int(itemRect.bottom()/h);
+        for(auto page = beginPage; page <= endPage; ++page)
+            ret[page] = QRectF(0,h * page, w, h);
+    }
+    return ret;
+}
+
 void BbScene::onToolChanged(BbToolType previous)
 {
 //    if(BBTT_Picker == previous)
@@ -737,12 +774,13 @@ void BbScene::onToolChanged(BbToolType previous)
 void BbScene::drawPageSplitterWhenNeeded(QPainter *painter, const QRectF &rect)
 {
     painter->setPen(_pageSplitterPen);
+    painter->setFont(_pageSpliiterTextFont);
     auto pageHeight = _pageAspectRatio * width();
     auto i = int(rect.bottom() / pageHeight);
     auto y = i * pageHeight;
     while(y > rect.top()){
         painter->drawLine(0,y,width(),y);
-        painter->drawText(2,y-2,QString("- %1 -").arg(i));
+        painter->drawText(2,y-2,_pageSplitterTextFormat.arg(i));
         --i;
         y = i * pageHeight;
     }
