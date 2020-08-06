@@ -1,12 +1,25 @@
 ﻿#include "BbMenu.h"
-#include "LazyPixmapGrabber.h"
-#include "PixmapSaver.h"
+#include "BbLazyPixmapGrabber.h"
+#include "BbPixmapSaver.h"
 
 #include <QDateTime>
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QStandardPaths>
+
+static QString makeSaveDir(){
+    auto ret = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) +
+            QStringLiteral("/牛师帮在线课堂/")+
+            QDateTime::currentDateTime().toString("yyyyMMdd");
+    QDir dir(ret);
+    if(dir.exists())
+        dir.mkpath(ret);
+    return ret;
+}
+static QString makeSaveName(int index,QString suffix){
+    return QDateTime::currentDateTime().toString("HHmmss")+"_"+QString::number(index)+suffix;
+}
 
 BbMenu::BbMenu(Blackboard *parent):
     QMenu(parent),
@@ -69,7 +82,7 @@ void BbMenu::init(){
     connect(addAction(QStringLiteral("保存全部非空页为图片（多图）")),
             &QAction::triggered,
             this,
-            &BbMenu::onSaveAllItemsToPicutreAction);
+            &BbMenu::onSaveAllItemsToPicturePageByPage);
     connect(addAction(QStringLiteral("保存黑板内容为JSON文件")),
             &QAction::triggered,
             this,
@@ -134,30 +147,13 @@ void BbMenu::saveItemsToPicture(QList<QGraphicsItem*> items)
 void BbMenu::saveAreaToPicture(QRectF srcArea)
 {
     auto pm = areaToPixmap(srcArea);
-    auto time = QDateTime::currentDateTime();
-    auto path =
-            QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)+
-            QStringLiteral("/牛师帮在线课堂/")+
-            time.toString("yyyyMMdd");
-    QDir d(path);
-    if(!d.exists())
-        d.mkpath(path);
-    pm.save(path+"/"+time.toString("hhMMss")+".png");
+    pm.save(makeSaveDir()+"/"+makeSaveName(0,".png"));
 }
 
 void BbMenu::saveBlackboardToJsonFile()
 {
     QJsonDocument jDoc(_blackboard->toJsonObject());
-
-    auto time = QDateTime::currentDateTime();
-    auto dirStr =
-            QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)+
-            QStringLiteral("/牛师帮在线课堂/")+
-            time.toString("yyyyMMdd");
-    QDir d(dirStr);
-    if(!d.exists())
-        d.mkpath(dirStr);
-    auto pathStr = dirStr+"/"+time.toString("hhMMss")+".json";
+    auto pathStr = makeSaveDir()+"/"+makeSaveName(0,".json");
     QFile file(pathStr);
     if(file.open(QIODevice::WriteOnly)){
         file.write(jDoc.toJson());
@@ -176,16 +172,11 @@ void BbMenu::saveBlackboardToJsonFile()
 void BbMenu::readBlackboardFromJsonFile()
 {
     auto time = QDateTime::currentDateTime();
-    auto dir = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) +
-            QStringLiteral("/牛师帮在线课堂/") +
-            time.toString("yyyyMMdd");
+    auto dir = makeSaveDir();
     auto path = QFileDialog::getOpenFileName(nullptr,u8"打开json文件",dir,"*.json");
     QFile file(path);
-    if(!file.exists())
+    if(!file.exists() || !file.open(QIODevice::ReadOnly))
         return;
-    if(!file.open(QIODevice::ReadOnly)){
-        return;
-    }
     auto jDoc = QJsonDocument::fromJson(file.readAll());
     _blackboard->clearItems();
     _blackboard->fromJsonObject(jDoc.object());
@@ -194,16 +185,7 @@ void BbMenu::readBlackboardFromJsonFile()
 void BbMenu::saveBlackboardToFile()
 {
     QJsonDocument jDoc(_blackboard->toJsonObject());
-
-    auto time = QDateTime::currentDateTime();
-    auto dirStr =
-            QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)+
-            QStringLiteral("/牛师帮在线课堂/")+
-            time.toString("yyyyMMdd");
-    QDir d(dirStr);
-    if(!d.exists())
-        d.mkpath(dirStr);
-    auto pathStr = dirStr+"/"+time.toString("hhMMss")+".nsbbb";
+    auto pathStr = makeSaveDir()+"/"+makeSaveName(0,".nsbbb");
     QFile file(pathStr);
     if(file.open(QIODevice::WriteOnly)){
         file.write(jDoc.toBinaryData());
@@ -222,9 +204,7 @@ void BbMenu::saveBlackboardToFile()
 void BbMenu::readBlackboardFromFile()
 {
     auto time = QDateTime::currentDateTime();
-    auto dir = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) +
-            QStringLiteral("/牛师帮在线课堂/") +
-            time.toString("yyyyMMdd");
+    auto dir = makeSaveDir();
     auto path = QFileDialog::getOpenFileName(nullptr,u8"打开nsbbb文件",dir,"*.nsbbb");
     QFile file(path);
     if(!file.exists())
@@ -236,7 +216,6 @@ void BbMenu::readBlackboardFromFile()
     _blackboard->clearItems();
     _blackboard->fromJsonObject(jDoc.object());
 }
-
 
 QPixmap BbMenu::areaToPixmap(QRectF srcArea)
 {
@@ -253,41 +232,35 @@ QPixmap BbMenu::areaToPixmap(QRectF srcArea)
 
 void BbMenu::savePixmapsToFiles(QList<QPixmap*> pixmaps)
 {
-    auto time = QDateTime::currentDateTime();
-    auto dirPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) +
-            QStringLiteral("/牛师帮在线课堂/")+
-            time.toString("yyyyMMdd");
-    QDir d(dirPath);
-    if(!d.exists())
-        d.mkpath(dirPath);
+    static QTime time;
+    time.start();
+    emit toast(QStringLiteral("开启保存图片..."));
     QHash<QString,QPixmap*> pms;
     auto i = 0;
+    auto dirPath = makeSaveDir();
     for(auto pixmap : pixmaps){
         ++i;
-        auto filePath = QStringLiteral("%1/%2_%3.png")
-                .arg(dirPath)
-                .arg(time.toString("hhMMss"))
-                .arg(i);
+        auto filePath = dirPath+"/"+makeSaveName(i,".png");
         pms[filePath] = pixmap;
     }
     auto total = pixmaps.count();
-    auto pixmapSaver = new PixmapSaver(pms);
-    auto onPixmapSaverProgress = [this](QString path,int duration,int current,int total){
-        auto content = QStringLiteral("图片保存进度：%1/%2，耗时：%3毫秒，路径：%4")
+    auto pixmapSaver = new BbPixmapSaver(pms);
+    auto onPixmapSaverProgress = [this](int current,int total){
+        auto content = QStringLiteral("图片保存进度：%1/%2，耗时：%3毫秒")
                 .arg(current)
                 .arg(total)
-                .arg(duration)
-                .arg(path);
+                .arg(time.restart());
         emit toast(content);
     };
-    connect(pixmapSaver,&PixmapSaver::progress,pixmapSaver,onPixmapSaverProgress);
-    connect(pixmapSaver,&PixmapSaver::finished,pixmapSaver,[this,total,pixmapSaver](){
-        auto content = QStringLiteral("图片保存线程结束，共%1頁，耗时：%2毫秒。")
+    auto onPixmapSaverFinish = [this,total,pixmapSaver](){
+        auto content = QStringLiteral("图片保存线程结束，耗时：%2毫秒。")
                 .arg(total)
-                .arg(pixmapSaver->duration);
+                .arg(time.restart());
         emit toast(content);
-    });
-    connect(pixmapSaver,&QThread::finished,pixmapSaver,&QObject::deleteLater);
+        pixmapSaver->deleteLater();
+    };
+    connect(pixmapSaver,&BbPixmapSaver::progress,pixmapSaver,onPixmapSaverProgress);
+    connect(pixmapSaver,&BbPixmapSaver::finished,pixmapSaver,onPixmapSaverFinish);
     pixmapSaver->start();
 }
 
@@ -297,10 +270,12 @@ void BbMenu::onSaveSelectedItemsToPicutreAction()
     saveItemsToPicture(items);
 }
 
-void BbMenu::onSaveAllItemsToPicutreAction()
+void BbMenu::onSaveAllItemsToPicturePageByPage()
 {
+    static QTime time;
+    time.start();
+
     emit toast(QStringLiteral("开始生成图片..."));
-    auto beginTime = QDateTime::currentMSecsSinceEpoch();
     if(!_blackboard){
         emit toast(QStringLiteral("黑板指针已空？！"));
         return;
@@ -310,47 +285,38 @@ void BbMenu::onSaveAllItemsToPicutreAction()
     auto itemCount = scene->items().count();
     emit toast(QStringLiteral("正在检测非空页..."));
     auto areas = scene->getNotEmptyPageAreas();
-    auto time0 = QDateTime::currentMSecsSinceEpoch();
     if(areas.empty()){
         emit toast(QStringLiteral("没有找到非空页。"));
         return;
     }
 
-    emit toast(QStringLiteral("共有非空页数量：%1").arg(areas.size()));
-    auto grabber = new LazyPixmapGrabber();
-    grabber->blackboard = _blackboard;
-    grabber->areas = areas.values();
-    connect(grabber,&LazyPixmapGrabber::progress,this,[this](qlonglong duration,int current, int total){
-        auto content = QStringLiteral("图片生成进度，%1/%2。耗时：%3")
+    emit toast(QStringLiteral("共有图形数量：%1，非空页数量：%2，耗时：%3毫秒")
+               .arg(itemCount)
+               .arg(areas.size())
+               .arg(time.restart()));
+
+    auto grabber = new BbLazyPixmapGrabber();
+    grabber->setBlackboard(_blackboard);
+    grabber->setAreas(areas.values());
+    auto onGrabberProgress = [&](int current, int total){
+        auto content = QStringLiteral("图片生成进度，%1/%2。耗时：%3毫秒")
                 .arg(current)
                 .arg(total)
-                .arg(duration);
+                .arg(time.restart());
         emit toast(content);
-    });
-
-    connect(grabber,&LazyPixmapGrabber::done,this,[this,itemCount,time0,beginTime](QList<QPixmap*> pixmaps){
-        auto endTime = QDateTime::currentMSecsSinceEpoch();
-        auto content = QStringLiteral("图片生成完毕, 其中图形%1个，"
-                                      "共%2頁，"
-                                      "检查获取非空页耗时：%3毫秒，"
-                                      "图片生成耗时：%4毫秒，"
-                                      "总共耗时：%5毫秒")
-                .arg(itemCount)
-                .arg(pixmaps.count())
-                .arg(time0-beginTime)
-                .arg(endTime-time0)
-                .arg(endTime-beginTime);
-        emit toast(content);
-        emit toast(QStringLiteral("开启图片保存线程..."));
-    });
-    connect(grabber,&LazyPixmapGrabber::done,this,&BbMenu::savePixmapsToFiles);
-    connect(grabber,&LazyPixmapGrabber::done,grabber,&LazyPixmapGrabber::deleteLater);
+    };
+    auto onGrabberDone = [this,grabber](QList<QPixmap*> pixmaps){
+        emit toast(QStringLiteral("图片生成完毕。"));
+        savePixmapsToFiles(pixmaps);
+        grabber->deleteLater();
+    };
+    connect(grabber,&BbLazyPixmapGrabber::progress,this,onGrabberProgress);
+    connect(grabber,&BbLazyPixmapGrabber::done,this,onGrabberDone);
     grabber->start();
 }
 
 void BbMenu::onSelectedAllActionTriggered()
 {
-//    _blackboard->setToolType(BBTT_Picker);
     _blackboard->selectedAll();
 }
 

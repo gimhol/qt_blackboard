@@ -28,8 +28,11 @@ signals:
 private slots:
     void onToolMenuTriggered(QAction *action);
     void onSaveSelectedItemsToPicutreAction();
-    void onSaveAllItemsToPicutreAction();
+
+    void onSaveAllItemsToPicturePageByPage();
+
     void onSelectedAllActionTriggered();
+
     void onBlackboardCustomContextMenuRequested(const QPoint &pos);
 private:
     QPointer<Blackboard> _blackboard;

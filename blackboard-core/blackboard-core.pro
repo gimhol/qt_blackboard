@@ -9,13 +9,10 @@ TEMPLATE = lib
 CONFIG += c++11
 DEFINES += NSB_BLACKBOARD_SHARED BLACKBOARD_ITEM_INDEX_SIGNAL
 DEFINES += QT_DEPRECATED_WARNINGS
-include(blackboard.pri)
+include(src.pri)
 include(../info.pri)
 win32
 {
-    DISTFILES = $$PWD/copy_to_shared.cmd
-    QMAKE_POST_LINK += $$PWD/copy_to_shared.cmd
-
 #    QMAKE_POST_LINK += && echo "Hello!!!"
     QMAKE_LFLAGS_DEBUG += /MAP
     QMAKE_CFLAGS_DEBUG += /Zi

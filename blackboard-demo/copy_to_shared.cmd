@@ -1,5 +1,6 @@
 echo %dst%
-xcopy /Y /I "%~dp0*.h" "%cd%\..\..\qt_blackboard_shared\include"
+xcopy /Y /I "%~dp0..\blackboard-core\*.h" "%cd%\..\..\qt_blackboard_shared\include"
+xcopy /Y /I "%~dp0..\blackboard-utils\*.h" "%cd%\..\..\qt_blackboard_shared\include"
 xcopy /Y /I "%cd%\..\*.exe" "%cd%\..\..\qt_blackboard_shared\bin\"
 xcopy /Y /I "%cd%\..\*.dll" "%cd%\..\..\qt_blackboard_shared\bin\"
 xcopy /Y /I "%cd%\..\*.lib" "%cd%\..\..\qt_blackboard_shared\lib\"
