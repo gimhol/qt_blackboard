@@ -13,7 +13,7 @@ static QString makeSaveDir(){
             QStringLiteral("/牛师帮在线课堂/")+
             QDateTime::currentDateTime().toString("yyyyMMdd");
     QDir dir(ret);
-    if(dir.exists())
+    if(!dir.exists())
         dir.mkpath(ret);
     return ret;
 }
