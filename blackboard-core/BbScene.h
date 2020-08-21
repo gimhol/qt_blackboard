@@ -109,11 +109,11 @@ public:
 
     IItemIndex *readItemFromStream(QDataStream &stream);
 
-    IItemIndex *readItemFromJsonObject(const QJsonObject &jobj);
-
     void selectedAll();
 
     void deselectAll();
+
+    void cutItems();
 
     void copyItems();
 
@@ -221,6 +221,8 @@ protected:
     virtual void keyPressEvent(QKeyEvent *e) override;
 
     virtual void keyReleaseEvent(QKeyEvent *e) override;
+
+    IItemIndex *selectedItems2Clipboard();
 
     void checkItemsPicking();
 
