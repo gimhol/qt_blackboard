@@ -228,7 +228,7 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 QGraphicsScene::mousePressEvent(event);
 
             if(!_curItemIndex){
-                auto item = blackboard()->factory()->createItemWhenToolDown(_toolType);
+                auto item = factory()->createItemWhenToolDown(_toolType);
                 if(item){
                     add(item);
                     item->toolDown(_mousePos);
@@ -470,6 +470,14 @@ void BbScene::pasteItems()
     if(data.size() == 0)
         return;
 
+    auto topZ = 0.0;
+    for(auto item : this->items(Qt::DescendingOrder)){
+        auto index = dynamic_cast<IItemIndex*>(item);
+        if(!index)
+            continue;
+        topZ = item->zValue();
+        break;
+    }
     deselectAll();
     auto jDoc = QJsonDocument::fromBinaryData(data);
 
@@ -504,10 +512,11 @@ void BbScene::pasteItems()
 
     MAKE_IITEMINDEX_LIST_BEGIN(first,prev)
     for(auto jVal : jItems){
-        auto curr = blackboard()->factory()->createItem(jVal.toObject());
+        auto curr = factory()->createItem(jVal.toObject());
         auto item = dynamic_cast<QGraphicsItem*>(curr);
         if(!item)
             continue;
+        curr->setZ(factory()->makeItemZ(curr->toolType()));
         add(curr);
         item->setSelected(true);
         auto outOfVision = !formSelf || !boundingRect.intersects(visionRect);
@@ -541,14 +550,14 @@ void BbScene::setBackground(const QPixmap &pixmap)
 
 QString BbScene::addBackground(const QPixmap &pixmap)
 {
-    auto backgroundId = blackboard()->factory()->makeBackgroundId();
+    auto backgroundId = factory()->makeBackgroundId();
     addBackground(backgroundId,pixmap);
     return backgroundId;
 }
 
 QString BbScene::addBackground(QGraphicsItem *graphicsItem)
 {
-    auto backgroundId = blackboard()->factory()->makeBackgroundId();
+    auto backgroundId = factory()->makeBackgroundId();
     addBackground(backgroundId,graphicsItem);
     return backgroundId;
 }
@@ -726,7 +735,7 @@ void BbScene::fromJsonObject(const QJsonObject &jobj)
     auto jItems = jobj["items"].toArray();
 
     for(auto jVal: jItems){
-        auto item = blackboard()->factory()->createItem(jVal.toObject());
+        auto item = factory()->createItem(jVal.toObject());
         add(item);
     }
 }
@@ -887,7 +896,7 @@ IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
 {
     int type;
     stream >> type;
-    auto index = blackboard()->factory()->createItem(static_cast<BbToolType>(type));
+    auto index = factory()->createItem(static_cast<BbToolType>(type));
     if(index)
     {
         add(index);
@@ -898,6 +907,11 @@ IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
         }
     }
     return index;
+}
+
+BbFactory *BbScene::factory()
+{
+    return blackboard()->factory();
 }
 
 void BbScene::selectedAll()
@@ -1006,7 +1020,7 @@ void BbScene::clearItems()
 
 IItemIndex *BbScene::readItemData(BbItemData *itemData)
 {
-    auto item = blackboard()->factory()->createItem(itemData);
+    auto item = factory()->createItem(itemData);
     if(item)
     {
         add(item);
@@ -1057,8 +1071,8 @@ BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height)
     moveItemToLeftTop(item,this);
     item->resize(width,height);
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
 }
@@ -1070,8 +1084,8 @@ BbItemImage *BbScene::addImageItem(const QPixmap &pixmap)
     moveItemToLeftTop(item,this);
     item->resize(pixmap.width(),pixmap.height());
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1084,8 +1098,8 @@ BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height, cons
     moveItemToLeftTop(item,this);
     item->resize(width,height);
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1103,8 +1117,8 @@ BbItemImage *BbScene::addImageItemWithPath(const QString &path)
 
     item->resize(pixmap.width(),pixmap.height());
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1120,8 +1134,8 @@ BbItemImage *BbScene::addImageItemWithPath(const qreal &width, const qreal &heig
     moveItemToLeftTop(item,this);
     item->resize(width,height);
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1136,8 +1150,8 @@ BbItemImage *BbScene::addImageItemWithUrl(const qreal &width, const qreal &heigh
     moveItemToLeftTop(item,this);
     item->resize(width,height);
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
 }
@@ -1148,8 +1162,8 @@ IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)
     auto index = readItemFromStream(stream);
     if(index)
     {
-        index->setId(blackboard()->factory()->makeItemId());
-        index->setZ(blackboard()->factory()->makeItemZ());
+        index->setId(factory()->makeItemId(index->toolType()));
+        index->setZ(factory()->makeItemZ(index->toolType()));
         index->updatePrevZ();
         index->moveByVector2(10,10);
         index->updatePrevPosition();

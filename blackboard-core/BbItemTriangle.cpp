@@ -44,8 +44,8 @@ void BbItemTriangle::toolDown(const QPointF &pos)
 {
     if(step() == 0)
     {
-        setId(blackboard()->factory()->makeItemId());
-        setZ(blackboard()->factory()->makeItemZ());
+        setId(blackboard()->factory()->makeItemId(toolType()));
+        setZ(blackboard()->factory()->makeItemZ(toolType()));
         updatePrevZ();
 
         auto settings = blackboard()->toolSettings<BbItemTriangleData>(BBTT_Triangle);

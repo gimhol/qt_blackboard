@@ -443,8 +443,8 @@ void BbItemPen::toolDown(const QPointF &pos)
 #ifdef QT_DEBUG
     qDebug() << __FUNCTION__ << pos;
 #endif
-    setId(blackboard()->factory()->makeItemId());
-    setZ(blackboard()->factory()->makeItemZ());
+    setId(blackboard()->factory()->makeItemId(toolType()));
+    setZ(blackboard()->factory()->makeItemZ(toolType()));
     updatePrevZ();
 
     setStraight(bbScene()->modifiers() & Qt::ShiftModifier);

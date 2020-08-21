@@ -291,8 +291,8 @@ void BbItemText::toolDown(const QPointF &pos)
     }
     else
     {
-        setId(blackboard()->factory()->makeItemId());
-        setZ(blackboard()->factory()->makeItemZ());
+        setId(blackboard()->factory()->makeItemId(toolType()));
+        setZ(blackboard()->factory()->makeItemZ(toolType()));
         updatePrevZ();
 
         auto settings = blackboard()->toolSettings<BbItemTextData>(BBTT_Text);

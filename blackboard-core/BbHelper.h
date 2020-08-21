@@ -29,6 +29,7 @@ public:
     static IItemIndex *createItem(BbToolType bbtt);
     static IItemIndex *createItem(BbItemData *data);
     static BbItemData *createToolSettings(BbToolType bbtt);
+    static QString toolTypeName(BbToolType bbtt);
 };
 
 #endif // BBHELPER_H

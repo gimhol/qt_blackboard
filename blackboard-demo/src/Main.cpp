@@ -1,4 +1,4 @@
-﻿#include <BlackboardTestWindow.h>
+﻿#include <BlackboardClientWindow.h>
 #include <QApplication>
 
 #include "BbItemEllipseData.h"
