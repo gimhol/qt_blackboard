@@ -160,6 +160,8 @@ void BlackboardConnector::onLocalItemChanged(BBItemEventType eventType, IItemInd
     case BBIET_triangleDown: onLocalTriangleDown(index); break;
     case BBIET_triangleDraw: onLocalTriangleDraw(index); break;
     case BBIET_triangleDone: onLocalTriangleDone(index); break;
+    case BBIET_imageHasPath: onImageHasPath(index); break;
+    case BBIET_imageHasUrl: onImageHasUrl(index); break;
     default:
         break;
     }
@@ -404,11 +406,28 @@ void BlackboardConnector::onLocalTriangleDraw(IItemIndex *index)
 void BlackboardConnector::onLocalTriangleDone(IItemIndex *index)
 {
     auto item = dynamic_cast<BbItemTriangle*>(index);
-    if(!item)
-        return;
+    if(!item) return;
     QJsonObject jobj;
     jobj["id"] = item->id();
     _me->send(BBIET_triangleDone,QJsonDocument(jobj).toBinaryData());
+}
+
+void BlackboardConnector::onImageHasPath(IItemIndex *index)
+{
+    auto item = dynamic_cast<BbItemImage*>(index);
+    if(!item) return;
+    qInfo() << "onImageHasPath: " << item->path();
+    item->setPixmap(item->path());
+
+}
+
+void BlackboardConnector::onImageHasUrl(IItemIndex *index)
+{
+    auto item = dynamic_cast<BbItemImage*>(index);
+    if(!item) return;
+
+    qInfo() << "todo, onImageHasUrl: " << item->url();
+
 }
 
 void BlackboardConnector::onMeMsgRead()

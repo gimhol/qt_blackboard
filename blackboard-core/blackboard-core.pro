@@ -1,0 +1,24 @@
+QT += widgets
+CONFIG += debug_and_release skip_target_version_ext
+CONFIG(debug, debug|release) {
+    TARGET = NsbBlackboardd
+} else {
+    TARGET = NsbBlackboard
+}
+TEMPLATE = lib
+CONFIG += c++11
+DEFINES += NSB_BLACKBOARD_SHARED BLACKBOARD_ITEM_INDEX_SIGNAL
+DEFINES += QT_DEPRECATED_WARNINGS
+include(src.pri)
+include(../info.pri)
+win32
+{
+#    QMAKE_POST_LINK += && echo "Hello!!!"
+    QMAKE_LFLAGS_DEBUG += /MAP
+    QMAKE_CFLAGS_DEBUG += /Zi
+    QMAKE_LFLAGS_DEBUG += /debug /opt:ref
+    QMAKE_LFLAGS_RELEASE += /MAP
+    QMAKE_CFLAGS_RELEASE += /Zi
+    QMAKE_LFLAGS_RELEASE += /debug /opt:ref
+    DESTDIR = $$OUT_PWD/../
+}
