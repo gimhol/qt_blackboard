@@ -468,9 +468,12 @@ void BbItemImage::modifiersChanged(Qt::KeyboardModifiers modifiers)
 
 void BbItemImage::added()
 {
-    if(!_data->url.isEmpty() && _data->pixmap.isNull())
-    {
-        emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
+    auto bb = blackboard();
+    if(_data->pixmap.isNull() && bb){
+        if(!_data->path.isEmpty()) // 通过信号通知外部，尝试读取本地路径
+            emit bb->itemChanged(BBIET_imageHasPath,this);
+        if(!_data->url.isEmpty()) // 通过信号通知外部，尝试读取URL
+            emit bb->itemChanged(BBIET_imageHasUrl,this);
     }
 }
 
@@ -658,11 +661,12 @@ void BbItemImage::fromJsonObject(const QJsonObject &jobj)
     _data->fromJsonObject(jobj);
     absolutize();
     repaint();
-    if(_data->pixmap.isNull()){
-        if(!_data->path.isEmpty()) // 通过信号通知外部，尝试读取本地路径
-            emit blackboard()->itemChanged(BBIET_imageHasPath,this);
-        if(!_data->url.isEmpty()) // 通过信号通知外部，尝试读取URL
-            emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
-    }
 
+    auto bb = blackboard();
+    if(_data->pixmap.isNull() && bb){
+        if(!_data->path.isEmpty()) // 通过信号通知外部，尝试读取本地路径
+            emit bb->itemChanged(BBIET_imageHasPath,this);
+        if(!_data->url.isEmpty()) // 通过信号通知外部，尝试读取URL
+            emit bb->itemChanged(BBIET_imageHasUrl,this);
+    }
 }

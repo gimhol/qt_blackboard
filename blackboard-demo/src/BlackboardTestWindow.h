@@ -87,6 +87,8 @@ private slots:
 
     void on_cb_pen_cap_activated(int index);
 
+    void on_cut_clicked();
+
 private:
     Ui::BlackboardTestWindow *ui;
     QPointer<BlackboardConnector> _connector;

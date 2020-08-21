@@ -11,6 +11,7 @@ public:
     virtual IItemIndex *createItemWhenToolDown(BbToolType bbtt);
     virtual IItemIndex *createItem(BbToolType bbtt);
     virtual IItemIndex *createItem(BbItemData *data);
+    virtual IItemIndex *createItem(const QJsonObject &jobj);
     virtual BbItemData *createToolSettings(BbToolType bbtt);
     virtual QString makeItemId();
     virtual QString makeBackgroundId();

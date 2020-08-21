@@ -595,3 +595,8 @@ void BlackboardTestWindow::on_cb_pen_cap_activated(int index)
         setting->pen.setCapStyle(style);
 
 }
+
+void BlackboardTestWindow::on_cut_clicked()
+{
+    blackboard()->cutItems();
+}

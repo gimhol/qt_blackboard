@@ -31,6 +31,23 @@ IItemIndex *BbFactory::createItem(BbItemData *data)
     return BbHelper::createItem(data);
 }
 
+IItemIndex *BbFactory::createItem(const QJsonObject &jobj)
+{
+    auto type = jobj["type"].toInt();
+    auto index = createItem(BbToolType(type));
+    Q_ASSERT(index);
+
+    if(!index)
+        return nullptr;
+
+    auto reader = dynamic_cast<IJsonWR*>(index);
+    Q_ASSERT(reader);
+    if(reader)
+        reader->fromJsonObject(jobj);
+
+    return index;
+}
+
 BbItemData *BbFactory::createToolSettings(BbToolType bbtt)
 {
     return BbHelper::createToolSettings(bbtt);
