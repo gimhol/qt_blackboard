@@ -164,8 +164,8 @@ BbItemData *BbItemEllipse::data()
 
 void BbItemEllipse::toolDown(const QPointF &pos)
 {
-    setId(blackboard()->factory()->makeItemId());
-    setZ(blackboard()->factory()->makeItemZ());
+    setId(blackboard()->factory()->makeItemId(toolType()));
+    setZ(blackboard()->factory()->makeItemZ(toolType()));
     updatePrevZ();
 
     auto settings = blackboard()->toolSettings<BbItemEllipseData>(BBTT_Ellipse);

@@ -119,3 +119,19 @@ BbItemData *BbHelper::createToolSettings(BbToolType bbtt)
         }
     }
 }
+
+QString BbHelper::toolTypeName(BbToolType bbtt)
+{
+    switch(bbtt){
+    case BBTT_Text:         return QString("text");         // = 1000,
+    case BBTT_Pen:          return QString("pen");          // = 2000,
+    case BBTT_Straight:     return QString("straight");     // = 2001,   // 直线
+    case BBTT_Rectangle:    return QString("rectangle");    // = 2002,  // 矩形
+    case BBTT_Ellipse:      return QString("ellipse");      // = 2003,    // 椭圆
+    case BBTT_Triangle:     return QString("triangle");     // = 2004,    // 三角
+    case BBTT_Picker:       return QString("picker");       // = 3000,
+    case BBTT_Pointer:      return QString("pointer");      // = 3001,
+    case BBTT_Image:        return QString("image");        // = 4000,
+    default:                return QString("unkown_tool_type_%1").arg(bbtt);
+    }
+}

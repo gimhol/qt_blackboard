@@ -43,8 +43,8 @@ void BbItemStraight::init()
 
 void BbItemStraight::toolDown(const QPointF &pos)
 {
-    setId(blackboard()->factory()->makeItemId());
-    setZ(blackboard()->factory()->makeItemZ());
+    setId(blackboard()->factory()->makeItemId(toolType()));
+    setZ(blackboard()->factory()->makeItemZ(toolType()));
     updatePrevZ();
 
     auto settings = blackboard()->toolSettings<BbItemStraightData>(BBTT_Straight);

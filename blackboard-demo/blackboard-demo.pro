@@ -3,6 +3,7 @@ CONFIG += c++14
 DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG(debug, debug|release) {
     TARGET = NsbBlackboardDemod
+    CONFIG += console
 } else {
     TARGET = NsbBlackboardDemo
 }

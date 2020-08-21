@@ -9,6 +9,7 @@
 #include "IStreamWR.h"
 #include "IItemIndex.h"
 
+class BbFactory;
 class BbItemPen;
 class BbItemPenData;
 class BbItemText;
@@ -108,6 +109,8 @@ public:
     IItemIndex *copyItemFromStream(QDataStream &stream);
 
     IItemIndex *readItemFromStream(QDataStream &stream);
+
+    BbFactory *factory();
 
     void selectedAll();
 
