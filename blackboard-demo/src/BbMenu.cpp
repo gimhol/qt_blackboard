@@ -75,6 +75,20 @@ void BbMenu::init(){
             _blackboard,
             &Blackboard::removeSelectedItems);
     addSeparator();
+    connect(addAction(QStringLiteral("剪切")),
+            &QAction::triggered,
+            _blackboard,
+            &Blackboard::cutItems);
+    connect(addAction(QStringLiteral("复制")),
+            &QAction::triggered,
+            _blackboard,
+            &Blackboard::copyItems);
+    connect(addAction(QStringLiteral("粘贴")),
+            &QAction::triggered,
+            _blackboard,
+            &Blackboard::pasteItems);
+
+    addSeparator();
     connect(addAction(QStringLiteral("保存选中图形为图片（单图）")),
             &QAction::triggered,
             this,
