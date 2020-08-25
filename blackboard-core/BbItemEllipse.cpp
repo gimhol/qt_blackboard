@@ -40,9 +40,15 @@ void BbItemEllipse::init()
 
 void BbItemEllipse::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
-    setCircular(modifiers & Qt::ShiftModifier,false);
-    setStartFromCenter(modifiers & Qt::AltModifier,false);
-    setPointcut(modifiers & Qt::ControlModifier,false);
+    bool pointcut = modifiers & Qt::ShiftModifier;
+    setPointcut(pointcut);
+
+    bool circular = !pointcut && modifiers & Qt::ControlModifier;
+    setCircular(circular);
+
+    bool startFromCenter = !pointcut && !(modifiers & Qt::AltModifier);
+    setStartFromCenter(startFromCenter);
+
     draw(_mousePos);
     emit blackboard()->itemChanged(BBIET_ellipseDraw,this);
 }
@@ -174,9 +180,17 @@ void BbItemEllipse::toolDown(const QPointF &pos)
     _data->setWeight(settings->weight());
 
     begin(pos);
-    setCircular(bbScene()->modifiers() & Qt::ShiftModifier);
-    setStartFromCenter(bbScene()->modifiers() & Qt::AltModifier);
-    setPointcut(bbScene()->modifiers() & Qt::ControlModifier);
+    auto modifiers = bbScene()->modifiers();
+
+    bool pointcut = modifiers & Qt::ShiftModifier;
+    setPointcut(pointcut);
+
+    bool circular = !pointcut && modifiers & Qt::ControlModifier;
+    setCircular(circular);
+
+    bool startFromCenter = !pointcut && !(modifiers & Qt::AltModifier);
+    setStartFromCenter(startFromCenter);
+
     bbScene()->setCurrentItem(this);
     emit blackboard()->itemChanged(BBIET_ellipseDown,this);
 }
@@ -262,7 +276,6 @@ void BbItemEllipse::toCircular(const QPointF &point, qreal &outX, qreal &outY)
 
 void BbItemEllipse::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-
     auto penW = _data->pen.widthF();
     auto w = rect().width();
     auto h = rect().height();
@@ -280,12 +293,12 @@ void BbItemEllipse::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     }
     painter->drawEllipse(r);
 
-//    if((isSelected() || _editing) && (w > 8 && h > 8)){ // 圆心
-//        painter->setBrush(QColor(255,255,255,122));
-//        painter->setPen(QColor(0,0,0,122));
-//        auto center = rect().center();
-//        painter->drawEllipse(center,3.0,3.0);
-//    }
+    if((isSelected() || _editing) && (w > 8 && h > 8)){ // 圆心
+        painter->setBrush(_data->brush.color());
+        painter->setPen(_data->pen.color());
+        auto center = rect().center();
+        painter->drawEllipse(center,3.0,3.0);
+    }
     QGraphicsRectItem::paint(painter,option,widget); // 仅用于绘制选取的虚线。
 }
 
