@@ -16,6 +16,13 @@ public:
     virtual QString makeItemId(BbToolType bbtt = BBTT_None);
     virtual QString makeBackgroundId();
     virtual qreal makeItemZ(BbToolType bbtt = BBTT_None);
+    virtual BbItemData *createItemData(BbToolType bbtt);
+
+    template<typename T>
+    inline T *createItemData(BbToolType bbtt){
+        return dynamic_cast<T*>(createItemData(bbtt));
+    }
+
 private:
     qint64 _itemIdCount = 0;
     qint64 _bbIdCount = 0;

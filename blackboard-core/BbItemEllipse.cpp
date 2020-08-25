@@ -32,7 +32,7 @@ void BbItemEllipse::init()
     Q_ASSERT(nullptr != _data);
     if(!_data)
     {
-        _data = new BbItemEllipseData();
+        _data = Blackboard::defaultFactory()->createItemData<BbItemEllipseData>(BBTT_Ellipse);
     }
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);

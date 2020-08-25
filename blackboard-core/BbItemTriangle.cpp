@@ -34,7 +34,7 @@ void BbItemTriangle::init()
 {
     if(!_data)
     {
-        _data = new BbItemTriangleData();
+        _data = Blackboard::defaultFactory()->createItemData<BbItemTriangleData>(BBTT_Triangle);
     }
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);

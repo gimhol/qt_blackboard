@@ -10,32 +10,33 @@
 
 BbItemStraight::BbItemStraight():
     QGraphicsRectItem(),
-    _myData(new BbItemStraightData())
+    _data(new BbItemStraightData())
 {
     init();
 }
 
 BbItemStraight::BbItemStraight(BbItemData *data):
     QGraphicsRectItem(),
-    _myData(dynamic_cast<BbItemStraightData*>(data))
+    _data(dynamic_cast<BbItemStraightData*>(data))
 {
     init();
 }
 
 BbItemStraight::~BbItemStraight()
 {
-    if(_myData)
+    if(_data)
     {
-        delete _myData;
-        _myData = nullptr;
+        delete _data;
+        _data = nullptr;
     }
 }
 
 void BbItemStraight::init()
 {
-    if(!_myData)
+    if(!_data)
     {
-        _myData = new BbItemStraightData();
+        _data = Blackboard::defaultFactory()->createItemData<BbItemStraightData>(BBTT_Straight);
+        _data = new BbItemStraightData();
     }
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
@@ -48,8 +49,8 @@ void BbItemStraight::toolDown(const QPointF &pos)
     updatePrevZ();
 
     auto settings = blackboard()->toolSettings<BbItemStraightData>(BBTT_Straight);
-    _myData->pen = settings->pen;
-    _myData->setWeight(settings->weight());
+    _data->pen = settings->pen;
+    _data->setWeight(settings->weight());
 
     begin(pos);
     setFortyFive(bbScene()->modifiers()&Qt::ShiftModifier);
@@ -82,27 +83,27 @@ void BbItemStraight::modifiersChanged(Qt::KeyboardModifiers modifiers)
 
 void BbItemStraight::absolutize()
 {
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    if(_data->mode == BbItemData::CM_PERCENTAGE)
     {
-        _myData->mode = BbItemData::CM_ABSOLUTE;
+        _data->mode = BbItemData::CM_ABSOLUTE;
         qreal ratio = bbScene()->width() / 100;
-        if(_myData->isPositionValid())
+        if(_data->isPositionValid())
         {
-            _myData->x *= ratio;
-            _myData->y *= ratio;
+            _data->x *= ratio;
+            _data->y *= ratio;
         }
-        if(_myData->isPrevPositionValid())
+        if(_data->isPrevPositionValid())
         {
-            _myData->prevX *= ratio;
-            _myData->prevY *= ratio;
+            _data->prevX *= ratio;
+            _data->prevY *= ratio;
         }
-        if(!_myData->a.isNull())
+        if(!_data->a.isNull())
         {
-            _myData->a *= ratio;
+            _data->a *= ratio;
         }
-        if(!_myData->b.isNull())
+        if(!_data->b.isNull())
         {
-            _myData->b *= ratio;
+            _data->b *= ratio;
         }
     }
 }
@@ -116,13 +117,13 @@ void BbItemStraight::begin(const QPointF &point)
 {
     _editing = true;
     setPos(point);
-    _myData->a = point;
-    _myData->b = point;
-    _myData->empty = false;
+    _data->a = point;
+    _data->b = point;
+    _data->empty = false;
     _mousePos = point;
     setupRectWithAB();
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
 }
 
 void BbItemStraight::draw(const QPointF &point)
@@ -130,34 +131,34 @@ void BbItemStraight::draw(const QPointF &point)
     _mousePos = point;
     if(_fortyFive)
     {
-        _myData->b = toFortyFive(point);
+        _data->b = toFortyFive(point);
     }
     else
     {
-        _myData->b = point;
+        _data->b = point;
     }
     setupRectWithAB();
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
 }
 
 void BbItemStraight::done()
 {
-    _myData->updatePostion(this);
-    _myData->updatePrevPostion();
+    _data->updatePostion(this);
+    _data->updatePrevPostion();
     _editing = false;
 }
 
 void BbItemStraight::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     QGraphicsRectItem::paint(painter,option,widget);
-    if(!_myData->empty)
+    if(!_data->empty)
     {
         painter->setRenderHint(QPainter::Antialiasing);
-        if(_myData->a == _myData->b)
+        if(_data->a == _data->b)
         {
-            qreal halfPenW = 0.5 * _myData->pen.widthF();
-            painter->setBrush(QBrush(_myData->pen.color()));
+            qreal halfPenW = 0.5 * _data->pen.widthF();
+            painter->setBrush(QBrush(_data->pen.color()));
             painter->setPen(Qt::NoPen);
             painter->drawEllipse(int(-halfPenW),
                                  int(-halfPenW),
@@ -167,7 +168,7 @@ void BbItemStraight::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
         else
         {
             painter->setBrush(Qt::NoBrush);
-            painter->setPen(_myData->pen);
+            painter->setPen(_data->pen);
             painter->drawLine(_a,_b);
         }
     }
@@ -175,24 +176,24 @@ void BbItemStraight::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 
 QPointF BbItemStraight::toFortyFive(const QPointF &point)
 {
-    QPointF vec2 = (_myData->a - point);
+    QPointF vec2 = (_data->a - point);
     qreal degree = std::atan2(vec2.y(), vec2.x());
     if(abs(degree) <= 0.3925 || abs(degree) > 2.7475)
     {
         // horizontal
         vec2.setX(point.x());
-        vec2.setY(_myData->a.y());
+        vec2.setY(_data->a.y());
     }
     else if(abs(degree) >= 1.1775 && abs(degree) <= 1.9625)
     {
         // vertical
         vec2.setY(point.y());
-        vec2.setX(_myData->a.x());
+        vec2.setX(_data->a.x());
     }
     else if((degree >= 0.3925 && degree <= 1.1775) || (degree <= -1.9625 && degree >= -2.7475))
     {
         // left-up ~ right-down
-        qreal b0 = _myData->a.y() - _myData->a.x();
+        qreal b0 = _data->a.y() - _data->a.x();
         qreal b1 = point.y() + point.x();
         vec2.setY((b0 + b1) / 2);
         vec2.setX((b0 - b1) / -2);
@@ -200,7 +201,7 @@ QPointF BbItemStraight::toFortyFive(const QPointF &point)
     else
     {
         // left-bottom ~ right-top
-        qreal b0 = _myData->a.y() + _myData->a.x();
+        qreal b0 = _data->a.y() + _data->a.x();
         qreal b1 = point.y() - point.x();
         vec2.setY((b0 + b1) / 2);
         vec2.setX((b1 - b0) / -2);
@@ -210,27 +211,27 @@ QPointF BbItemStraight::toFortyFive(const QPointF &point)
 
 void BbItemStraight::setupRectWithAB()
 {
-    qreal halfPenW = 0.5 * _myData->pen.widthF();
-    qreal x = -halfPenW+std::min(_myData->a.x(), _myData->b.x());
-    qreal y = -halfPenW+std::min(_myData->a.y(), _myData->b.y());
-    qreal w = halfPenW+std::max(_myData->a.x(), _myData->b.x()) - x;
-    qreal h = halfPenW+std::max(_myData->a.y(), _myData->b.y()) - y;
+    qreal halfPenW = 0.5 * _data->pen.widthF();
+    qreal x = -halfPenW+std::min(_data->a.x(), _data->b.x());
+    qreal y = -halfPenW+std::min(_data->a.y(), _data->b.y());
+    qreal w = halfPenW+std::max(_data->a.x(), _data->b.x()) - x;
+    qreal h = halfPenW+std::max(_data->a.y(), _data->b.y()) - y;
     setPos(x+halfPenW,y+halfPenW);
     setRect(-halfPenW,-halfPenW,w,h);
-    _a = _myData->a - pos();
-    _b = _myData->b - pos();
+    _a = _data->a - pos();
+    _b = _data->b - pos();
     update();
 }
 
 void BbItemStraight::repaint()
 {
     setupRectWithAB();
-    if( _myData->isPositionValid())
+    if( _data->isPositionValid())
     {
-        setPos(_myData->x,_myData->y);
-        _myData->updatePrevPostion();
+        setPos(_data->x,_data->y);
+        _data->updatePrevPostion();
     }
-    setZValue(_myData->z);
+    setZValue(_data->z);
     update();
 }
 
@@ -246,45 +247,45 @@ void BbItemStraight::setFortyFive(const bool &fortyFive)
 
 QPointF BbItemStraight::a()
 {
-    return _myData->a;
+    return _data->a;
 }
 
 QPointF BbItemStraight::b()
 {
-    return _myData->b;
+    return _data->b;
 }
 
 void BbItemStraight::writeStream(QDataStream &stream)
 {
-    _myData->x = x();
-    _myData->y = y();
-    _myData->z = zValue();
-    _myData->writeStream(stream);
+    _data->x = x();
+    _data->y = y();
+    _data->z = zValue();
+    _data->writeStream(stream);
 }
 
 void BbItemStraight::readStream(QDataStream &stream)
 {
-    _myData->readStream(stream);
+    _data->readStream(stream);
     absolutize();
     repaint();
 }
 
 QJsonObject BbItemStraight::toJsonObject()
 {
-    _myData->x = x();
-    _myData->y = y();
-    _myData->z = zValue();
-    return _myData->toJsonObject();
+    _data->x = x();
+    _data->y = y();
+    _data->z = zValue();
+    return _data->toJsonObject();
 }
 
 void BbItemStraight::fromJsonObject(const QJsonObject &jobj)
 {
-    _myData->fromJsonObject(jobj);
+    _data->fromJsonObject(jobj);
     absolutize();
     repaint();
 }
 
 BbItemData *BbItemStraight::data()
 {
-    return _myData;
+    return _data;
 }

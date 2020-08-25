@@ -73,3 +73,7 @@ qreal BbFactory::makeItemZ(BbToolType bbtt)
     ++_zCount;
     return QDateTime::currentMSecsSinceEpoch() + _zCount;
 }
+
+BbItemData *BbFactory::createItemData(BbToolType bbtt){
+    return BbHelper::createItemData(bbtt);
+}

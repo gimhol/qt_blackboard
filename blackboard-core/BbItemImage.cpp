@@ -34,7 +34,8 @@ BbItemImage::~BbItemImage()
 void BbItemImage::init()
 {
     if(!_data)
-        _data = new BbItemImageData();
+        _data = Blackboard::defaultFactory()->createItemData<BbItemImageData>(BBTT_Image);
+
     setAcceptedMouseButtons(Qt::LeftButton);
     setAcceptHoverEvents(true);
 }

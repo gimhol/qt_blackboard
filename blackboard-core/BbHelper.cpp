@@ -120,6 +120,25 @@ BbItemData *BbHelper::createToolSettings(BbToolType bbtt)
     }
 }
 
+BbItemData *BbHelper::createItemData(BbToolType bbtt)
+{
+    switch(bbtt)
+    {
+    case BBTT_Triangle:  return new BbItemTriangleData();
+    case BBTT_Ellipse:   return new BbItemEllipseData();
+    case BBTT_Rectangle: return new BbItemRectData();
+    case BBTT_Pen:       return new BbItemPenData();
+    case BBTT_Straight:  return new BbItemStraightData();
+    case BBTT_Text:      return new BbItemTextData();
+    case BBTT_Image:     return new BbItemImageData();
+    default:
+    {
+        qWarning() << "can not create settings, not handling tool type: " << bbtt << " !";
+        return nullptr;
+    }
+    }
+}
+
 QString BbHelper::toolTypeName(BbToolType bbtt)
 {
     switch(bbtt){

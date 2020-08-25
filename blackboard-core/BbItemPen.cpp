@@ -39,7 +39,7 @@ void BbItemPen::init()
 {
     if(!_data)
     {
-        _data = new BbItemPenData();
+        _data = Blackboard::defaultFactory()->createItemData<BbItemPenData>(BBTT_Pen);
     }
 #ifdef LINE_SMOOTHING
     _distances[0] = -1;

@@ -31,7 +31,7 @@ void BbItemRect::init()
     Q_ASSERT(nullptr != _data);
     if(!_data)
     {
-        _data = new BbItemRectData();
+        _data = Blackboard::defaultFactory()->createItemData<BbItemRectData>(BBTT_Rectangle);
     }
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
