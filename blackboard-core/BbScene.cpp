@@ -405,11 +405,11 @@ IItemIndex *BbScene::selectedItems2Clipboard()
         auto x = curr->data()->x + 20;
         auto y = curr->data()->y + 20;
         auto jObj = writer->toJsonObject();
+        jObj["id"] = factory()->makeItemId(curr->toolType());
         jObj["x"] = x;
         jObj["y"] = y;
         jObj["prev_x"] = x;
         jObj["prev_y"] = y;
-
         jArr << jObj;
         MAKE_IITEMINDEX_LIST(first,prev,curr);
     }
@@ -507,8 +507,9 @@ void BbScene::pasteItems()
                 visionRightBottom.x()-visionLeftTop.x(),
                 visionRightBottom.y()-visionLeftTop.y());
 
-    auto offsetX = visionRect.left() + 0.5f * (visionRect.width() - boundingRect.width());
-    auto offsetY = visionRect.top() + 0.5f * (visionRect.height() - boundingRect.height());
+    auto outOfVision = !formSelf || !boundingRect.intersects(visionRect);
+    auto offsetX = visionRect.left() + 0.5f * (visionRect.width() - boundingRect.width()) - boundingRect.left();
+    auto offsetY = visionRect.top() + 0.5f * (visionRect.height() - boundingRect.height()) - boundingRect.top();
 
     MAKE_IITEMINDEX_LIST_BEGIN(first,prev)
     for(auto jVal : jItems){
@@ -519,10 +520,9 @@ void BbScene::pasteItems()
         curr->setZ(factory()->makeItemZ(curr->toolType()));
         add(curr);
         item->setSelected(true);
-        auto outOfVision = !formSelf || !boundingRect.intersects(visionRect);
         if(outOfVision){
-            auto x = curr->positionX() + offsetX - boundingRect.left();
-            auto y = curr->positionY() + offsetY - boundingRect.top();
+            auto x = curr->positionX() + offsetX;
+            auto y = curr->positionY() + offsetY;
             curr->moveToPosition(x,y);
             curr->updatePrevPosition();
         }
