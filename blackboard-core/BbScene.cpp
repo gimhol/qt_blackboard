@@ -320,11 +320,6 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
          *      -Gim
          */
         for(auto idx: _deletingItems){
-            auto item = dynamic_cast<QGraphicsItem*>(idx);
-            if(item){
-                //This line trigger the bug.
-                //QGraphicsScene::removeItem(item);
-            }
             if(idx->toolType() == BBTT_Text){
                 auto text = dynamic_cast<BbItemText*>(idx);
                 text->deleteLater();
@@ -402,15 +397,7 @@ IItemIndex *BbScene::selectedItems2Clipboard()
         bounding_right = (std::max)(boundingRect.right(),bounding_right);
         bounding_top = (std::min)(boundingRect.top(),bounding_top);
         bounding_bottom = (std::max)(boundingRect.bottom(),bounding_bottom);
-        auto x = curr->data()->x + 20;
-        auto y = curr->data()->y + 20;
-        auto jObj = writer->toJsonObject();
-        jObj["id"] = factory()->makeItemId(curr->toolType());
-        jObj["x"] = x;
-        jObj["y"] = y;
-        jObj["prev_x"] = x;
-        jObj["prev_y"] = y;
-        jArr << jObj;
+        jArr << writer->toJsonObject();
         MAKE_IITEMINDEX_LIST(first,prev,curr);
     }
 
@@ -517,6 +504,7 @@ void BbScene::pasteItems()
         auto item = dynamic_cast<QGraphicsItem*>(curr);
         if(!item)
             continue;
+        curr->setId(factory()->makeItemId(curr->toolType()));
         curr->setZ(factory()->makeItemZ(curr->toolType()));
         add(curr);
         item->setSelected(true);
@@ -524,6 +512,9 @@ void BbScene::pasteItems()
             auto x = curr->positionX() + offsetX;
             auto y = curr->positionY() + offsetY;
             curr->moveToPosition(x,y);
+            curr->updatePrevPosition();
+        }else{
+            curr->moveByVector2(20,20);
             curr->updatePrevPosition();
         }
         MAKE_IITEMINDEX_LIST(first,prev,curr)
@@ -591,7 +582,6 @@ void BbScene::clearBackground()
     {
         for(auto pair: _backgrounds)
         {
-            QGraphicsScene::removeItem(pair.second);
             delete pair.second;
         }
         _backgrounds.clear();
@@ -967,9 +957,6 @@ void BbScene::remove(IItemIndex *index)
         if(_mouseButtons != Qt::NoButton){
             _deletingItems << index;
         }else{
-            if(item){
-                QGraphicsScene::removeItem(item);
-            }
             if(index->toolType() == BBTT_Text){
                 auto text = dynamic_cast<BbItemText*>(index);
                 text->deleteLater();
