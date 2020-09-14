@@ -82,6 +82,19 @@ void BlackboardConnector::onLocalPointerHidden(QPoint){
 }
 
 void BlackboardConnector::onLocalMultipleItemChanged(BBItemEventType eventType, IItemIndex *index){
+
+#ifdef QT_DEBUG
+    qDebug().noquote() << "multiple items changed eventType: " << eventType;
+    auto a = index;
+    auto i = 0;
+    while(a){
+        auto t = QJsonDocument(a->data()->toJsonObject()).toJson();
+        qDebug().noquote() << "item_" << i << ":" << t;
+        ++i;
+        a = a->next;
+    }
+    qDebug() << "";
+#endif
     switch(eventType)
     {
     case BBIET_itemMoving:
@@ -140,28 +153,33 @@ void BlackboardConnector::onLocalItemsDelete(IItemIndex *index)
 
 void BlackboardConnector::onLocalItemChanged(BBItemEventType eventType, IItemIndex *index)
 {
+#ifdef QT_DEBUG
+    qDebug().noquote() << "item changed eventType: " << eventType;
+    qDebug().noquote() << "item:" << QJsonDocument(index->data()->toJsonObject()).toJson();
+    qDebug() << "";
+#endif
     switch(eventType){
     case BBIET_penDown:         onLocalPenDown(index); break;
     case BBIET_penDraw:         onLocalPenDraw(index); break;
     case BBIET_penStraighting:  onLocalPenStraighting(index); break;
     case BBIET_penDone:         onLocalPenDone(index); break;
-    case BBIET_textAdded:   onLocalTextAdded(index); break;
-    case BBIET_textChanged: onLocalTextChanged(index); break;
-    case BBIET_textDone:    onLocalTextDone(index); break;
-    case BBIET_straightDown: onLocalStraightDown(index); break;
-    case BBIET_straightDraw: onLocalStraightDraw(index); break;
-    case BBIET_straightDone: onLocalStraightDone(index); break;
-    case BBIET_rectDown: onLocalRectDown(index); break;
-    case BBIET_rectDraw: onLocalRectDraw(index); break;
-    case BBIET_rectDone: onLocalRectDone(index); break;
-    case BBIET_ellipseDown: onLocalEllipseDown(index); break;
-    case BBIET_ellipseDraw: onLocalEllipseDraw(index); break;
-    case BBIET_ellipseDone: onLocalEllipseDone(index); break;
-    case BBIET_triangleDown: onLocalTriangleDown(index); break;
-    case BBIET_triangleDraw: onLocalTriangleDraw(index); break;
-    case BBIET_triangleDone: onLocalTriangleDone(index); break;
-    case BBIET_imageHasPath: onImageHasPath(index); break;
-    case BBIET_imageHasUrl: onImageHasUrl(index); break;
+    case BBIET_textAdded:       onLocalTextAdded(index); break;
+    case BBIET_textChanged:     onLocalTextChanged(index); break;
+    case BBIET_textDone:        onLocalTextDone(index); break;
+    case BBIET_straightDown:    onLocalStraightDown(index); break;
+    case BBIET_straightDraw:    onLocalStraightDraw(index); break;
+    case BBIET_straightDone:    onLocalStraightDone(index); break;
+    case BBIET_rectDown:        onLocalRectDown(index); break;
+    case BBIET_rectDraw:        onLocalRectDraw(index); break;
+    case BBIET_rectDone:        onLocalRectDone(index); break;
+    case BBIET_ellipseDown:     onLocalEllipseDown(index); break;
+    case BBIET_ellipseDraw:     onLocalEllipseDraw(index); break;
+    case BBIET_ellipseDone:     onLocalEllipseDone(index); break;
+    case BBIET_triangleDown:    onLocalTriangleDown(index); break;
+    case BBIET_triangleDraw:    onLocalTriangleDraw(index); break;
+    case BBIET_triangleDone:    onLocalTriangleDone(index); break;
+    case BBIET_imageHasPath:    onImageHasPath(index); break;
+    case BBIET_imageHasUrl:     onImageHasUrl(index); break;
     default:
         break;
     }

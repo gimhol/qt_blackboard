@@ -1,6 +1,6 @@
 ﻿#include "BlackboardServer.h"
 #include "BlackboardServerWindow.h"
-#include "BlackboardTestWindow.h"
+#include "BlackboardClientWindow.h"
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
@@ -26,7 +26,7 @@ void MainWindow::on_startBlackboardServer_clicked()
 
 void MainWindow::on_startBlackboardClient_clicked()
 {
-    auto win0 = new BlackboardTestWindow();
+    auto win0 = new BlackboardClientWindow();
     win0->setAttribute(Qt::WA_DeleteOnClose);
     win0->setWindowTitle(QStringLiteral("黑板客户端窗口%1").arg(QDateTime::currentDateTime().toString()));
     win0->show();

@@ -507,6 +507,11 @@ void Blackboard::deselectAll()
     scene()->deselectAll();
 }
 
+void Blackboard::cutItems()
+{
+    scene()->cutItems();
+}
+
 void Blackboard::copyItems()
 {
     scene()->copyItems();

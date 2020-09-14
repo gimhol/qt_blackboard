@@ -6,7 +6,7 @@ enum BBItemEventType
     BBIET_itemMoving,
     BBIET_itemMoved,
     BBIET_itemDelete,
-    BBIET_itemPaste,
+    BBIET_itemPaste, // 粘贴
 
     BBIET_penDown,
     BBIET_penDraw,
@@ -33,7 +33,7 @@ enum BBItemEventType
     BBIET_imageHasUrl, // 图片有url。
     BBIET_imageHasPath, // 图片有path。
 
-    // TODO
+    // TODO begin;
     BBIET_straightChanged, // TODO: 支持对直线进行编辑，允许拖动两个顶点允许的任意一个
     BBIET_rectResizing, // TODO: 支持对矩形进行编辑，支持八方向拉伸
     BBIET_rectResized,  // TODO: 支持对矩形进行编辑，支持八方向拉伸
@@ -41,6 +41,10 @@ enum BBItemEventType
     BBIET_ellipseResized,  // TODO: 支持对椭圆进行编辑，支持八方向拉伸
     BBIET_triangleChanging, // TODO: 支持对三角形进行编辑，允许拖动三个顶点的任意一个
     BBIET_triangleChanged,  // TODO: 支持对三角形进行编辑，允许拖动三个顶点的任意一个
+    // TODO end;
+
+    BBIET_itemCopy, // 被复制
+    BBIET_itemCut,  // 被剪切
 
     BBIET_max
 };

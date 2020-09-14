@@ -9,6 +9,7 @@
 #include "IStreamWR.h"
 #include "IItemIndex.h"
 
+class BbFactory;
 class BbItemPen;
 class BbItemPenData;
 class BbItemText;
@@ -109,11 +110,13 @@ public:
 
     IItemIndex *readItemFromStream(QDataStream &stream);
 
-    IItemIndex *readItemFromJsonObject(const QJsonObject &jobj);
+    BbFactory *factory();
 
     void selectedAll();
 
     void deselectAll();
+
+    void cutItems();
 
     void copyItems();
 
@@ -221,6 +224,8 @@ protected:
     virtual void keyPressEvent(QKeyEvent *e) override;
 
     virtual void keyReleaseEvent(QKeyEvent *e) override;
+
+    IItemIndex *selectedItems2Clipboard();
 
     void checkItemsPicking();
 

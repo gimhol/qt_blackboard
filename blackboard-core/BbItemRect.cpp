@@ -31,7 +31,7 @@ void BbItemRect::init()
     Q_ASSERT(nullptr != _data);
     if(!_data)
     {
-        _data = new BbItemRectData();
+        _data = Blackboard::defaultFactory()->createItemData<BbItemRectData>(BBTT_Rectangle);
     }
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
@@ -118,8 +118,8 @@ BbItemData *BbItemRect::data()
 
 void BbItemRect::toolDown(const QPointF &pos)
 {
-    setId(blackboard()->factory()->makeItemId());
-    setZ(blackboard()->factory()->makeItemZ());
+    setId(blackboard()->factory()->makeItemId(toolType()));
+    setZ(blackboard()->factory()->makeItemZ(toolType()));
     updatePrevZ();
 
     auto settings = blackboard()->toolSettings<BbItemRectData>(BBTT_Rectangle);

@@ -14,7 +14,7 @@ class NSB_BLACKBOARD_EXPORT BbItemStraight:
 {
     BB_HIDE_POS_SETTER
 protected:
-    BbItemStraightData * _myData;
+    BbItemStraightData * _data;
 
     QRectF _rect;
 

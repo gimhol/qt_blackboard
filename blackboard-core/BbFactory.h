@@ -11,10 +11,18 @@ public:
     virtual IItemIndex *createItemWhenToolDown(BbToolType bbtt);
     virtual IItemIndex *createItem(BbToolType bbtt);
     virtual IItemIndex *createItem(BbItemData *data);
+    virtual IItemIndex *createItem(const QJsonObject &jobj);
     virtual BbItemData *createToolSettings(BbToolType bbtt);
-    virtual QString makeItemId();
+    virtual QString makeItemId(BbToolType bbtt = BBTT_None);
     virtual QString makeBackgroundId();
-    virtual qreal makeItemZ();
+    virtual qreal makeItemZ(BbToolType bbtt = BBTT_None);
+    virtual BbItemData *createItemData(BbToolType bbtt);
+
+    template<typename T>
+    inline T *createItemData(BbToolType bbtt){
+        return dynamic_cast<T*>(createItemData(bbtt));
+    }
+
 private:
     qint64 _itemIdCount = 0;
     qint64 _bbIdCount = 0;
