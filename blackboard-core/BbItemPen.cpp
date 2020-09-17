@@ -262,8 +262,8 @@ void BbItemPen::addPointToPath(const QPointF &point)
     _rect = _path.boundingRect();
     _rect.moveLeft(_rect.x()-halfPenW);
     _rect.moveTop(_rect.y()-halfPenW);
-    _rect.setWidth(_rect.width()+halfPenW);
-    _rect.setHeight(_rect.height()+halfPenW);
+    _rect.setWidth(_rect.width()+2*halfPenW);
+    _rect.setHeight(_rect.height()+2*halfPenW);
     _data->updatePostion(this);
     _data->updatePrevPostion();
 }
@@ -360,8 +360,8 @@ void BbItemPen::repaint()
         _rect = _path.boundingRect();
         _rect.moveLeft(_rect.x()-halfPenW);
         _rect.moveTop(_rect.y()-halfPenW);
-        _rect.setWidth(_rect.width()+halfPenW);
-        _rect.setHeight(_rect.height()+halfPenW);
+        _rect.setWidth(_rect.width()+2*halfPenW);
+        _rect.setHeight(_rect.height()+2*halfPenW);
         setRect(_rect);
     }
     if(_data->isPositionValid()){
