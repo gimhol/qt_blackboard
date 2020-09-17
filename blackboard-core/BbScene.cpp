@@ -425,7 +425,8 @@ void BbScene::cutItems()
 {
     auto first = selectedItems2Clipboard();
     if(!first)
-        return
+        return;
+
     emit blackboard()->multipleItemChanged(BBIET_itemCut,first);
 
     IITEMINDEX_TRAVERSAl_BEGIN(first,curr)
@@ -437,7 +438,7 @@ void BbScene::copyItems()
 {
     auto first = selectedItems2Clipboard();
     if(!first)
-        return
+        return;
 
     emit blackboard()->multipleItemChanged(BBIET_itemCopy,first);
 }

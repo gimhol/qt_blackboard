@@ -233,8 +233,8 @@ void BbItemPen::straightLineDragging(const QPointF &point)
     qreal w = std::max(pathRect.right(), _straightTo.x()) - x;
     qreal h = std::max(pathRect.bottom(), _straightTo.y()) - y;
 
-    _rect.setX(x - halfPenW);
-    _rect.setY(y - halfPenW);
+    _rect.moveLeft(x - halfPenW);
+    _rect.moveTop(y - halfPenW);
     _rect.setWidth(w + 2 * halfPenW);
     _rect.setHeight(h + 2 * halfPenW);
 
@@ -260,8 +260,8 @@ void BbItemPen::addPointToPath(const QPointF &point)
      setPos(newLeft, newTop);
 
     _rect = _path.boundingRect();
-    _rect.setX(_rect.x()-halfPenW);
-    _rect.setY(_rect.y()-halfPenW);
+    _rect.moveLeft(_rect.x()-halfPenW);
+    _rect.moveTop(_rect.y()-halfPenW);
     _rect.setWidth(_rect.width()+halfPenW);
     _rect.setHeight(_rect.height()+halfPenW);
     _data->updatePostion(this);
@@ -358,8 +358,8 @@ void BbItemPen::repaint()
         _path.lineTo(point - QPointF(newLeft, newTop));
          setPos(newLeft, newTop);
         _rect = _path.boundingRect();
-        _rect.setX(_rect.x()-halfPenW);
-        _rect.setY(_rect.y()-halfPenW);
+        _rect.moveLeft(_rect.x()-halfPenW);
+        _rect.moveTop(_rect.y()-halfPenW);
         _rect.setWidth(_rect.width()+halfPenW);
         _rect.setHeight(_rect.height()+halfPenW);
         setRect(_rect);
