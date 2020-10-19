@@ -17,6 +17,7 @@
 #include "BbItemImageData.h"
 #include "BBItemEventType.h"
 #include "BbHelper.h"
+#include "BbItemDeleter.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include <QKeyEvent>
@@ -24,9 +25,9 @@
 #include <QClipboard>
 #include <QMimeData>
 
-#ifdef WIN32
 #include <QDateTime>
 #include <QTimer>
+#ifdef WIN32
 #include <Windows.h>
 #pragma comment(lib, "user32")
 #endif
@@ -89,12 +90,6 @@ BbScene::~BbScene()
     _pickerRect = nullptr;
     _curItemIndex = nullptr;
     _backgrounds.clear();
-    /*
-     * Note: 这里不需要delete 因为会item 会在clear中被delete。
-     * 这里的delete可能会导致不可预知的问题。(?)
-     * 但还没有找到重现的方法？？？
-     * -Gim
-     */
     _deletingItems.clear();
 }
 
@@ -319,14 +314,11 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
          * 鼠标是按下状态时，先加入待移除的列。在鼠标抬起时再移除。
          *      -Gim
          */
-        for(auto idx: _deletingItems){
-            if(idx->toolType() == BBTT_Text){
-                auto text = dynamic_cast<BbItemText*>(idx);
-                text->deleteLater();
-            }
-            else{
-                delete idx;
-            }
+        for(auto idx: _deletingItems)
+        {
+            auto item = dynamic_cast<QGraphicsItem*>(idx);
+            removeItem(item);
+            BbItemDeleter::get()->addItem(idx);
         }
         _deletingItems.clear();
     }else if(event->button() == Qt::RightButton){
@@ -583,7 +575,8 @@ void BbScene::clearBackground()
     {
         for(auto pair: _backgrounds)
         {
-            delete pair.second;
+            removeItem(pair.second);
+            BbItemDeleter::get()->addItem(pair.second);
         }
         _backgrounds.clear();
     }
@@ -599,7 +592,9 @@ void BbScene::removeBackground(int index)
 {
     if(index < _backgrounds.count())
     {
-        delete _backgrounds.takeAt(index).second;
+        auto pair = _backgrounds.takeAt(index);
+        removeItem(pair.second);
+        BbItemDeleter::get()->addItem(pair.second);
     }
 }
 
@@ -610,7 +605,8 @@ void BbScene::removeBackground(QString id)
         if(id == pair.first)
         {
             _backgrounds.removeOne(pair);
-            delete pair.second;
+            removeItem(pair.second);
+            BbItemDeleter::get()->addItem(pair.second);
             break;
         }
     }
@@ -929,47 +925,43 @@ void BbScene::deselectAll()
 
 void BbScene::remove(IItemIndex *index)
 {
-    if(index){
-        index->removed();
-        if(_curItemIndex == index)
-            _curItemIndex = nullptr;
-        auto item = dynamic_cast<QGraphicsItem*>(index);
-        if(item)
-        {
-            item->clearFocus();
-            item->setSelected(false);
-//            item->setFlag(QGraphicsItem::ItemIsMovable,false);
-//            item->setFlag(QGraphicsItem::ItemIsSelectable,false);
-//            item->setFlag(QGraphicsItem::ItemIsFocusable,false);
-            item->setOpacity(0);
-            item->setScale(0);
-            item->setData(GRAPHICS_ITEM_DATA_KEY_DELETING,true);
-        }
-        else
-        {
-            qWarning() << "[BlackboardScene::remove] item is not a 'QGraphicsItem'! what happen?!";
-        }
-        /*
-         * NOTE:
-         * 在拖动item时移除item。会导致后面新出现的item拖动动时发生跳至其他位置的BUG，故在这里特殊处理。
-         * 鼠标是按下状态时，先加入待移除的列。在鼠标抬起时再移除。
-         *      -Gim
-         */
-        if(_mouseButtons != Qt::NoButton){
-            _deletingItems << index;
-        }else{
-            if(index->toolType() == BBTT_Text){
-                auto text = dynamic_cast<BbItemText*>(index);
-                text->deleteLater();
-            }
-            else{
-                delete index;
-            }
-        }
+    if(!index){
+        qWarning() << __FUNCTION__ << "failed! index == nullptr!";
+        return;
+    }
+
+    index->removed();
+
+    if(_curItemIndex == index)
+        _curItemIndex = nullptr;
+
+    auto item = dynamic_cast<QGraphicsItem*>(index);
+    if(item)
+    {
+        item->clearFocus();
+        item->setSelected(false);
+        item->setOpacity(0);
+        item->setScale(0);
+        item->setData(GRAPHICS_ITEM_DATA_KEY_DELETING,true);
     }
     else
     {
-        qWarning() << "[BlackboardScene::remove] can not remove item, pointer is nullptr!";
+        qWarning() << __FUNCTION__ << "item is not a 'QGraphicsItem'! what happen?!";
+    }
+    /*
+     * NOTE:
+     * 在拖动item时移除item。会导致后面新出现的item拖动动时发生跳至其他位置的BUG，故在这里特殊处理。
+     * 鼠标是按下状态时，先加入待移除的列。在鼠标抬起时再移除。
+     *      -Gim
+     */
+    if(_mouseButtons != Qt::NoButton){
+        _deletingItems << index;
+    }
+    else
+    {
+        BbItemDeleter::get()->addItem(index);
+        if(item)
+            removeItem(item);
     }
 }
 

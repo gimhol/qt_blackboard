@@ -21,10 +21,19 @@ float penSqrt(float number)
 }
 #endif
 
+
+#ifdef NSB_PEN_DEBUG
+static int deconstruct_count = 0;
+static int construct_count = 0;
+#endif
+
 BbItemPen::BbItemPen():
     QGraphicsRectItem(),
     _data(new BbItemPenData())
 {
+#ifdef NSB_PEN_DEBUG
+    construct_count++;
+#endif
     init();
 }
 
@@ -32,6 +41,9 @@ BbItemPen::BbItemPen(BbItemData *data):
     QGraphicsRectItem(),
     _data(dynamic_cast<BbItemPenData *>(data))
 {
+#ifdef NSB_PEN_DEBUG
+    construct_count++;
+#endif
     init();
 }
 
@@ -49,23 +61,13 @@ void BbItemPen::init()
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
 }
+
 BbItemPen::~BbItemPen()
 {
-    if(flags==0xdeadbeef){
-        QMessageBox::critical(nullptr, QStringLiteral("黑板故障"), QStringLiteral(
-                                  "二次析构笔迹。"
-                                  "如果您是老师，请记住前几秒的使用在线课堂上课的操作并将本错误拍照告知牛师帮在线课堂。\n"
-                                  "如果您是学生，请拍照并告诉老师。"));
-        qFatal(__FUNCTION__"0xdeadbeef");
-    }
-    if(flags!=0x900dbeef){
-        QMessageBox::critical(nullptr, QStringLiteral("黑板故障"), QStringLiteral(
-                                 "析构野指针笔迹。"
-                                 "如果您是老师，请记住前几秒的使用在线课堂上课的操作并将本错误拍照告知牛师帮在线课堂。\n"
-                                 "如果您是学生，请拍照并告诉老师。"));
-        qFatal(__FUNCTION__"no 0x900dbeef");
-    }
-    flags=0xdeadbeef;
+#ifdef NSB_PEN_DEBUG
+    ++deconstruct_count;
+    qDebug() << __func__ << int(this) << deconstruct_count << "remain:" << (construct_count-deconstruct_count);
+#endif
     if(_data){
         delete _data;
     }
@@ -109,7 +111,7 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 }
 
 void BbItemPen::penDown(const QPointF &point){
-#ifdef QT_DEBUG
+#ifdef NSB_PEN_DEBUG
     qInfo() << __FUNCTION__ << point;
 #endif
     _editing = true;
@@ -130,7 +132,7 @@ void BbItemPen::penDown(const QPointF &point){
 
 void BbItemPen::penDraw(const QPointF &point)
 {
-#ifdef QT_DEBUG
+#ifdef NSB_PEN_DEBUG
     qInfo() << __FUNCTION__ << point;
 #endif
     setStraight(false);
@@ -151,7 +153,7 @@ void BbItemPen::penDraw(const QPointF &point)
 
 void BbItemPen::penStraighting(const QPointF &point)
 {
-#ifdef QT_DEBUG
+#ifdef NSB_PEN_DEBUG
     qInfo() << __FUNCTION__ << point;
 #endif
     setStraight(true);
@@ -163,7 +165,7 @@ void BbItemPen::penStraighting(const QPointF &point)
 
 void BbItemPen::done()
 {
-#ifdef QT_DEBUG
+#ifdef NSB_PEN_DEBUG
     qInfo() << __FUNCTION__;
 #endif
 
@@ -440,7 +442,7 @@ BbItemData *BbItemPen::data()
 
 void BbItemPen::toolDown(const QPointF &pos)
 {
-#ifdef QT_DEBUG
+#ifdef NSB_PEN_DEBUG
     qDebug() << __FUNCTION__ << pos;
 #endif
     setId(blackboard()->factory()->makeItemId(toolType()));
@@ -458,7 +460,7 @@ void BbItemPen::toolDown(const QPointF &pos)
 
 void BbItemPen::toolDraw(const QPointF &pos)
 {
-#ifdef QT_DEBUG
+#ifdef NSB_PEN_DEBUG
     qDebug() << __FUNCTION__ << pos;
 #endif
     setStraight(bbScene()->modifiers()==Qt::ShiftModifier);
@@ -491,7 +493,7 @@ void BbItemPen::toolDraw(const QPointF &pos)
 
 void BbItemPen::toolDone(const QPointF &pos)
 {
-#ifdef QT_DEBUG
+#ifdef NSB_PEN_DEBUG
     qDebug() << __FUNCTION__ << pos;
 #endif
     if(straight())

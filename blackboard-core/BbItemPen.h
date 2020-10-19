@@ -26,9 +26,6 @@ protected:
     float _distances[3];
 #endif
 
-    //Weiqi
-    unsigned int flags = 0x900dbeef;
-
     QPainterPath _path;
 
     QList<QPointF> _changed;
