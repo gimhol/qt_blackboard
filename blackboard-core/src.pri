@@ -4,6 +4,7 @@ HEADERS += \
     $$PWD/BbFactory.h \
     $$PWD/BbHeader.h \
     $$PWD/BbHelper.h \
+    $$PWD/BbItemDeleter.h \
     $$PWD/BbScene.h \
     $$PWD/IJsonWR.h \
     $$PWD/IStreamWR.h \
@@ -31,6 +32,7 @@ HEADERS += \
 SOURCES += \
     $$PWD/BbFactory.cpp \
     $$PWD/BbHelper.cpp \
+    $$PWD/BbItemDeleter.cpp \
     $$PWD/BbScene.cpp \
     $$PWD/Blackboard.cpp \
     $$PWD/BbItemPen.cpp \
