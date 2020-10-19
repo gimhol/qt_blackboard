@@ -83,7 +83,7 @@ void BlackboardConnector::onLocalPointerHidden(QPoint){
 
 void BlackboardConnector::onLocalMultipleItemChanged(BBItemEventType eventType, IItemIndex *index){
 
-#ifdef QT_DEBUG
+#ifdef NSB_BB_CONNECTOR_DEBUG
     qDebug().noquote() << "multiple items changed eventType: " << eventType;
     auto a = index;
     auto i = 0;
@@ -153,7 +153,7 @@ void BlackboardConnector::onLocalItemsDelete(IItemIndex *index)
 
 void BlackboardConnector::onLocalItemChanged(BBItemEventType eventType, IItemIndex *index)
 {
-#ifdef QT_DEBUG
+#ifdef NSB_BB_CONNECTOR_DEBUG
     qDebug().noquote() << "item changed eventType: " << eventType;
     qDebug().noquote() << "item:" << QJsonDocument(index->data()->toJsonObject()).toJson();
     qDebug() << "";
