@@ -31,27 +31,56 @@ IItemIndex *BbFactory::createItem(BbItemData *data)
     return BbHelper::createItem(data);
 }
 
+IItemIndex *BbFactory::createItem(const QJsonObject &jobj)
+{
+    auto type = jobj["type"].toInt();
+    auto index = createItem(BbToolType(type));
+    Q_ASSERT(index);
+
+    if(!index)
+        return nullptr;
+
+    auto reader = dynamic_cast<IJsonWR*>(index);
+    Q_ASSERT(reader);
+    if(reader)
+        reader->fromJsonObject(jobj);
+
+    return index;
+}
+
 BbItemData *BbFactory::createToolSettings(BbToolType bbtt)
 {
     return BbHelper::createToolSettings(bbtt);
 }
 
-QString BbFactory::makeItemId()
+QString BbFactory::makeItemId(BbToolType bbtt)
 {
     ++_itemIdCount;
-    return QString("item_%1").arg(
-                QDateTime::currentMSecsSinceEpoch()+_itemIdCount);
+    auto toolTypeName = BbHelper::toolTypeName(bbtt);
+    auto msec = QDateTime::currentMSecsSinceEpoch();
+    return QString("%1_%2_%3").arg(toolTypeName).arg(msec).arg(_itemIdCount);
 }
 
 QString BbFactory::makeBackgroundId()
 {
     ++_bbIdCount;
-    return QString("bb_%1").arg(
-                QDateTime::currentMSecsSinceEpoch()+_bbIdCount);
+    auto msec = QDateTime::currentMSecsSinceEpoch();
+    return QString("bb_%1_%2").arg(msec).arg(_bbIdCount);
 }
 
-qreal BbFactory::makeItemZ()
+qreal BbFactory::makeItemZ(BbToolType bbtt)
 {
-    ++_zCount;
-    return QDateTime::currentMSecsSinceEpoch() + _zCount;
+    auto z = QDateTime::currentMSecsSinceEpoch();
+    if(z > _prevZ){
+        _zCount = 0;
+    }else{
+        ++_zCount;
+        z += _zCount;
+    }
+    _prevZ = z;
+    return z;
+}
+
+BbItemData *BbFactory::createItemData(BbToolType bbtt){
+    return BbHelper::createItemData(bbtt);
 }

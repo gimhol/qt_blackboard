@@ -17,6 +17,7 @@
 #include "BbItemImageData.h"
 #include "BBItemEventType.h"
 #include "BbHelper.h"
+#include "BbItemDeleter.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include <QKeyEvent>
@@ -24,14 +25,40 @@
 #include <QClipboard>
 #include <QMimeData>
 
-#ifdef WIN32
 #include <QDateTime>
 #include <QTimer>
+#ifdef WIN32
 #include <Windows.h>
 #pragma comment(lib, "user32")
 #endif
 
 #define GRAPHICS_ITEM_DATA_KEY_DELETING 1000
+
+#define MAKE_IITEMINDEX_LIST_BEGIN(_FIRST_ITEM_NAME_,_PREV_ITEM_NAME_) \
+    IItemIndex *_FIRST_ITEM_NAME_ = nullptr; \
+    IItemIndex *_PREV_ITEM_NAME_ = nullptr;
+
+#define MAKE_IITEMINDEX_LIST(_FIRST_ITEM_NAME_,_PREV_ITEM_NAME_,_CURRENT_ITEM_NAME_) \
+    do{ \
+        if(_FIRST_ITEM_NAME_){ \
+            _PREV_ITEM_NAME_->next = _CURRENT_ITEM_NAME_; \
+            _CURRENT_ITEM_NAME_->last = _PREV_ITEM_NAME_; \
+        } \
+        else{ \
+            _CURRENT_ITEM_NAME_->last = nullptr; \
+            _FIRST_ITEM_NAME_ = _CURRENT_ITEM_NAME_; \
+        } \
+        _CURRENT_ITEM_NAME_->next = nullptr; \
+        _PREV_ITEM_NAME_ = _CURRENT_ITEM_NAME_; \
+    } while(0);
+
+#define IITEMINDEX_TRAVERSAl_BEGIN(_FIRST_ITEM_NAME_,_CURRENT_ITEM_NAME_) \
+    auto _CURRENT_ITEM_NAME_ = _FIRST_ITEM_NAME_; \
+    while(_CURRENT_ITEM_NAME_){ \
+        auto _NEXT_ITEM_ = _CURRENT_ITEM_NAME_->next;
+
+#define IITEMINDEX_TRAVERSAl_END(_CURRENT_ITEM_NAME_) \
+    _CURRENT_ITEM_NAME_ = _NEXT_ITEM_; }
 
 BbScene::BbScene(Blackboard *parent):
     QGraphicsScene(parent),
@@ -63,12 +90,6 @@ BbScene::~BbScene()
     _pickerRect = nullptr;
     _curItemIndex = nullptr;
     _backgrounds.clear();
-    /*
-     * Note: 这里不需要delete 因为会item 会在clear中被delete。
-     * 这里的delete可能会导致不可预知的问题。(?)
-     * 但还没有找到重现的方法？？？
-     * -Gim
-     */
     _deletingItems.clear();
 }
 
@@ -127,31 +148,19 @@ IItemIndex *BbScene::enumAll(std::function<bool (IItemIndex *, int)> job)
 
 IItemIndex *BbScene::enumSelected(std::function<bool(IItemIndex *,int)> job)
 {
-    IItemIndex *first = nullptr;
-    IItemIndex *current = nullptr;
+    MAKE_IITEMINDEX_LIST_BEGIN(first,prev)
     int i = 0;
     for(auto item: selectedItems()){
         // 忽略正在被移除的item。
         if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
             continue;
-
-        IItemIndex *index = dynamic_cast<IItemIndex *>(item);
+        auto index = dynamic_cast<IItemIndex *>(item);
         if(!index)
             continue;
-
-        if(first){
-            index->last = current;
-            current->next = index;
-        }
-        else{
-            index->last = nullptr;
-            first = index;
-        }
-        index->next = nullptr;
+        MAKE_IITEMINDEX_LIST(first,prev,index)
         if(job && job(index,i)){
             break;
         }
-        current = index;
         i++;
     }
     return first;
@@ -214,7 +223,7 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 QGraphicsScene::mousePressEvent(event);
 
             if(!_curItemIndex){
-                auto item = blackboard()->factory()->createItemWhenToolDown(_toolType);
+                auto item = factory()->createItemWhenToolDown(_toolType);
                 if(item){
                     add(item);
                     item->toolDown(_mousePos);
@@ -305,19 +314,11 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
          * 鼠标是按下状态时，先加入待移除的列。在鼠标抬起时再移除。
          *      -Gim
          */
-        for(auto idx: _deletingItems){
+        for(auto idx: _deletingItems)
+        {
             auto item = dynamic_cast<QGraphicsItem*>(idx);
-            if(item){
-                //This line trigger the bug.
-                //QGraphicsScene::removeItem(item);
-            }
-            if(idx->toolType() == BBTT_Text){
-                auto text = dynamic_cast<BbItemText*>(idx);
-                text->deleteLater();
-            }
-            else{
-                delete idx;
-            }
+            removeItem(item);
+            BbItemDeleter::get()->addItem(idx);
         }
         _deletingItems.clear();
     }else if(event->button() == Qt::RightButton){
@@ -355,92 +356,163 @@ void BbScene::keyReleaseEvent(QKeyEvent *e)
     }
 }
 
-void BbScene::copyItems()
+IItemIndex *BbScene::selectedItems2Clipboard()
 {
-    QClipboard *clipboard = QApplication::clipboard();
-
-    QByteArray data;
-    QDataStream dataStream(&data, QIODevice::WriteOnly);
     auto items = selectedItems();
-    std::sort(items.begin(),items.end(),[](QGraphicsItem *a,QGraphicsItem*b){
+
+    if(items.isEmpty())
+        return nullptr;
+
+    auto sortOp = [](QGraphicsItem *a, QGraphicsItem *b){
         return a->zValue() < b->zValue();
-    });
-    for(auto item: items){
+    };
+    std::sort(items.begin(),items.end(),sortOp);
+
+    QJsonArray jArr;
+    auto bounding_left = qreal(INT_MAX);
+    auto bounding_right = qreal(INT_MIN);
+    auto bounding_top = qreal(INT_MAX);
+    auto bounding_bottom = qreal(INT_MIN);
+    MAKE_IITEMINDEX_LIST_BEGIN(first,prev);
+    for(auto item: items)
+    {
         // 忽略正在被移除的item。
-        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+        if(!item->isVisible() || item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
             continue;
 
-        IItemIndex *index = dynamic_cast<IItemIndex *>(item);
-        IStreamW *streamWriter = dynamic_cast<IStreamW *>(item);
-        if(!index || !streamWriter)
-        {
+        auto curr = dynamic_cast<IItemIndex *>(item);
+        auto writer = dynamic_cast<IJsonW *>(item);
+        if(!writer)
             continue;
-        }
-        dataStream << static_cast<int>(index->toolType());
-        streamWriter->writeStream(dataStream);
+        auto boundingRect = item->sceneBoundingRect();
+        bounding_left = (std::min)(boundingRect.left(),bounding_left);
+        bounding_right = (std::max)(boundingRect.right(),bounding_right);
+        bounding_top = (std::min)(boundingRect.top(),bounding_top);
+        bounding_bottom = (std::max)(boundingRect.bottom(),bounding_bottom);
+        jArr << writer->toJsonObject();
+        MAKE_IITEMINDEX_LIST(first,prev,curr);
     }
 
-    QMimeData *mimeData = new QMimeData();
-    mimeData->setData("nsb/blackboard-items",data);
+    if(jArr.isEmpty())
+        return nullptr;
+
+    QJsonObject jObj;
+    jObj["items"] = jArr;
+    jObj["bounding_left"] = bounding_left;
+    jObj["bounding_right"] = bounding_right;
+    jObj["bounding_top"] = bounding_top;
+    jObj["bounding_bottom"] = bounding_bottom;
+
+    jObj["address"] = int(this);
+    auto data = QJsonDocument(jObj).toBinaryData();
+    auto clipboard = QApplication::clipboard();
+    auto mimeData = new QMimeData();
+    mimeData->setData("nsb/bb-items",data);
     clipboard->setMimeData(mimeData);
+
+    return first;
+}
+
+void BbScene::cutItems()
+{
+    auto first = selectedItems2Clipboard();
+    if(!first)
+        return;
+
+    emit blackboard()->multipleItemChanged(BBIET_itemCut,first);
+
+    IITEMINDEX_TRAVERSAl_BEGIN(first,curr)
+    remove(curr);
+    IITEMINDEX_TRAVERSAl_END(curr)
+}
+
+void BbScene::copyItems()
+{
+    auto first = selectedItems2Clipboard();
+    if(!first)
+        return;
+
+    emit blackboard()->multipleItemChanged(BBIET_itemCopy,first);
 }
 
 void BbScene::pasteItems()
 {
-    QClipboard *clipboard = QApplication::clipboard();
-    const QMimeData *mimeData = clipboard->mimeData();
+    auto clipboard = QApplication::clipboard();
+    auto mimeData = clipboard->mimeData();
 
+    if(!mimeData || !mimeData->hasFormat("nsb/bb-items"))
+        return;
 
-    for(auto item: selectedItems()){
+    auto data = mimeData->data("nsb/bb-items");
 
-        // 忽略正在被移除的item。
-        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
+    Q_ASSERT(data.size() != 0);
+
+    if(data.size() == 0)
+        return;
+
+    auto topZ = 0.0;
+    for(auto item : this->items(Qt::DescendingOrder)){
+        auto index = dynamic_cast<IItemIndex*>(item);
+        if(!index)
             continue;
+        topZ = item->zValue();
+        break;
+    }
+    deselectAll();
+    auto jDoc = QJsonDocument::fromBinaryData(data);
 
-        item->setSelected(false);
-    }
-    if(mimeData && mimeData->hasFormat("nsb/blackboard-items"))
-    {
-        auto data = mimeData->data("nsb/blackboard-items");
-        QDataStream dataStream(&data, QIODevice::ReadOnly);
-        IItemIndex *first = nullptr;
-        IItemIndex *current = nullptr;
-        while(!dataStream.atEnd())
-        {
-            auto index = copyItemFromStream(dataStream);
-            if(index)
-            {
-                if(first)
-                {
-                    current->next = index;
-                    index->last = current;
-                }
-                else
-                {
-                    index->last = nullptr;
-                    first = index;
-                }
-                current = index;
-                index->next = nullptr;
-                auto item = dynamic_cast<QGraphicsItem*>(index);
-                if(item)
-                {
-                    item->setSelected(true);
-                }
-            }
+    Q_ASSERT(jDoc.isObject());
+
+    if(!jDoc.isObject())
+        return;
+
+    auto jObj = jDoc.object();
+    auto jItems = jObj["items"].toArray();
+    auto formSelf = jObj["address"].toInt() == int(this);
+    auto boundingLeft = jObj["bounding_left"].toDouble();
+    auto boundingTop = jObj["bounding_top"].toDouble();
+    QRectF boundingRect(
+                boundingLeft,
+                boundingTop,
+                jObj["bounding_right"].toDouble() - boundingLeft,
+                jObj["bounding_bottom"].toDouble() - boundingTop);
+
+    auto visionLeftTop = blackboard()->mapToScene(0,0);
+    auto visionRightBottom = blackboard()->mapToScene(
+                blackboard()->width(),
+                blackboard()->height());
+    QRectF visionRect(
+                visionLeftTop.x(),
+                visionLeftTop.y(),
+                visionRightBottom.x()-visionLeftTop.x(),
+                visionRightBottom.y()-visionLeftTop.y());
+
+    auto outOfVision = !formSelf || !boundingRect.intersects(visionRect);
+    auto offsetX = visionRect.left() + 0.5f * (visionRect.width() - boundingRect.width()) - boundingRect.left();
+    auto offsetY = visionRect.top() + 0.5f * (visionRect.height() - boundingRect.height()) - boundingRect.top();
+
+    MAKE_IITEMINDEX_LIST_BEGIN(first,prev)
+    for(auto jVal : jItems){
+        auto curr = factory()->createItem(jVal.toObject());
+        auto item = dynamic_cast<QGraphicsItem*>(curr);
+        if(!item)
+            continue;
+        curr->setId(factory()->makeItemId(curr->toolType()));
+        curr->setZ(factory()->makeItemZ(curr->toolType()));
+        add(curr);
+        item->setSelected(true);
+        if(outOfVision){
+            auto x = curr->positionX() + offsetX;
+            auto y = curr->positionY() + offsetY;
+            curr->moveToPosition(x,y);
+            curr->updatePrevPosition();
+        }else{
+            curr->moveByVector2(20,20);
+            curr->updatePrevPosition();
         }
-        if(first)
-        {
-            emit blackboard()->multipleItemChanged(BBIET_itemPaste,first);
-            current = first;
-            while(current)
-            {
-                auto next = current->next;
-                emit blackboard()->itemChanged(BBIET_itemPaste,current);
-                current = next;
-            }
-        }
+        MAKE_IITEMINDEX_LIST(first,prev,curr)
     }
+    emit blackboard()->multipleItemChanged(BBIET_itemPaste,first);
 }
 
 QSizeF BbScene::backgroundSize() const
@@ -462,14 +534,14 @@ void BbScene::setBackground(const QPixmap &pixmap)
 
 QString BbScene::addBackground(const QPixmap &pixmap)
 {
-    auto backgroundId = blackboard()->factory()->makeBackgroundId();
+    auto backgroundId = factory()->makeBackgroundId();
     addBackground(backgroundId,pixmap);
     return backgroundId;
 }
 
 QString BbScene::addBackground(QGraphicsItem *graphicsItem)
 {
-    auto backgroundId = blackboard()->factory()->makeBackgroundId();
+    auto backgroundId = factory()->makeBackgroundId();
     addBackground(backgroundId,graphicsItem);
     return backgroundId;
 }
@@ -503,8 +575,8 @@ void BbScene::clearBackground()
     {
         for(auto pair: _backgrounds)
         {
-            QGraphicsScene::removeItem(pair.second);
-            delete pair.second;
+            removeItem(pair.second);
+            BbItemDeleter::get()->addItem(pair.second);
         }
         _backgrounds.clear();
     }
@@ -520,7 +592,9 @@ void BbScene::removeBackground(int index)
 {
     if(index < _backgrounds.count())
     {
-        delete _backgrounds.takeAt(index).second;
+        auto pair = _backgrounds.takeAt(index);
+        removeItem(pair.second);
+        BbItemDeleter::get()->addItem(pair.second);
     }
 }
 
@@ -531,7 +605,8 @@ void BbScene::removeBackground(QString id)
         if(id == pair.first)
         {
             _backgrounds.removeOne(pair);
-            delete pair.second;
+            removeItem(pair.second);
+            BbItemDeleter::get()->addItem(pair.second);
             break;
         }
     }
@@ -647,7 +722,8 @@ void BbScene::fromJsonObject(const QJsonObject &jobj)
     auto jItems = jobj["items"].toArray();
 
     for(auto jVal: jItems){
-        readItemFromJsonObject(jVal.toObject());
+        auto item = factory()->createItem(jVal.toObject());
+        add(item);
     }
 }
 
@@ -807,7 +883,7 @@ IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
 {
     int type;
     stream >> type;
-    auto index = blackboard()->factory()->createItem(static_cast<BbToolType>(type));
+    auto index = factory()->createItem(static_cast<BbToolType>(type));
     if(index)
     {
         add(index);
@@ -820,22 +896,13 @@ IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
     return index;
 }
 
-IItemIndex *BbScene::readItemFromJsonObject(const QJsonObject &jobj)
+BbFactory *BbScene::factory()
 {
-    auto type = jobj["type"].toInt();
-    auto index = blackboard()->factory()->createItem(static_cast<BbToolType>(type));
-    if(index){
-        add(index);
-        auto r = dynamic_cast<IJsonWR*>(index);
-        if(r)
-            r->fromJsonObject(jobj);
-    }
-    return index;
+    return blackboard()->factory();
 }
 
 void BbScene::selectedAll()
 {
-//    if(_toolType == BBTT_Picker){
     for(auto item: items()){
 
         // 忽略正在被移除的item。
@@ -848,97 +915,76 @@ void BbScene::selectedAll()
 
         item->setSelected(true);
     }
-//    }
 }
 
 void BbScene::deselectAll()
 {
-    for(auto item: selectedItems())
-    {
-        // 忽略正在被移除的item。
-        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
-            continue;
-
-        IItemIndex* itemIndex = dynamic_cast<IItemIndex*>(item);
-        if(!itemIndex)
-            continue;
-
-        item->setSelected(false);
-    }
+    QPainterPath path;
+    setSelectionArea(path);
 }
 
 void BbScene::remove(IItemIndex *index)
 {
-    if(index){
-        index->removed();
-        if(_curItemIndex == index)
-            _curItemIndex = nullptr;
-        auto item = dynamic_cast<QGraphicsItem*>(index);
-        if(item)
-        {
-            item->clearFocus();
-            item->setSelected(false);
-//            item->setFlag(QGraphicsItem::ItemIsMovable,false);
-//            item->setFlag(QGraphicsItem::ItemIsSelectable,false);
-//            item->setFlag(QGraphicsItem::ItemIsFocusable,false);
-            item->setOpacity(0);
-            item->setScale(0);
-            item->setData(GRAPHICS_ITEM_DATA_KEY_DELETING,true);
-        }
-        else
-        {
-            qWarning() << "[BlackboardScene::remove] item is not a 'QGraphicsItem'! what happen?!";
-        }
-        /*
-         * NOTE:
-         * 在拖动item时移除item。会导致后面新出现的item拖动动时发生跳至其他位置的BUG，故在这里特殊处理。
-         * 鼠标是按下状态时，先加入待移除的列。在鼠标抬起时再移除。
-         *      -Gim
-         */
-        if(_mouseButtons != Qt::NoButton){
-            _deletingItems << index;
-        }else{
-            if(item){
-                QGraphicsScene::removeItem(item);
-            }
-            if(index->toolType() == BBTT_Text){
-                auto text = dynamic_cast<BbItemText*>(index);
-                text->deleteLater();
-            }
-            else{
-                delete index;
-            }
-        }
+    if(!index){
+        qWarning() << __FUNCTION__ << "failed! index == nullptr!";
+        return;
+    }
+
+    index->removed();
+
+    if(_curItemIndex == index)
+        _curItemIndex = nullptr;
+
+    auto item = dynamic_cast<QGraphicsItem*>(index);
+    if(item)
+    {
+        item->clearFocus();
+        item->setSelected(false);
+        item->setOpacity(0);
+        item->setScale(0);
+        item->setData(GRAPHICS_ITEM_DATA_KEY_DELETING,true);
     }
     else
     {
-        qWarning() << "[BlackboardScene::remove] can not remove item, pointer is nullptr!";
+        qWarning() << __FUNCTION__ << "item is not a 'QGraphicsItem'! what happen?!";
+    }
+    /*
+     * NOTE:
+     * 在拖动item时移除item。会导致后面新出现的item拖动动时发生跳至其他位置的BUG，故在这里特殊处理。
+     * 鼠标是按下状态时，先加入待移除的列。在鼠标抬起时再移除。
+     *      -Gim
+     */
+    if(_mouseButtons != Qt::NoButton){
+        _deletingItems << index;
+    }
+    else
+    {
+        BbItemDeleter::get()->addItem(index);
+        if(item)
+            removeItem(item);
     }
 }
 
 void BbScene::add(IItemIndex *index)
 {
-    if(index)
+    if(!index){
+        qWarning() << "[BlackboardScene::add] fail to add item, pointer is nullptr!";
+        return;
+    }
+    auto item = dynamic_cast<QGraphicsItem *>(index);
+    if(item)
     {
-        QGraphicsItem *item = dynamic_cast<QGraphicsItem *>(index);
-        if(item)
-        {
-            item->setFlag(QGraphicsItem::ItemIsMovable,true);
-            item->setFlag(QGraphicsItem::ItemIsSelectable,true);
-            item->setFlag(QGraphicsItem::ItemIsFocusable,true);
-            QGraphicsScene::addItem(item);
-            index->absolutize();
-        }
-        else
-        {
-            qWarning() << "[BlackboardScene::add] item is not a 'QGraphicsItem'! what happen?!";
-        }
-        index->added();
+        item->setFlag(QGraphicsItem::ItemIsMovable,true);
+        item->setFlag(QGraphicsItem::ItemIsSelectable,true);
+        item->setFlag(QGraphicsItem::ItemIsFocusable,true);
+        QGraphicsScene::addItem(item);
     }
     else
     {
-        qWarning() << "[BlackboardScene::add] fail to add item, pointer is nullptr!";
+        qWarning() << "[BlackboardScene::add] item is not a 'QGraphicsItem'! what happen?!";
     }
+    index->absolutize();
+    index->added();
 }
 
 void BbScene::clearItems()
@@ -954,7 +1000,7 @@ void BbScene::clearItems()
 
 IItemIndex *BbScene::readItemData(BbItemData *itemData)
 {
-    auto item = blackboard()->factory()->createItem(itemData);
+    auto item = factory()->createItem(itemData);
     if(item)
     {
         add(item);
@@ -992,15 +1038,21 @@ bool BbScene::isMouseLeftButtonDown()
 {
     return _mouseButtons & Qt::LeftButton;
 }
+static void moveItemToLeftTop(IItemIndex *item,BbScene *scene){
+    auto blackboard = scene->blackboard();
+    auto pos = blackboard->mapToScene(0,0);
+    item->moveToPosition(pos);
+}
 
 BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height)
 {
     auto item = new BbItemImage();
     add(item);
+    moveItemToLeftTop(item,this);
     item->resize(width,height);
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
 }
@@ -1009,10 +1061,11 @@ BbItemImage *BbScene::addImageItem(const QPixmap &pixmap)
 {
     auto item = new BbItemImage();
     add(item);
+    moveItemToLeftTop(item,this);
     item->resize(pixmap.width(),pixmap.height());
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1022,10 +1075,11 @@ BbItemImage *BbScene::addImageItem(const qreal &width, const qreal &height, cons
 {
     auto item = new BbItemImage();
     add(item);
+    moveItemToLeftTop(item,this);
     item->resize(width,height);
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1038,10 +1092,13 @@ BbItemImage *BbScene::addImageItemWithPath(const QString &path)
     add(item);
     auto data = dynamic_cast<BbItemImageData*>(item->data());
     data->path = path;
+
+    moveItemToLeftTop(item,this);
+
     item->resize(pixmap.width(),pixmap.height());
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1054,10 +1111,11 @@ BbItemImage *BbScene::addImageItemWithPath(const qreal &width, const qreal &heig
     add(item);
     auto data = dynamic_cast<BbItemImageData*>(item->data());
     data->path = path;
+    moveItemToLeftTop(item,this);
     item->resize(width,height);
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     item->setPixmap(pixmap);
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
@@ -1069,11 +1127,11 @@ BbItemImage *BbScene::addImageItemWithUrl(const qreal &width, const qreal &heigh
     add(item);
     auto data = dynamic_cast<BbItemImageData*>(item->data());
     data->url = url;
+    moveItemToLeftTop(item,this);
     item->resize(width,height);
-
     item->updatePrevPosition();
-    item->setZ(blackboard()->factory()->makeItemZ());
-    item->setId(blackboard()->factory()->makeItemId());
+    item->setZ(factory()->makeItemZ(item->toolType()));
+    item->setId(factory()->makeItemId(item->toolType()));
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
 }
@@ -1084,8 +1142,8 @@ IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)
     auto index = readItemFromStream(stream);
     if(index)
     {
-        index->setId(blackboard()->factory()->makeItemId());
-        index->setZ(blackboard()->factory()->makeItemZ());
+        index->setId(factory()->makeItemId(index->toolType()));
+        index->setZ(factory()->makeItemZ(index->toolType()));
         index->updatePrevZ();
         index->moveByVector2(10,10);
         index->updatePrevPosition();

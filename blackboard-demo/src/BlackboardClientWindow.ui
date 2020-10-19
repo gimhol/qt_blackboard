@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>BlackboardTestWindow</class>
- <widget class="QWidget" name="BlackboardTestWindow">
+ <class>BlackboardClientWindow</class>
+ <widget class="QWidget" name="BlackboardClientWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -14,7 +14,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#BlackboardTestWindow{
+   <string notr="true">#BlackboardClientWindow{
 background-color:#333333;
 }
 *{
@@ -946,71 +946,7 @@ outline: 0px;
          <property name="bottomMargin">
           <number>3</number>
          </property>
-         <item row="0" column="0">
-          <widget class="QPushButton" name="selectedAll">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>全选</string>
-           </property>
-           <property name="shortcut">
-            <string>Ctrl+A</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QPushButton" name="copy">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>复制</string>
-           </property>
-           <property name="shortcut">
-            <string>Ctrl+C</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QPushButton" name="deselectedAll">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>不选</string>
-           </property>
-           <property name="shortcut">
-            <string>Ctrl+D</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QPushButton" name="paste">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>粘贴</string>
-           </property>
-           <property name="shortcut">
-            <string>Ctrl+V</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
+         <item row="0" column="3">
           <widget class="QPushButton" name="remove">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1026,7 +962,65 @@ outline: 0px;
            </property>
           </widget>
          </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="cut">
+           <property name="text">
+            <string>剪切</string>
+           </property>
+           <property name="shortcut">
+            <string>Ctrl+X</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="3">
+          <widget class="QPushButton" name="paste">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>粘贴</string>
+           </property>
+           <property name="shortcut">
+            <string>Ctrl+V</string>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="2">
+          <widget class="QPushButton" name="copy">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>复制</string>
+           </property>
+           <property name="shortcut">
+            <string>Ctrl+C</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="deselectedAll">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>不选</string>
+           </property>
+           <property name="shortcut">
+            <string>Ctrl+D</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
           <widget class="QPushButton" name="repaint">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1039,7 +1033,7 @@ outline: 0px;
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="2" column="1">
           <widget class="QPushButton" name="clear">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1052,6 +1046,22 @@ outline: 0px;
            </property>
            <property name="shortcut">
             <string>Ctrl+Del</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="selectedAll">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>全选</string>
+           </property>
+           <property name="shortcut">
+            <string>Ctrl+A</string>
            </property>
           </widget>
          </item>

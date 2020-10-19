@@ -1,5 +1,5 @@
-﻿#ifndef BLACKBOARDTESTWINDOW_H
-#define BLACKBOARDTESTWINDOW_H
+﻿#ifndef BLACKBOARDCLIENTWINDOW_H
+#define BLACKBOARDCLIENTWINDOW_H
 #include "BlackboardClient.h"
 #include "BlackboardConnector.h"
 #include "ColorPanel.h"
@@ -7,7 +7,7 @@
 #include <QWidget>
 #include <Blackboard.h>
 namespace Ui {
-    class BlackboardTestWindow;
+    class BlackboardClientWindow;
 }
 class Blackboard;
 
@@ -19,20 +19,17 @@ enum WhichColor{
     WhichColor_Max
 };
 
-class BlackboardTestWindow : public QWidget
+class BlackboardClientWindow : public QWidget
 {
     Q_OBJECT
     WhichColor _whichColor = WhichColor_Invalid;
     QMap<BbToolType,BbItemData*> itemSettings;
 public:
-    explicit BlackboardTestWindow(QWidget *parent = nullptr);
-
-    static void bindBlackboard(Blackboard * blackboard0,
-                               Blackboard *blackboard1);
+    explicit BlackboardClientWindow(QWidget *parent = nullptr);
 
     Blackboard * blackboard();
 
-    ~BlackboardTestWindow();
+    ~BlackboardClientWindow();
 
     static void loadImage(BbItemImage *item);
 
@@ -87,10 +84,12 @@ private slots:
 
     void on_cb_pen_cap_activated(int index);
 
+    void on_cut_clicked();
+
 private:
-    Ui::BlackboardTestWindow *ui;
+    Ui::BlackboardClientWindow *ui;
     QPointer<BlackboardConnector> _connector;
     QPointer<ColorPanel> _colorPanel;
 };
 
-#endif // BLACKBOARDTESTWINDOW_H
+#endif // BLACKBOARDCLIENTWINDOW_H
