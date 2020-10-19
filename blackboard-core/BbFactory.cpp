@@ -70,8 +70,15 @@ QString BbFactory::makeBackgroundId()
 
 qreal BbFactory::makeItemZ(BbToolType bbtt)
 {
-    ++_zCount;
-    return QDateTime::currentMSecsSinceEpoch() + _zCount;
+    auto z = QDateTime::currentMSecsSinceEpoch();
+    if(z > _prevZ){
+        _zCount = 0;
+    }else{
+        ++_zCount;
+        z += _zCount;
+    }
+    _prevZ = z;
+    return z;
 }
 
 BbItemData *BbFactory::createItemData(BbToolType bbtt){

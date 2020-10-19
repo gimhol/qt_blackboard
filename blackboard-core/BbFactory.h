@@ -27,6 +27,7 @@ private:
     qint64 _itemIdCount = 0;
     qint64 _bbIdCount = 0;
     qint64 _zCount = 0;
+    qint64 _prevZ = INT64_MIN;
 };
 
 #endif // BBFACTORY_H
