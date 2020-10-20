@@ -19,8 +19,10 @@ protected:
 public:
     static BbItemDeleter *get();
     QTimer timer;
-    QList<IItemIndex *> indices;
-    QList<QGraphicsItem *> items;
+    QMap<IItemIndex *, IItemIndex *> indices;
+    QMap<QGraphicsItem *, QGraphicsItem *> items;
+    void remove(IItemIndex *item);
+    void remove(QGraphicsItem *item);
     void addItem(IItemIndex *item);
     void addItem(QGraphicsItem *item);
     void doit();
