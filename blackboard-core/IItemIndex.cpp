@@ -1,13 +1,14 @@
+#include "BbItemDeleter.h"
 #include "BbScene.h"
 #include "Blackboard.h"
 #include "IItemIndex.h"
-
+#include "BbItemDeleter.h"
 #include <QGraphicsItem>
 
 IItemIndex::~IItemIndex(){
+    BbItemDeleter::get()->remove(this);
     if(last)
         last->next = next;
-
     if(next)
         next->last = last;
 }
