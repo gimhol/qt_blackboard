@@ -11,12 +11,13 @@
 class BlackboardPrivate
 {
 public:
+    bool resizing = false;
     qreal scaleRatio = 1;
-    QSize orginalSize;
-    QSize canvasSize;
+    QSizeF orginalSize;
+    QSizeF canvasSize;
     QPixmap pointerPixmap;
     QPoint mousePos;
-    QPoint scrollValue;
+    QPointF scrollValue;
     QString cid;
 
     QMap<BbToolType,BbItemData*> toolSettings;
@@ -78,6 +79,8 @@ Blackboard::Blackboard(QWidget *parent):
 
     connect(horizontalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollXChanged);
     connect(verticalScrollBar(),&QScrollBar::valueChanged, this, &Blackboard::onScrollYChanged);
+
+
     qApp->installEventFilter(this);
 }
 
@@ -168,19 +171,21 @@ void Blackboard::setPointerPixmap(const QPixmap &pixmap)
     setToolCursor(BBTT_Pointer,QCursor(pixmap,pixmap.width()/2,pixmap.height()/2));
 }
 
-void Blackboard::setScroll(int x,int y)
+void Blackboard::setScroll(const qreal &x,const qreal &y)
 {
-    dptr->scrollValue.setX(x);
-    dptr->scrollValue.setY(y);
-    disconnect(this->horizontalScrollBar(), &QScrollBar::valueChanged,this, &Blackboard::onScrollXChanged);
-    disconnect(this->verticalScrollBar(), &QScrollBar::valueChanged,this, &Blackboard::onScrollYChanged);
-    horizontalScrollBar()->setValue(x);
-    verticalScrollBar()->setValue(y);
-    connect(this->horizontalScrollBar(), &QScrollBar::valueChanged,this, &Blackboard::onScrollXChanged);
-    connect(this->verticalScrollBar(), &QScrollBar::valueChanged,this, &Blackboard::onScrollYChanged);
+    dptr->scrollValue.rx() = x;
+    dptr->scrollValue.ry() = y;
+    auto hsb = horizontalScrollBar();
+    auto vsb = verticalScrollBar();
+    disconnect(hsb,&QScrollBar::valueChanged,this,&Blackboard::onScrollXChanged);
+    disconnect(vsb,&QScrollBar::valueChanged,this,&Blackboard::onScrollYChanged);
+    hsb->setValue(x * width() / 100);
+    vsb->setValue(y * width() / 100);
+    connect(hsb,&QScrollBar::valueChanged,this,&Blackboard::onScrollXChanged);
+    connect(vsb,&QScrollBar::valueChanged,this,&Blackboard::onScrollYChanged);
 }
 
-QPoint Blackboard::getScrollValue()
+QPointF Blackboard::getScrollValue()
 {
     return dptr->scrollValue;
 }
@@ -200,54 +205,57 @@ qreal Blackboard::scaleRatio()
     return dptr->scaleRatio;
 }
 
-QSize Blackboard::orginalSize()
+QSizeF Blackboard::orginalSize()
 {
     return dptr->orginalSize;
 }
 
-int Blackboard::orginalWidth()
+qreal Blackboard::orginalWidth()
 {
     return dptr->orginalSize.width();
 }
 
-int Blackboard::orginalHeight()
+qreal Blackboard::orginalHeight()
 {
     return dptr->orginalSize.height();
 }
 
-void Blackboard::setOrginalSize(int width, int height)
+void Blackboard::setOrginalSize(const qreal &width, const qreal &height)
 {
-    dptr->orginalSize.setWidth(width);
-    dptr->orginalSize.setHeight(height);
+    dptr->orginalSize.rwidth() = width;
+    dptr->orginalSize.rheight() = height;
 }
 
-void Blackboard::setOrginalSize(const QSize &size)
+void Blackboard::setOrginalSize(const QSizeF &size)
 {
-    setOrginalSize(size.width(),size.height());
+    dptr->orginalSize = size;
 }
 
 void Blackboard::resizeEvent(QResizeEvent *event)
 {
-    if(dptr->orginalSize.width() == -1)
-    {
+#ifdef QT_DEBUG
+    qInfo() << __FUNCTION__ << "begin: " << event->oldSize() << "to" << event->size();
+#endif
+
+    dptr->resizing = true;
+
+    if(dptr->orginalSize.width() <= 0.5) {
         dptr->orginalSize = event->size();
-//        scene()->setSceneRect(0,0, dptr->canvasSize.width(), dptr->canvasSize.height());
     }
-    else
-    {
+    else {
         dptr->scaleRatio = qreal(event->size().width()) / dptr->orginalSize.width();
-
         resetTransform();
-
         scale(dptr->scaleRatio,dptr->scaleRatio);
-
-//        scene()->setSceneRect(0,0, dptr->canvasSize.width(), dptr->canvasSize.height());
-
-//        setScroll(dptr->scrollValue.x(),dptr->scrollValue.y());
-
-        emit resized(float(dptr->scaleRatio));
     }
     QGraphicsView::resizeEvent(event);
+    horizontalScrollBar()->setValue(dptr->scrollValue.rx() * event->size().width() / 100);
+    verticalScrollBar()->setValue(dptr->scrollValue.ry() * event->size().width() / 100);
+
+    dptr->resizing = false;
+
+#ifdef QT_DEBUG
+    qInfo() << __FUNCTION__ << "end: " << event->oldSize() << "to" << event->size();
+#endif
 }
 
 void Blackboard::enterEvent(QEvent *event)
@@ -332,17 +340,23 @@ void Blackboard::setToolType(BbToolType toolType)
     scene()->setToolType(toolType);
 }
 
-void Blackboard::setCanvasSize(const QSize &size)
+void Blackboard::setCanvasSize(const QSizeF &size)
 {
-    setCanvasSize(size.width(), size.height());
+#ifdef QT_DEBUG
+    qDebug() << __FUNCTION__ << size;
+#endif
+    scene()->setSceneRect(0,0, size.width(), size.height());
+    dptr->canvasSize = size;
 }
 
-void Blackboard::setCanvasSize(int width, int height)
+void Blackboard::setCanvasSize(const qreal &width, const qreal &height)
 {
+#ifdef QT_DEBUG
+    qDebug() << __FUNCTION__ << width << 'x' << height;
+#endif
     scene()->setSceneRect(0,0, width, height);
-
-    dptr->canvasSize.setWidth(width);
-    dptr->canvasSize.setHeight(height);
+    dptr->canvasSize.rwidth() = width;
+    dptr->canvasSize.rheight() = height;
 }
 
 void Blackboard::removeSelectedItems()
@@ -379,19 +393,35 @@ void Blackboard::add(IItemIndex *item)
 
 void Blackboard::onScrollXChanged(int x)
 {
+    if(dptr->resizing)
+        return;
     onScrollChanged( x, verticalScrollBar()->value() );
 }
 
 void Blackboard::onScrollYChanged(int y)
 {
+    if(dptr->resizing)
+        return;
     onScrollChanged( horizontalScrollBar()->value(), y );
 }
 
 void Blackboard::onScrollChanged(int x, int y)
 {
-    dptr->scrollValue.setX(x);
-    dptr->scrollValue.setY(y);
-    emit scrolled(x, y);
+    if(dptr->resizing)
+        return;
+#ifdef QT_DEBUG
+    qInfo() << __FUNCTION__ << "begin.";
+#endif
+
+    dptr->scrollValue.rx() = 100.0 * x / width();
+    dptr->scrollValue.ry() = 100.0 * y / width();
+
+    emit scrolled(dptr->scrollValue.rx(),
+                  dptr->scrollValue.ry());
+
+#ifdef QT_DEBUG
+    qInfo() << __FUNCTION__ << "end.";
+#endif
 }
 
 void Blackboard::clearItems()
@@ -637,13 +667,13 @@ void Blackboard::fromJsonObject(const QJsonObject &jobj)
     scene()->fromJsonObject(jobj);
 }
 
-qreal Blackboard::orginalRatio(){return static_cast<qreal>(dptr->orginalSize.width())/dptr->orginalSize.height();  }
+qreal Blackboard::orginalRatio(){return dptr->orginalSize.rwidth() / dptr->orginalSize.rheight();  }
 
-QSize Blackboard::canvasSize(){return dptr->canvasSize;}
+QSizeF Blackboard::canvasSize(){return dptr->canvasSize;}
 
-int Blackboard::canvasWidth(){return dptr->canvasSize.width();}
+qreal Blackboard::canvasWidth(){return dptr->canvasSize.rwidth();}
 
-int Blackboard::canvasHeight(){return dptr->canvasSize.height();}
+qreal Blackboard::canvasHeight(){return dptr->canvasSize.rheight();}
 
 void Blackboard::onMousePress(const QPoint &pos, const Qt::MouseButton &button)
 {
@@ -783,10 +813,4 @@ void Blackboard::tabletEvent(QTabletEvent *event)
     default:
         break;
     }
-}
-
-void Blackboard::moveEvent(QMoveEvent *event)
-{
-    QGraphicsView::moveEvent(event);
-    emit moved();
 }
