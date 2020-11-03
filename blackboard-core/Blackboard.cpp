@@ -393,32 +393,27 @@ void Blackboard::add(IItemIndex *item)
 
 void Blackboard::onScrollXChanged(int x)
 {
-    if(dptr->resizing)
-        return;
     onScrollChanged( x, verticalScrollBar()->value() );
 }
 
 void Blackboard::onScrollYChanged(int y)
 {
-    if(dptr->resizing)
-        return;
     onScrollChanged( horizontalScrollBar()->value(), y );
 }
 
 void Blackboard::onScrollChanged(int x, int y)
 {
-    if(dptr->resizing)
-        return;
 #ifdef QT_DEBUG
-    qInfo() << __FUNCTION__ << "begin.";
+    qInfo() << __FUNCTION__
+            << "begin."
+            << "x:" << x
+            << "y:" << y
+            << "resizing:" << (dptr->resizing?"true":"false");
 #endif
-
     dptr->scrollValue.rx() = 100.0 * x / width();
     dptr->scrollValue.ry() = 100.0 * y / width();
-
     emit scrolled(dptr->scrollValue.rx(),
                   dptr->scrollValue.ry());
-
 #ifdef QT_DEBUG
     qInfo() << __FUNCTION__ << "end.";
 #endif
