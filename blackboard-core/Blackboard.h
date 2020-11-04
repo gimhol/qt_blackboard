@@ -47,9 +47,9 @@ public:
 
     void setPointerPixmap(const QPixmap & pixmap);
 
-    void setScroll(int x,int y);
+    void setScroll(const qreal &x, const qreal &y);
 
-    QPoint getScrollValue();
+    QPointF getScrollValue();
 
     void setCanvasId(const QString &id);
 
@@ -57,23 +57,23 @@ public:
 
     qreal scaleRatio();
 
-    QSize orginalSize();
+    QSizeF orginalSize();
 
-    int orginalWidth();
+    qreal orginalWidth();
 
-    int orginalHeight();
+    qreal orginalHeight();
 
-    void setOrginalSize(int width,int height);
+    void setOrginalSize(const qreal &width, const qreal &height);
 
-    void setOrginalSize(const QSize &size);
+    void setOrginalSize(const QSizeF &size);
 
     qreal orginalRatio();
 
-    QSize canvasSize();
+    QSizeF canvasSize();
 
-    int canvasWidth();
+    qreal canvasWidth();
 
-    int canvasHeight();
+    qreal canvasHeight();
 
     void onMousePress(const QPoint &pos, const Qt::MouseButton &button);
 
@@ -84,8 +84,6 @@ public:
     bool eventFilter(QObject *object,QEvent *event) override;
 
     void tabletEvent(QTabletEvent *event) override;
-
-    void moveEvent(QMoveEvent *event) override;
 
     void resizeEvent(QResizeEvent * event) override;
 
@@ -103,9 +101,9 @@ public:
 
     void setToolType(BbToolType toolType);
 
-    void setCanvasSize(const QSize& size);
+    void setCanvasSize(const QSizeF& size);
 
-    void setCanvasSize(int width, int height);
+    void setCanvasSize(const qreal &width, const qreal &height);
 
     void removeSelectedItems();
 
@@ -259,10 +257,7 @@ public:
     QPointF tabletPenPos();
     bool tabletActive();
 signals:
-    void moved();
-    void resized(float scale);
-    void scrolled(float x, float y);
-//    void itemSelected(IItemIndex *index, bool selected);
+    void scrolled(qreal x, qreal y);
 
     void itemChanged(BBItemEventType eventType,IItemIndex *index);
     void multipleItemChanged(BBItemEventType eventType,IItemIndex *first);
