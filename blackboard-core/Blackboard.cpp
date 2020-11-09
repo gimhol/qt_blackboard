@@ -28,14 +28,10 @@ public:
     QPointF tabletPenPos;
 };
 
-static BbFactory *_defaultFactory = new BbFactory();
+static BbFactory *_defaultFactory = BbFactory::get();
 
 void Blackboard::setDefaultFactory(BbFactory *factory)
 {
-    if(_defaultFactory)
-    {
-        delete _defaultFactory;
-    }
     _defaultFactory = factory;
 }
 
@@ -46,19 +42,12 @@ BbFactory *Blackboard::defaultFactory()
 
 void Blackboard::setFactory(BbFactory *factory)
 {
-    if(dptr->factory)
-    {
-        delete dptr->factory;
-    }
     dptr->factory = factory;
 }
 
 BbFactory *Blackboard::factory()
 {
-    if(dptr->factory){
-        return dptr->factory;
-    }
-    return _defaultFactory;
+    return dptr->factory?dptr->factory:defaultFactory();
 }
 
 Blackboard::Blackboard(QWidget *parent):

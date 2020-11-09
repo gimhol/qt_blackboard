@@ -5,6 +5,7 @@
 class NSB_BLACKBOARD_EXPORT BbFactory
 {
 public:
+    static BbFactory *get();
     BbFactory();
     virtual ~BbFactory();
     virtual BbScene *createScene(Blackboard *blackboard);
