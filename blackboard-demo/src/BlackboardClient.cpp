@@ -30,6 +30,8 @@ BlackboardClient::~BlackboardClient(){
         delete _writer;
     if(_readMsgBody)
         delete _readMsgBody;
+    if(_msgBodyReader)
+        delete _msgBodyReader;
 }
 
 QPointer<QTcpSocket> BlackboardClient::socket()

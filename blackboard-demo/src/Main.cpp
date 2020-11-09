@@ -8,10 +8,12 @@
 #include "ColorPanel.h"
 #include "MainWindow.h"
 
+#ifdef NSB_PROJECT_VLD_ON
+#include <vld.h>
+#endif
+
 int main(int argc, char *argv[])
 {
-
-    QApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
     QApplication appCentre(argc,argv);
     MainWindow mainWindow;
     mainWindow.show();

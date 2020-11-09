@@ -399,8 +399,8 @@ void BlackboardClientWindow::on_btn_make_sure_show_all_backgrouns_clicked()
     auto canvasH = bb->canvasHeight();
     auto bgRect = bb->backgroundRect();
     bb->setCanvasSize(
-                (std::max)(canvasW,int(bgRect.right())),
-                (std::max)(canvasH,int(bgRect.bottom()))
+                qMax(canvasW,bgRect.right()),
+                qMax(canvasH,bgRect.bottom())
                 );
 }
 void BlackboardClientWindow::on_btn_remove_one_background_clicked()

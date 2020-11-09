@@ -4,6 +4,13 @@
 
 #include <QDateTime>
 
+Q_GLOBAL_STATIC(BbFactory,bbFactory)
+
+BbFactory *BbFactory::get()
+{
+    return bbFactory();
+}
+
 BbFactory::BbFactory()
 {
 

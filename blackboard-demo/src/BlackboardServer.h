@@ -12,7 +12,7 @@ class BlackboardServer: public QObject
     Q_OBJECT
 public:
     explicit BlackboardServer(QObject *parent = nullptr);
-
+    ~BlackboardServer();
     bool isRunning();
     void start(int port);
     void stop();

@@ -7,4 +7,7 @@
 #else
 #define NSB_BLACKBOARD_EXPORT Q_DECL_IMPORT
 #endif
+#ifdef NSB_PROJECT_VLD_ON
+#include <vld.h>
+#endif
 #endif // BLACKBOARDHEADER_H

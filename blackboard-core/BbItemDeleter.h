@@ -14,18 +14,21 @@
  */
 class BbItemDeleter: public QObject {
     Q_OBJECT
-protected:
-    explicit BbItemDeleter(QObject *parent);
 public:
+    explicit BbItemDeleter(QObject *parent = nullptr);
     static BbItemDeleter *get();
-    QTimer timer;
-    QMap<IItemIndex *, IItemIndex *> indices;
-    QMap<QGraphicsItem *, QGraphicsItem *> items;
     void remove(IItemIndex *item);
     void remove(QGraphicsItem *item);
     void addItem(IItemIndex *item);
     void addItem(QGraphicsItem *item);
     void doit();
+private:
+    QTimer timer;
+    QMap<int, IItemIndex *> indices;
+    QMap<int, QGraphicsItem *> items;
+    QList<int> deadIndices;
+    QList<int> deadItems;
+    bool itemDeleting = false;
 };
 
 
