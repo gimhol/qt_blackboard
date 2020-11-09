@@ -6,6 +6,7 @@ BlackboardServerWindow::BlackboardServerWindow(QWidget *parent) :
     ui(new Ui::BlackboardServerWindow)
 {
     ui->setupUi(this);
+    setAttribute(Qt::WA_DeleteOnClose);
     ui->btnToggle->setText("start");
     _server = new BlackboardServer(this);
 }
