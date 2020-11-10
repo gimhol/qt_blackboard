@@ -14,18 +14,18 @@ win32{
     QMAKE_CFLAGS_RELEASE += /Zi
     QMAKE_LFLAGS_DEBUG += /MAP /debug /opt:ref
     QMAKE_CFLAGS_DEBUG += /Zi
-
-    CONFIG(debug, debug|release)
-    {
+}
+win32
+{
+    CONFIG(debug, debug|release){
         DEFINES += $$(NSB_PROJECT_VLD)
-        CONFIG += $$(NSB_PROJECT_VLD)
-        NSB_PROJECT_VLD_ON
-        {
-            message(vld on! libs path: \"$$(NSB_PROJECT_VLD_LIBS)\" include path: \"$$(NSB_PROJECT_VLD_INCLUDE)\")
+        if(contains(DEFINES,NSB_PROJECT_VLD_ON)){
+            !build_pass:message("$$TARGET, vld on! libs path: $$(NSB_PROJECT_VLD_LIBS) include path: $$(NSB_PROJECT_VLD_INCLUDE)")
             LIBS += -L"$$(NSB_PROJECT_VLD_LIBS)" -lvld
             INCLUDEPATH += $$(NSB_PROJECT_VLD_INCLUDE)
         }
+        else{
+            !build_pass:message("$$TARGET, vld off!")
+        }
     }
 }
-
-
