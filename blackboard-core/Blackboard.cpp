@@ -13,7 +13,6 @@ class BlackboardPrivate
 public:
     bool resizing = false;
     qreal scaleRatio = 1;
-    QSizeF orginalSize;
     QSizeF canvasSize;
     QPixmap pointerPixmap;
     QPoint mousePos;
@@ -194,32 +193,6 @@ qreal Blackboard::scaleRatio()
     return dptr->scaleRatio;
 }
 
-QSizeF Blackboard::orginalSize()
-{
-    return dptr->orginalSize;
-}
-
-qreal Blackboard::orginalWidth()
-{
-    return dptr->orginalSize.width();
-}
-
-qreal Blackboard::orginalHeight()
-{
-    return dptr->orginalSize.height();
-}
-
-void Blackboard::setOrginalSize(const qreal &width, const qreal &height)
-{
-    dptr->orginalSize.rwidth() = width;
-    dptr->orginalSize.rheight() = height;
-}
-
-void Blackboard::setOrginalSize(const QSizeF &size)
-{
-    dptr->orginalSize = size;
-}
-
 void Blackboard::resizeEvent(QResizeEvent *event)
 {
 #ifdef QT_DEBUG
@@ -228,11 +201,11 @@ void Blackboard::resizeEvent(QResizeEvent *event)
 
     dptr->resizing = true;
 
-    if(dptr->orginalSize.width() <= 0.5) {
-        dptr->orginalSize = event->size();
+    if(dptr->canvasSize.width() <= 0.5) {
+        dptr->canvasSize = event->size();
     }
     else {
-        dptr->scaleRatio = qreal(event->size().width()) / dptr->orginalSize.width();
+        dptr->scaleRatio = qreal(event->size().width()) / dptr->canvasSize.width();
         resetTransform();
         scale(dptr->scaleRatio,dptr->scaleRatio);
     }
@@ -650,8 +623,6 @@ void Blackboard::fromJsonObject(const QJsonObject &jobj)
 {
     scene()->fromJsonObject(jobj);
 }
-
-qreal Blackboard::orginalRatio(){return dptr->orginalSize.rwidth() / dptr->orginalSize.rheight();  }
 
 QSizeF Blackboard::canvasSize(){return dptr->canvasSize;}
 

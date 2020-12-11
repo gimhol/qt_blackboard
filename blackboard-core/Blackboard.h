@@ -57,18 +57,6 @@ public:
 
     qreal scaleRatio();
 
-    QSizeF orginalSize();
-
-    qreal orginalWidth();
-
-    qreal orginalHeight();
-
-    void setOrginalSize(const qreal &width, const qreal &height);
-
-    void setOrginalSize(const QSizeF &size);
-
-    qreal orginalRatio();
-
     QSizeF canvasSize();
 
     qreal canvasWidth();
