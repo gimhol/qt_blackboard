@@ -14,9 +14,16 @@ public:
     static const qreal &getMinWidth();
     static const qreal &getMaxWidth();
     static const QPen &getDefaultPen();
+    static const bool &getDefaultCubic();
     static void setMinWidth(const qreal &value);
     static void setMaxWidth(const qreal &value);
     static void setDefaultPen(const QPen &value);
+    static void setDefaultCubic(const bool &value);
+
+    /**
+     * @brief cubic 曲线
+     */
+    bool cubic;
 
     /**
      * @brief coords 轨迹的点，[x0,y0,x1,y1...]

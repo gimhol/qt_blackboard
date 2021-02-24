@@ -86,6 +86,8 @@ private slots:
 
     void on_cut_clicked();
 
+    void on_cb_cubic_pen_clicked(bool checked);
+
 private:
     Ui::BlackboardClientWindow *ui;
     QPointer<BlackboardConnector> _connector;

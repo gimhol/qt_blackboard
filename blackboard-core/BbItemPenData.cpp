@@ -8,7 +8,7 @@
 static qreal minWidth = 1.1;
 static qreal maxWidth = 30;
 static QPen defaultPen = QPen(QColor(100,100,180), minWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-
+static bool defaultCubic = true;
 const qreal & BbItemPenData::getMinWidth()
 {
     return minWidth;
@@ -20,6 +20,11 @@ const qreal & BbItemPenData::getMaxWidth()
 const QPen & BbItemPenData::getDefaultPen()
 {
     return defaultPen;
+}
+
+const bool &BbItemPenData::getDefaultCubic()
+{
+    return defaultCubic;
 }
 void BbItemPenData::setMinWidth(const qreal &value)
 {
@@ -34,6 +39,10 @@ void BbItemPenData::setDefaultPen(const QPen &value)
 {
     defaultPen = value;
 }
+void BbItemPenData::setDefaultCubic(const bool &value)
+{
+    defaultCubic = value;
+}
 
 BbItemPenData::BbItemPenData(CoordMode mode):
     BbItemData(mode)
@@ -41,6 +50,7 @@ BbItemPenData::BbItemPenData(CoordMode mode):
     tooltype = BBTT_Pen;
     needPen = true;
     pen = defaultPen;
+    cubic = defaultCubic;
 }
 
 void BbItemPenData::setColor(const QColor &color)
@@ -65,6 +75,7 @@ QJsonObject BbItemPenData::toJsonObject()
     for(auto coord: coords)
         jarrs << coord;
     jobj["coords"] = jarrs;
+    jobj["cubic"] = cubic;
     return jobj;
 }
 
@@ -73,5 +84,6 @@ void BbItemPenData::fromJsonObject(const QJsonObject &jobj)
     BbItemData::fromJsonObject(jobj);
     for(auto jval: jobj["coords"].toArray())
         coords.append(jval.toDouble());
+    cubic = jobj["cubic"].toBool(false);
     empty = coords.isEmpty();
 }
