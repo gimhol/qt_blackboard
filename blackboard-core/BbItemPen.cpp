@@ -253,13 +253,29 @@ void BbItemPen::addPointToPath(const QPointF &point)
     qreal halfPenW = 0.5 * _data->pen.widthF();
     qreal oldLeft = pos().x();
     qreal oldTop = pos().y();
-    qreal newLeft = std::min(point.x(), oldLeft);
-    qreal newTop = std::min(point.y(), oldTop);
+    qreal newLeft = qMin(point.x(), oldLeft);
+    qreal newTop = qMin(point.y(), oldTop);
 
     _path.translate(oldLeft-newLeft,oldTop-newTop);    // 重新计算左上角位置
-    _path.lineTo(point - QPointF(newLeft, newTop));
 
-     setPos(newLeft, newTop);
+    auto dx = point.x() - newLeft;
+    auto dy = point.y() - newTop;
+
+    if(_data->cubic){
+        auto elementCount = _path.elementCount();
+        if(elementCount == 1){
+            _path.cubicTo(dx,dy,dx,dy,dx,dy);
+        }else{
+            auto a = _path.elementAt(elementCount-3);
+            _path.setElementPositionAt(elementCount-1,(dx+a.x)/2,(dy+a.y)/2);
+            _path.setElementPositionAt(elementCount-2,a.x,a.y);
+            _path.setElementPositionAt(elementCount-3,a.x,a.y);
+            _path.cubicTo(dx,dy,dx,dy,dx,dy);
+        }
+    }else{
+        _path.lineTo(dx,dy);
+    }
+    setPos(newLeft, newTop);
 
     _rect = _path.boundingRect();
     _rect.moveLeft(_rect.x()-halfPenW);
@@ -356,8 +372,23 @@ void BbItemPen::repaint()
         qreal oldTop = pos().y();
         qreal newLeft = std::min(point.x(), oldLeft);
         qreal newTop = std::min(point.y(), oldTop);
+        auto dx = point.x() - newLeft;
+        auto dy = point.y() - newTop;
         _path.translate(oldLeft-newLeft,oldTop-newTop);    // 重新计算左上角位置
-        _path.lineTo(point - QPointF(newLeft, newTop));
+        if(_data->cubic){
+            auto elementCount = _path.elementCount();
+            if(elementCount == 1){
+                _path.cubicTo(dx,dy,dx,dy,dx,dy);
+            }else{
+                auto a = _path.elementAt(elementCount-3);
+                _path.setElementPositionAt(elementCount-1,(dx+a.x)/2,(dy+a.y)/2);
+                _path.setElementPositionAt(elementCount-2,a.x,a.y);
+                _path.setElementPositionAt(elementCount-3,a.x,a.y);
+                _path.cubicTo(dx,dy,dx,dy,dx,dy);
+            }
+        }else{
+            _path.lineTo(dx,dy);
+        }
          setPos(newLeft, newTop);
         _rect = _path.boundingRect();
         _rect.moveLeft(_rect.x()-halfPenW);

@@ -44,11 +44,23 @@ static QNetworkAccessManager *networkManager()
     return ret;
 }
 
+class PathItem: public QGraphicsPathItem{
+public:
+    explicit PathItem(const QPainterPath &path):QGraphicsPathItem(path){
+
+    }
+    QRectF boundingRect() const override{
+        auto r = path().boundingRect();
+        return QRectF(r.left()-10,r.top()-10,r.width()+20,r.height()+20);
+    }
+};
+
 BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::BlackboardClientWindow)
 {
     ui->setupUi(this);
+    ui->cb_cubic_pen->setChecked(BbItemPenData::getDefaultCubic());
     _colorPanel = new ColorPanel(this);
     connect(_colorPanel,&ColorPanel::colorChanged,this,&BlackboardClientWindow::onColorChanged);
 
@@ -159,6 +171,81 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
     for(auto itr=penJoinStyles.begin();itr!=penJoinStyles.end();++itr)
         ui->cb_pen_join->addItem(itr.value(),int(itr.key()));
     ui->cb_pen_join->setCurrentText(penJoinStyles[penSetting->pen.joinStyle()]);
+
+
+    auto points = std::vector<qreal>{
+            180,200,
+            150,120,
+            50,80,
+            93,500,
+            460,340,
+            123,564,
+            400,684
+    };
+    {
+        auto path = QPainterPath();
+        auto size = points.size();
+
+//        for(auto i = 0; i < size; i += 2){
+//            if(i == 0){
+//                path.moveTo(points[i],points[i+1]);
+//                continue;
+//            }
+//            if(i < 4)
+//                continue;
+//            auto bX = points[i-2];
+//            auto bY = points[i-1];
+//            auto dX = (points[i-2] + points[i])/2;
+//            auto dY = (points[i-1] + points[i+1])/2;
+//            path.cubicTo(bX,bY,bX,bY,dX,dY);
+////            path.lineTo(dX,dY);
+//        }
+        path.moveTo(points[0],points[1]);
+
+        auto add = [&](qreal dx, qreal dy){
+            auto elementCount = path.elementCount();
+            auto radius = 5.0;
+            if(elementCount == 1){
+                auto element = path.elementAt(0);
+                path.cubicTo(dx,dy,dx,dy,dx,dy);
+            }else{
+                auto a = path.elementAt(elementCount-3);
+                auto ax = a.x;
+                auto ay = a.y;
+                path.setElementPositionAt(elementCount-1,(dx+ax)/2,(dy+ay)/2);
+                path.setElementPositionAt(elementCount-2,ax,ay);
+                path.setElementPositionAt(elementCount-3,ax,ay);
+                path.cubicTo(dx,dy,dx,dy,dx,dy);
+            }
+        };
+        for(auto i = 2; i < size; i += 2){
+            add(points[i],points[i+1]);
+        }
+        auto item = new PathItem(path);
+        item->setPen(QPen(Qt::white,3,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin));
+        item->setBrush(Qt::transparent);
+        item->setFlag(QGraphicsItem::ItemIsSelectable);
+        item->setFlag(QGraphicsItem::ItemIsFocusable);
+        item->setFlag(QGraphicsItem::ItemIsMovable);
+        ui->blackboard->scene()->addItem(item);
+    }{
+        auto path = QPainterPath();
+        auto size = points.size();
+        for(auto i = 0; i < size; i+=2){
+            if(i == 0)
+                path.moveTo(points[i],points[i+1]);
+            else
+                path.lineTo(points[i],points[i+1]);
+        }
+        auto item = new PathItem(path);
+        item->setPen(QPen(Qt::red,1,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin));
+        item->setBrush(Qt::transparent);
+        item->setFlag(QGraphicsItem::ItemIsSelectable);
+        item->setFlag(QGraphicsItem::ItemIsFocusable);
+        item->setFlag(QGraphicsItem::ItemIsMovable);
+        ui->blackboard->scene()->addItem(item);
+    }
+
 }
 
 BlackboardClientWindow::~BlackboardClientWindow()
@@ -463,4 +550,9 @@ void BlackboardClientWindow::on_cb_pen_cap_activated(int index)
 void BlackboardClientWindow::on_cut_clicked()
 {
     blackboard()->cutItems();
+}
+
+void BlackboardClientWindow::on_cb_cubic_pen_clicked(bool checked)
+{
+    BbItemPenData::setDefaultCubic(checked);
 }
