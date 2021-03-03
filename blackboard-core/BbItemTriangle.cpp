@@ -2,7 +2,7 @@
 #include "BbItemTriangleData.h"
 #include "Blackboard.h"
 #include "BbScene.h"
-
+#include "BbItemInnerDataKey.h"
 #include <QPainter>
 #include <QDebug>
 #include <QStyleOptionGraphicsItem>
@@ -38,6 +38,7 @@ void BbItemTriangle::init()
     }
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
+    setData(BBIIDK_ITEM_IS_SHAPE,true);
 }
 
 void BbItemTriangle::toolDown(const QPointF &pos)

@@ -192,6 +192,10 @@ public:
 
     QHash<int,QRectF> getNotEmptyPageAreas();
 
+    void groupUp();
+
+    void dismiss();
+
     template<typename T>
     inline T *find(const std::string &lid)
     {

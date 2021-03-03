@@ -5,6 +5,7 @@ HEADERS += \
     $$PWD/BbHeader.h \
     $$PWD/BbHelper.h \
     $$PWD/BbItemDeleter.h \
+    $$PWD/BbItemInnerDataKey.h \
     $$PWD/BbScene.h \
     $$PWD/IJsonWR.h \
     $$PWD/IStreamWR.h \
