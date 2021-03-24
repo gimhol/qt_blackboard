@@ -212,8 +212,6 @@ void Blackboard::resizeEvent(QResizeEvent *event)
         scale(dptr->scaleRatio,dptr->scaleRatio);
     }
     QGraphicsView::resizeEvent(event);
-    horizontalScrollBar()->setValue(dptr->scrollValue.rx() * event->size().width() / 100);
-    verticalScrollBar()->setValue(dptr->scrollValue.ry() * event->size().width() / 100);
 
     dptr->resizing = false;
 
