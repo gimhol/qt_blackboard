@@ -44,10 +44,12 @@ void MainWindow::on_startBlackboardClientOpenGL_clicked()
 
     auto vp = new QOpenGLWidget;
     QSurfaceFormat format;
-    format.setVersion(3, 3);
+    format.setVersion(3, 2);
     format.setSamples(4); //多重采样
     format.setProfile(QSurfaceFormat::CoreProfile);
     vp->setFormat(format);
+    vp->setMouseTracking(true);
+    vp->setTabletTracking(true);
 
     auto bb = win0->blackboard();
     // Note: 为viewPort为QOpenGLWidget的QGraphicsView设置styleSheet将导致渲染问题。 -Gim
