@@ -52,11 +52,13 @@ background-color:#888888;
 border-radius:3px;
 padding:2px 0px;
 }
+/*
 #blackboard{
 background-color:#555557;
 border-radius:3px;
 border:none;
 }
+*/
 QComboBox{
 background-color:#888888;
 border-radius:3px;

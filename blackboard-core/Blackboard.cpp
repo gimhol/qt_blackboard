@@ -7,6 +7,8 @@
 #include <QTimer>
 #include <QScrollBar>
 #include <QApplication>
+#include <QOpenGLWidget>
+#include <QOpenGLContext>
 
 class BlackboardPrivate
 {
