@@ -60,6 +60,8 @@ private slots:
 
     void on_imageInsert_clicked();
 
+    void on_blackboardWidth_editingFinished();
+
     void on_blackboardHeight_editingFinished();
 
     void on_btn_set_background_clicked();

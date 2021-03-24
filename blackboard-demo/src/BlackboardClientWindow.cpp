@@ -111,9 +111,14 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
 
     QPixmap pm(5,5);
     pm.fill("red");
-    ui->blackboard->setCanvasSize(ui->blackboard->baseSize().width(),1000);
+    ui->blackboardWidth->setValue(800);
+    ui->blackboardHeight->setValue(2000);
+    ui->blackboard->setCanvasSize(
+                ui->blackboardWidth->value(),
+                ui->blackboardHeight->value()
+                );
     ui->blackboard->setPointerPixmap(pm);
-    ui->blackboard->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    ui->blackboard->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 //    ui->blackboard->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->blackboard->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -423,14 +428,17 @@ void BlackboardClientWindow::on_imageInsert_clicked()
     loadImage(item);
 }
 
+void BlackboardClientWindow::on_blackboardWidth_editingFinished()
+{
+    auto height = blackboard()->canvasSize().height();
+    blackboard()->setCanvasSize(ui->blackboardWidth->value(),height);
+}
+
 void BlackboardClientWindow::on_blackboardHeight_editingFinished()
 {
     auto width = blackboard()->canvasSize().width();
     blackboard()->setCanvasSize(width,ui->blackboardHeight->value());
-
 }
-
-
 
 void BlackboardClientWindow::on_btn_set_background_clicked()
 {
