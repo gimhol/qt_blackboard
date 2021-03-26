@@ -33,6 +33,11 @@ public:
     void onLocalPenStraighting(IItemIndex *index);
     void onLocalPenDone(IItemIndex *index);
 
+    void onLocalPenDown2(IItemIndex *index);
+    void onLocalPenDraw2(IItemIndex *index);
+    void onLocalPenStraighting2(IItemIndex *index);
+    void onLocalPenDone2(IItemIndex *index);
+
     void onLocalTextAdded(IItemIndex *index);
     void onLocalTextChanged(IItemIndex *index);
     void onLocalTextDone(IItemIndex *index);

@@ -6,11 +6,14 @@ class BbPointerPrivate
 {
 public:
     QPixmap pixmap;
+    QString text;
+    QPointF pixmapAnchor;
+    QPointF textAnchor;
 };
 
 BbPointer::BbPointer(QWidget *parent) :
     QWidget(parent),
-    _private(new BbPointerPrivate)
+    dptr(new BbPointerPrivate)
 {
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setDisabled(true);
@@ -18,19 +21,50 @@ BbPointer::BbPointer(QWidget *parent) :
 
 BbPointer::~BbPointer()
 {
-    delete _private;
+    delete dptr;
 }
 
-void BbPointer::setPixmap(const QPixmap &pixmap)
+BbPointer *BbPointer::setPixmap(const QPixmap &pixmap)
 {
-    _private->pixmap = pixmap;
-    resize(pixmap.size());
+    dptr->pixmap = pixmap;
+    updatePixmap();
+    return this;
+}
+
+BbPointer *BbPointer::setText(const QString &text)
+{
+    dptr->text = text;
+    updatePixmap();
+    return this;
+}
+
+BbPointer *BbPointer::setPixmapAnchor(const QPointF &pixmapAnchor)
+{
+    dptr->pixmapAnchor = pixmapAnchor;
+    updatePixmap();
+    return this;
+}
+
+BbPointer *BbPointer::setTextAnchor(const QPointF &textAnchor)
+{
+    dptr->textAnchor = textAnchor;
+    updatePixmap();
+    return this;
+}
+
+void BbPointer::updatePixmap()
+{
+    auto bg = dptr->pixmap;
+    auto p = palette();
+    p.setBrush(QPalette::Window, bg);
+    setPalette(p);
+
+    resize(bg.size());
     update();
 }
 
-void BbPointer::paintEvent(QPaintEvent *event)
+void BbPointer::paintEvent(QPaintEvent *)
 {
-    Q_UNUSED(event);
     QPainter painter(this);
-    painter.drawPixmap(_private->pixmap.rect(),_private->pixmap);
+    painter.drawPixmap(dptr->pixmap.rect(),dptr->pixmap);
 }

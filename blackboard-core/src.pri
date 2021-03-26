@@ -6,6 +6,8 @@ HEADERS += \
     $$PWD/BbHelper.h \
     $$PWD/BbItemDeleter.h \
     $$PWD/BbItemInnerDataKey.h \
+    $$PWD/BbItemPen2.h \
+    $$PWD/BbItemPenData2.h \
     $$PWD/BbScene.h \
     $$PWD/IJsonWR.h \
     $$PWD/IStreamWR.h \
@@ -34,6 +36,8 @@ SOURCES += \
     $$PWD/BbFactory.cpp \
     $$PWD/BbHelper.cpp \
     $$PWD/BbItemDeleter.cpp \
+    $$PWD/BbItemPen2.cpp \
+    $$PWD/BbItemPenData2.cpp \
     $$PWD/BbScene.cpp \
     $$PWD/Blackboard.cpp \
     $$PWD/BbItemPen.cpp \

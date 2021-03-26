@@ -241,6 +241,47 @@ void BlackboardConnector::onLocalPenDone(IItemIndex *index){
     _me->send(BBIET_penDone,QJsonDocument(jobj).toBinaryData());
 }
 
+void BlackboardConnector::onLocalPenDown2(IItemIndex *index){
+    auto item = dynamic_cast<BbItemPen2*>(index);
+    QJsonObject jobj;
+    jobj["id"] = item->id();
+    jobj["z"] = item->z();
+    setPenToJsonObject(item->data(),jobj);
+    auto dot = item->changed()->first();
+    jobj["x"] = qreal(dot.x())/_bb->canvasWidth();
+    jobj["y"] = qreal(dot.y())/_bb->canvasWidth();
+    _me->send(BBIET_penDown,QJsonDocument(jobj).toBinaryData());
+}
+
+void BlackboardConnector::onLocalPenDraw2(IItemIndex *index){
+    auto pen = dynamic_cast<BbItemPen2*>(index);
+    QJsonObject jobj;
+    jobj["id"] = pen->id();
+    QJsonArray dots;
+    for(auto p: *pen->changed()){
+        dots << (p.x()/_bb->canvasWidth())
+             << (p.y()/_bb->canvasWidth());
+    }
+    jobj["dots"] = dots;
+    _me->send(BBIET_penDraw,QJsonDocument(jobj).toBinaryData());
+}
+
+void BlackboardConnector::onLocalPenStraighting2(IItemIndex *index){
+    auto pen = dynamic_cast<BbItemPen2*>(index);
+    QJsonObject jobj;
+    jobj["id"] = pen->id();
+    jobj["x"] = qreal(pen->straightTo().x())/_bb->canvasWidth();
+    jobj["y"] = qreal(pen->straightTo().y())/_bb->canvasWidth();
+    _me->send(BBIET_penStraighting,QJsonDocument(jobj).toBinaryData());
+}
+
+void BlackboardConnector::onLocalPenDone2(IItemIndex *index){
+    QJsonObject jobj;
+    jobj["id"] = index->id();
+    _me->send(BBIET_penDone,QJsonDocument(jobj).toBinaryData());
+}
+
+
 void BlackboardConnector::onLocalTextAdded(IItemIndex *index){
     auto item = dynamic_cast<BbItemText*>(index);
     if(!item)

@@ -8,6 +8,11 @@ enum BBItemEventType
     BBIET_itemDelete,
     BBIET_itemPaste, // 粘贴
 
+    BBIET_penDown2,
+    BBIET_penDraw2,
+    BBIET_penDone2,
+    BBIET_penStraighting2,
+
     BBIET_penDown,
     BBIET_penDraw,
     BBIET_penDone,
