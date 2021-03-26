@@ -135,8 +135,6 @@ void BbItemPen::penDraw(const QPointF &point)
 #ifdef NSB_PEN_DEBUG
     qInfo() << __FUNCTION__ << point;
 #endif
-    setStraight(false);
-
     _changed.clear();
 
     _mousePos = point;
@@ -156,7 +154,6 @@ void BbItemPen::penStraighting(const QPointF &point)
 #ifdef NSB_PEN_DEBUG
     qInfo() << __FUNCTION__ << point;
 #endif
-    setStraight(true);
     _changed.clear();
     straightLineDragging(point);
     setRect(_rect);
@@ -247,9 +244,35 @@ void BbItemPen::straightLineDragging(const QPointF &point)
 
 void BbItemPen::addPointToPath(const QPointF &point)
 {
+#ifdef NSB_PEN_DEBUG
+    qInfo() << __FUNCTION__ << (_data->coords.size()/2) << ", point: " <<point;
+#endif
+
     _changed.append(point);
+
+    auto isStraightEnd = false;
+    auto dontAddToPath = false;
+    if(_data->coords.size() >= 2){
+        auto itr = _data->coords.rbegin();
+        const auto prevY = *itr;
+        const auto prevX = *(++itr);
+        dontAddToPath = point.x() == prevX && point.y() == prevY;
+    }
+    if(_data->coords.size() >= 4){
+        auto itr = _data->coords.rbegin();
+        const auto prevY0 = *itr;
+        const auto prevX0 = *(++itr);
+        const auto prevY1 = *(++itr);
+        const auto prevX1 = *(++itr);
+        isStraightEnd = prevX1 == prevX0 && prevY1 == prevY0;
+    }
+
     _data->coords.append(point.x());
     _data->coords.append(point.y());
+
+    if(dontAddToPath)
+        return;
+
     qreal halfPenW = 0.5 * _data->pen.widthF();
     qreal oldLeft = pos().x();
     qreal oldTop = pos().y();
@@ -263,15 +286,13 @@ void BbItemPen::addPointToPath(const QPointF &point)
 
     if(_data->cubic){
         auto elementCount = _path.elementCount();
-        if(elementCount == 1){
-            _path.cubicTo(dx,dy,dx,dy,dx,dy);
-        }else{
+        if(elementCount > 1 && !isStraightEnd){
             auto a = _path.elementAt(elementCount-3);
             _path.setElementPositionAt(elementCount-1,(dx+a.x)/2,(dy+a.y)/2);
             _path.setElementPositionAt(elementCount-2,a.x,a.y);
             _path.setElementPositionAt(elementCount-3,a.x,a.y);
-            _path.cubicTo(dx,dy,dx,dy,dx,dy);
         }
+        _path.cubicTo(dx,dy,dx,dy,dx,dy);
     }else{
         _path.lineTo(dx,dy);
     }
@@ -359,45 +380,21 @@ void BbItemPen::appendPointSmoothing(const QPointF &point)
 void BbItemPen::repaint()
 {
     _path.clear();
-    qreal halfPenW = 0.5 * _data->pen.widthF();
-    for(int i = 0; i < _data->coords.length(); i+=2)
+    auto coords = _data->coords;
+    _data->coords = QList<qreal>();
+    for(int i = 0; i < coords.length(); i+=2)
     {
-        QPointF point(_data->coords[i],_data->coords[i+1]);
-        if(i == 0){
-            _path = QPainterPath();
-            _path.moveTo(0,0);
-            setPos(point);
-        }
-        qreal oldLeft = pos().x();
-        qreal oldTop = pos().y();
-        qreal newLeft = std::min(point.x(), oldLeft);
-        qreal newTop = std::min(point.y(), oldTop);
-        auto dx = point.x() - newLeft;
-        auto dy = point.y() - newTop;
-        _path.translate(oldLeft-newLeft,oldTop-newTop);    // 重新计算左上角位置
-        if(_data->cubic){
-            auto elementCount = _path.elementCount();
-            if(elementCount == 1){
-                _path.cubicTo(dx,dy,dx,dy,dx,dy);
-            }else{
-                auto a = _path.elementAt(elementCount-3);
-                _path.setElementPositionAt(elementCount-1,(dx+a.x)/2,(dy+a.y)/2);
-                _path.setElementPositionAt(elementCount-2,a.x,a.y);
-                _path.setElementPositionAt(elementCount-3,a.x,a.y);
-                _path.cubicTo(dx,dy,dx,dy,dx,dy);
-            }
-        }else{
-            _path.lineTo(dx,dy);
-        }
-         setPos(newLeft, newTop);
-        _rect = _path.boundingRect();
-        _rect.moveLeft(_rect.x()-halfPenW);
-        _rect.moveTop(_rect.y()-halfPenW);
-        _rect.setWidth(_rect.width()+2*halfPenW);
-        _rect.setHeight(_rect.height()+2*halfPenW);
-        setRect(_rect);
+        QPointF point(coords[i], coords[i+1]);
+        if(i == 0)
+            penDown(point);
+        else
+            penDraw(point);
+        if(i == coords.length() - 2)
+            done();
     }
-    if(_data->isPositionValid()){
+    _changed.clear();
+    if(_data->isPositionValid())
+    {
         moveToPosition(_data->x,_data->y);
         updatePrevPosition();
     }
@@ -414,20 +411,34 @@ bool BbItemPen::straight()
 void BbItemPen::setStraight(const bool & straight)
 {
     if(straight == _straight)
-    {
         return;
-    }
 
     // 开/关直线模式
     if(straight)
     {
         _straightFrom = QPointF(-999999, -999999);
         _straightTo = QPointF(-999999, -999999);
+        if(_data->coords.size() >= 4){
+            auto itr = _data->coords.rbegin();
+            auto y0 = *itr;
+            auto x0 = *(++itr);
+            auto y1 = *(++itr);
+            auto x1 = *(++itr);
+            if(x1 != x0 || y1 != y0){
+                addPointToPath(QPointF(x0,y0));
+            }
+        } else if(_data->coords.size() >= 2){
+            auto itr = _data->coords.rbegin();
+            auto y0 = *itr;
+            auto x0 = *(++itr);
+            addPointToPath(QPointF(x0,y0));
+        }
     }
     else if(_straightTo.x() > -999998)
     {
-        _mousePos = _straightTo + pos();
         _changed.clear();
+        _mousePos = straightTo();
+        addPointToPath(_mousePos);
         addPointToPath(_mousePos);
     }
     _straight = straight;
@@ -494,24 +505,15 @@ void BbItemPen::toolDraw(const QPointF &pos)
 #ifdef NSB_PEN_DEBUG
     qDebug() << __FUNCTION__ << pos;
 #endif
-    setStraight(bbScene()->modifiers()==Qt::ShiftModifier);
+    if(_mousePos == pos){
+#ifdef NSB_PEN_DEBUG
+        qDebug() << __FUNCTION__ << "got same mouse pos!";
+#endif
+        return;
+    }
+    setStraight(bbScene()->modifiers() == Qt::ShiftModifier);
     if(!straight())
     {
-        /*
-         * Note:
-         * 当黑板按下鼠标右键弹出某个菜单，然后点击左键其他地方取消菜单。
-         * 会触发一个与mouseDown事件，一个mouseMove事件。
-         * 他们的鼠标坐标是相同的，在会让paint事件的逻辑会画不出任何东西。
-         * 这里排除掉次坐标
-         *  -Gim
-         */
-//        if(_data->coords.size() >= 2){
-//            auto itr = _data->coords.rbegin();
-//            auto y = *itr;
-//            auto x = *(++itr);
-//            if(pos == QPointF(x,y))
-//                return;
-//        }
         penDraw(pos);
         emit blackboard()->itemChanged(BBIET_penDraw,this);
     }
