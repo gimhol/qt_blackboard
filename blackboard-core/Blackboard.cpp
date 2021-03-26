@@ -594,6 +594,16 @@ QList<QPair<QString, QGraphicsItem *> > Blackboard::backgrounds()
     return scene()->backgrounds();
 }
 
+void Blackboard::groupUp()
+{
+    return scene()->groupUp();
+}
+
+void Blackboard::dismiss()
+{
+    return scene()->dismiss();
+}
+
 QPointF Blackboard::tabletPenPos()
 {
     return dptr->tabletPenPos;

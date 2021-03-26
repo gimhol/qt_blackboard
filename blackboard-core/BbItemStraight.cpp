@@ -2,7 +2,7 @@
 #include "BbItemStraightData.h"
 #include "Blackboard.h"
 #include "BbScene.h"
-
+#include "BbItemInnerDataKey.h"
 #include <cmath>
 #include <QPainter>
 #include <QDebug>
@@ -40,6 +40,7 @@ void BbItemStraight::init()
     }
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
+    setData(BBIIDK_ITEM_IS_SHAPE,true);
 }
 
 void BbItemStraight::toolDown(const QPointF &pos)

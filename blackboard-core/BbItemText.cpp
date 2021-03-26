@@ -2,6 +2,7 @@
 #include "BbItemTextData.h"
 #include "Blackboard.h"
 #include "BbScene.h"
+#include "BbItemInnerDataKey.h"
 #include <QKeyEvent>
 #include<QDebug>
 
@@ -34,6 +35,7 @@ void BbItemText::init()
     setFont(_myData->font);
     setDefaultTextColor(_myData->color);
     setAcceptedMouseButtons(Qt::LeftButton);
+    setData(BBIIDK_ITEM_IS_SHAPE,true);
 }
 
 void BbItemText::focusOutEvent(QFocusEvent *)

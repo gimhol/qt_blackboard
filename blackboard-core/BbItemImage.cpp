@@ -2,6 +2,7 @@
 #include "BbItemImageData.h"
 #include "BbScene.h"
 #include "Blackboard.h"
+#include "BbItemInnerDataKey.h"
 #include <QPainter>
 #include <QDebug>
 #include <QStaticText>
@@ -38,6 +39,7 @@ void BbItemImage::init()
 
     setAcceptedMouseButtons(Qt::LeftButton);
     setAcceptHoverEvents(true);
+    setData(BBIIDK_ITEM_IS_SHAPE,true);
 }
 
 qreal BbItemImage::minWidth()

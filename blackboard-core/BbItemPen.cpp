@@ -2,6 +2,7 @@
 #include "BbScene.h"
 #include "Blackboard.h"
 #include "BbItemPenData.h"
+#include "BbItemInnerDataKey.h"
 #include <QDebug>
 #include <QMessageBox>
 
@@ -60,6 +61,7 @@ void BbItemPen::init()
 #endif
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
+    setData(BBIIDK_ITEM_IS_SHAPE,true);
 }
 
 BbItemPen::~BbItemPen()

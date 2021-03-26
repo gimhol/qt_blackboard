@@ -18,6 +18,7 @@
 #include "BBItemEventType.h"
 #include "BbHelper.h"
 #include "BbItemDeleter.h"
+#include "BbItemInnerDataKey.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include <QKeyEvent>
@@ -840,6 +841,55 @@ QHash<int, QRectF> BbScene::getNotEmptyPageAreas()
             ret[page] = QRectF(0,h * page, w, h);
     }
     return ret;
+}
+
+void BbScene::groupUp()
+{
+    auto items = QList<QGraphicsItem*>();
+    for(auto item : selectedItems()){
+        if(false == item->data(BBIIDK_ITEM_IS_SHAPE))
+            continue;
+        items << item;
+    }
+    if(items.isEmpty())
+        return;
+    for(auto item : items){
+        item->setFlag(QGraphicsItem::ItemIsMovable,false);
+        item->setFlag(QGraphicsItem::ItemIsSelectable,false);
+        item->setFlag(QGraphicsItem::ItemIsFocusable,false);
+    }
+    auto group = QGraphicsScene::createItemGroup(items);
+    group->setFlag(QGraphicsItem::ItemIsMovable,true);
+    group->setFlag(QGraphicsItem::ItemIsSelectable,true);
+    group->setFlag(QGraphicsItem::ItemIsFocusable,false);
+    group->setData(BBIIDK_ITEM_IS_GROUP,true);
+    group->setSelected(true);
+}
+
+void BbScene::dismiss()
+{
+    auto groups = QList<QGraphicsItemGroup*>();
+    for(auto item : selectedItems()){
+        if(false == item->data(BBIIDK_ITEM_IS_GROUP))
+            continue;
+        groups << static_cast<QGraphicsItemGroup*>(item);
+    }
+    for(auto group: groups){
+        auto items = group->childItems();
+        destroyItemGroup(group);
+        for(auto item: items){
+            if(true == item->data(BBIIDK_ITEM_IS_SHAPE)){
+                item->setFlag(QGraphicsItem::ItemIsFocusable);
+                item->setFlag(QGraphicsItem::ItemIsMovable);
+                item->setFlag(QGraphicsItem::ItemIsSelectable);
+                item->setSelected(true);
+            }
+            else{
+                group->removeFromGroup(item);
+                // NOTE: delete? -Gim
+            }
+        }
+    }
 }
 
 void BbScene::onToolChanged(BbToolType previous)

@@ -238,6 +238,9 @@ public:
      */
     QList<QPair<QString,QGraphicsItem *>> backgrounds();
 
+    void groupUp();
+
+    void dismiss();
 
     template<class Cls> Cls* toolSettings(const BbToolType &toolType);
     template<class Cls> Cls* find(const std::string &lid);
