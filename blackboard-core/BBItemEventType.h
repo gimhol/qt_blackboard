@@ -51,6 +51,9 @@ enum BBItemEventType
     BBIET_itemCopy, // 被复制
     BBIET_itemCut,  // 被剪切
 
+    BBIET_itemGroupUp,
+    BBIET_itemGroupDismiss,
+
     BBIET_max
 };
 #endif // BBITEMEVENTTYPE_H

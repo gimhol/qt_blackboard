@@ -82,7 +82,7 @@ public:
 protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
 
-    BbItemTextData *_myData;
+    BbItemTextData *_data;
     QString _lastContent;
     bool isRemoved = false;
 };

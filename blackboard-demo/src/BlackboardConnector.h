@@ -55,10 +55,18 @@ public:
     void onLocalTriangleDown(IItemIndex *index);
     void onLocalTriangleDraw(IItemIndex *index);
     void onLocalTriangleDone(IItemIndex *index);
+
+    void onLocalItemGroupUped(QList<QGraphicsItemGroup *> groups);
+    void onLocalItemGroupDismissed(QList<QGraphicsItemGroup *> groups);
+
     void onImageHasPath(IItemIndex *index);
     void onImageHasUrl(IItemIndex *index);
 
     void onMeMsgRead();
+
+    void onRemoteItemGroupUped();
+    void onRemoteItemGroupDismissed();
+
     void onRemoteBlackboardScrolled();
     void onRemotePointerShown();
     void onRemotePointerMoving();

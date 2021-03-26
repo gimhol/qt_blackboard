@@ -604,6 +604,16 @@ void Blackboard::dismiss()
     return scene()->dismiss();
 }
 
+void Blackboard::groupUp(QList<QString> itemIds, QString groupId)
+{
+    return scene()->groupUp(itemIds,groupId);
+}
+
+void Blackboard::dismiss(QList<QString> groupIds)
+{
+    return scene()->dismiss(groupIds);
+}
+
 QPointF Blackboard::tabletPenPos()
 {
     return dptr->tabletPenPos;

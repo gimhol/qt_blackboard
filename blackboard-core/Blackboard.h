@@ -242,6 +242,10 @@ public:
 
     void dismiss();
 
+    void groupUp(QList<QString> itemIds, QString groupId);
+
+    void dismiss(QList<QString> groupIds);
+
     template<class Cls> Cls* toolSettings(const BbToolType &toolType);
     template<class Cls> Cls* find(const std::string &lid);
     template<class Cls> Cls* find(const QString &lid);
@@ -252,6 +256,9 @@ signals:
 
     void itemChanged(BBItemEventType eventType,IItemIndex *index);
     void multipleItemChanged(BBItemEventType eventType,IItemIndex *first);
+
+    void groupUped(QList<QGraphicsItemGroup *> groups);
+    void dismissed(QList<QGraphicsItemGroup *> groups);
 
     void pointerShown(QPoint localPoint);
     void pointerMoving(QPoint localPoint);

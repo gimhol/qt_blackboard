@@ -59,6 +59,7 @@ void BbItemPen::init()
     _distances[1] = -1;
     _distances[2] = -1;
 #endif
+    setId(_data->lid);
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
     setData(BBIIDK_ITEM_IS_SHAPE,true);

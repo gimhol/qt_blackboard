@@ -58,6 +58,7 @@ protected:
     qreal _pageAspectRatio ;
     QString _pageSplitterTextFormat;
     QFont _pageSpliiterTextFont;
+    QList<QGraphicsItemGroup*> _groups;
 public:
     BbScene(Blackboard *parent = Q_NULLPTR);
 
@@ -192,9 +193,13 @@ public:
 
     QHash<int,QRectF> getNotEmptyPageAreas();
 
-    void groupUp();
+    void groupUp(QList<QGraphicsItem*> items, QString id = "");
 
-    void dismiss();
+    void groupUp(QList<QString> itemIds, QString id = "");
+
+    void groupUp(QString id = "");
+
+    void dismiss(QList<QString> ids = {});
 
     template<typename T>
     inline T *find(const std::string &lid)

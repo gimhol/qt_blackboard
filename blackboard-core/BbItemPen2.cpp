@@ -25,6 +25,7 @@ void BbItemPen2::init()
     {
         _data = Blackboard::defaultFactory()->createItemData<BbItemPenData2>(BBTT_Pen);
     }
+    setId(_data->lid);
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
 }

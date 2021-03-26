@@ -36,6 +36,7 @@ void BbItemTriangle::init()
     {
         _data = Blackboard::defaultFactory()->createItemData<BbItemTriangleData>(BBTT_Triangle);
     }
+    setId(_data->lid);
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
     setData(BBIIDK_ITEM_IS_SHAPE,true);

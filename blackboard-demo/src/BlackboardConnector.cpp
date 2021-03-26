@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QHostAddress>
+#include "BbItemInnerDataKey.h"
 
 BlackboardConnector::BlackboardConnector(Blackboard *blackboard):
     QObject(blackboard),
@@ -23,6 +24,9 @@ BlackboardConnector::BlackboardConnector(Blackboard *blackboard):
 
     connect(_bb,&Blackboard::itemChanged,this,&BlackboardConnector::onLocalItemChanged);
     connect(_bb,&Blackboard::multipleItemChanged,this,&BlackboardConnector::onLocalMultipleItemChanged);
+
+    connect(_bb,&Blackboard::groupUped,this,&BlackboardConnector::onLocalItemGroupUped);
+    connect(_bb,&Blackboard::dismissed,this,&BlackboardConnector::onLocalItemGroupDismissed);
 
     // remote
     connect(_me,&BlackboardClient::msgRead,this,&BlackboardConnector::onMeMsgRead);
@@ -471,6 +475,39 @@ void BlackboardConnector::onLocalTriangleDone(IItemIndex *index)
     _me->send(BBIET_triangleDone,QJsonDocument(jobj).toBinaryData());
 }
 
+void BlackboardConnector::onLocalItemGroupUped(QList<QGraphicsItemGroup *> groups)
+{
+    QJsonArray jarr;
+    for(auto group: groups)
+    {
+        if(!group)
+            continue;
+        QJsonObject jobj;
+        jobj["id"] = group->data(BBIIDK_ITEM_ID).toString();
+        QJsonArray jitems;
+        for(auto item: group->childItems()){
+            if(!item)
+                continue;
+            jitems << QJsonObject {
+                {"id", item->data(BBIIDK_ITEM_ID).toString() }
+            };
+        }
+        jobj["items"] = jitems;
+        jarr << jobj;
+    }
+    _me->send(BBIET_itemGroupUp,QJsonDocument(jarr).toBinaryData());
+}
+
+void BlackboardConnector::onLocalItemGroupDismissed(QList<QGraphicsItemGroup *> groups)
+{
+    QJsonArray jarr;
+    for(auto group: groups)
+    {
+        jarr << group->data(BBIIDK_ITEM_ID).toString();
+    }
+    _me->send(BBIET_itemGroupDismiss,QJsonDocument(jarr).toBinaryData());
+}
+
 void BlackboardConnector::onImageHasPath(IItemIndex *index)
 {
     auto item = dynamic_cast<BbItemImage*>(index);
@@ -537,9 +574,45 @@ void BlackboardConnector::onMeMsgRead()
     case BBIET_triangleDown: onRemoteTriangleDown(); break;
     case BBIET_triangleDraw: onRemoteTriangleDraw(); break;
     case BBIET_triangleDone: onRemoteTriangleDone(); break;
+    case BBIET_itemGroupUp: onRemoteItemGroupUped(); break;
+    case BBIET_itemGroupDismiss: onRemoteItemGroupDismissed(); break;
     default:
         break;
     }
+}
+
+void BlackboardConnector::onRemoteItemGroupUped()
+{
+    auto jarr = QJsonDocument::fromBinaryData(_me->msgBody()).array();
+    for(auto jVal: jarr){
+        auto jObj = jVal.toObject();
+        auto id = jObj["id"].toString();
+        if(id.isEmpty())
+            continue;
+        auto jItems = jObj["items"].toArray();
+        if(jItems.isEmpty())
+            continue;
+        QList<QString> itemIds;
+        for(auto jItem: jItems){
+            auto itemId = jItem.toObject()["id"].toString();
+            if(itemId.isEmpty())
+                continue;
+            itemIds << itemId;
+        }
+        if(itemIds.isEmpty())
+            continue;
+        _bb->groupUp(itemIds,id);
+    }
+
+}
+
+void BlackboardConnector::onRemoteItemGroupDismissed()
+{
+    auto jarr = QJsonDocument::fromBinaryData(_me->msgBody()).array();
+    QList<QString> ids;
+    for(auto jVal: jarr)
+        ids << jVal.toString();
+    _bb->dismiss(ids);
 }
 
 void BlackboardConnector::onRemoteBlackboardScrolled(){

@@ -35,6 +35,7 @@ void BbItemEllipse::init()
     {
         _data = Blackboard::defaultFactory()->createItemData<BbItemEllipseData>(BBTT_Ellipse);
     }
+    setId(_data->lid);
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
     setData(BBIIDK_ITEM_IS_SHAPE,true);
