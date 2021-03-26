@@ -847,9 +847,16 @@ void BbScene::groupUp()
 {
     auto items = QList<QGraphicsItem*>();
     for(auto item : selectedItems()){
-        if(false == item->data(BBIIDK_ITEM_IS_SHAPE))
-            continue;
-        items << item;
+        if(true == item->data(BBIIDK_ITEM_IS_GROUP)){
+            auto group = static_cast<QGraphicsItemGroup*>(item);
+            for(auto item : group->childItems()){
+                items << item;
+            }
+            destroyItemGroup(group);
+        }
+        else if(true == item->data(BBIIDK_ITEM_IS_SHAPE)){
+            items << item;
+        }
     }
     if(items.isEmpty())
         return;
