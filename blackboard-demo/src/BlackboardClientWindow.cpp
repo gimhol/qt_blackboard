@@ -33,6 +33,9 @@
 #include <QJsonArray>
 #include <QListView>
 #include <QGraphicsDropShadowEffect>
+#include <QFontDialog>
+#include <QFileDialog>
+#include <QFontDataBase.h>
 
 static QNetworkAccessManager *networkManager()
 {
@@ -546,4 +549,62 @@ void BlackboardClientWindow::on_cut_clicked()
 void BlackboardClientWindow::on_cb_cubic_pen_clicked(bool checked)
 {
     BbItemPenData::setDefaultCubic(checked);
+}
+
+void BlackboardClientWindow::on_btnFont_clicked()
+{
+
+    bool ok = false;
+    QFont font = QFontDialog::getFont(&ok, QFont(u8"宋体", 24), nullptr, u8"选择字体");
+    if (!ok)
+        return;
+    qDebug() << font.family().toUtf8().data() << font.bold() << font.italic() << font.pointSize();
+    auto settings = ui->blackboard->toolSettings<BbItemTextData>(BBTT_Text);
+    settings->font = font;
+}
+
+static QStringList loadFont(const QString& path)
+{
+    QFile file(path);
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::warning(nullptr,u8"无法加载字体！",u8"无法打开字体文件。");
+        return {};
+    }
+    auto id = QFontDatabase::addApplicationFontFromData(file.readAll());
+    if(id == -1)
+    {
+        QMessageBox::warning(nullptr,u8"无法加载字体！",u8"字体文件不可用。");
+        return {};
+    }
+    auto familys = QFontDatabase::applicationFontFamilies(id);
+    if(familys.empty())
+    {
+        QMessageBox::warning(nullptr,u8"无法加载字体！",u8"无法获取字体簇！");
+        return {};
+    }
+    return familys;
+}
+
+void BlackboardClientWindow::on_btnFontFile_clicked()
+{
+    /*
+    static QString getOpenFileName(QWidget *parent = nullptr,
+                                   const QString &caption = QString(),
+                                   const QString &dir = QString(),
+                                   const QString &filter = QString(),
+                                   QString *selectedFilter = nullptr,
+                                   Options options = Options());
+     */
+
+    auto caption = u8"选择字体文件";
+    auto dir = "";
+    auto filter = "OTF(*.otf);;TTF(*.ttf)";
+    auto path = QFileDialog::getOpenFileName(nullptr,caption,dir,filter);
+    auto fontFamilys = loadFont(path);
+    for(auto family: fontFamilys){
+        ui->textBrowser->append(family);
+    }
+    auto settings = ui->blackboard->toolSettings<BbItemTextData>(BBTT_Text);
+    settings->font = QFont(fontFamilys.at(0));
 }

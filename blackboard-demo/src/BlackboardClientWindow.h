@@ -90,6 +90,10 @@ private slots:
 
     void on_cb_cubic_pen_clicked(bool checked);
 
+    void on_btnFont_clicked();
+
+    void on_btnFontFile_clicked();
+
 private:
     Ui::BlackboardClientWindow *ui;
     QPointer<BlackboardConnector> _connector;
