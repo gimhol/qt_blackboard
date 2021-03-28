@@ -62,6 +62,17 @@ void BbMenu::init(){
     clear();
     initToolMenu();
     addSeparator();
+    auto slot0 = static_cast<void(Blackboard::*)()>(&Blackboard::groupUp);
+    connect(addAction(QStringLiteral("组合")),
+            &QAction::triggered,
+            _blackboard,
+            slot0);
+    auto slot1 = static_cast<void(Blackboard::*)()>(&Blackboard::dismiss);
+    connect(addAction(QStringLiteral("解除组合")),
+            &QAction::triggered,
+            _blackboard,
+            slot1);
+    addSeparator();
     connect(addAction(QStringLiteral("全选")),
             &QAction::triggered,
             this,

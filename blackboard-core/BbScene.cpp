@@ -18,6 +18,7 @@
 #include "BBItemEventType.h"
 #include "BbHelper.h"
 #include "BbItemDeleter.h"
+#include "BbItemInnerDataKey.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include <QKeyEvent>
@@ -840,6 +841,97 @@ QHash<int, QRectF> BbScene::getNotEmptyPageAreas()
             ret[page] = QRectF(0,h * page, w, h);
     }
     return ret;
+}
+
+void BbScene::groupUp(QList<QGraphicsItem*> items,QString id){
+    if(items.isEmpty())
+        return;
+    for(auto item : items){
+        item->setFlag(QGraphicsItem::ItemIsMovable,false);
+        item->setFlag(QGraphicsItem::ItemIsSelectable,false);
+        item->setFlag(QGraphicsItem::ItemIsFocusable,false);
+    }
+    auto group = QGraphicsScene::createItemGroup(items);
+    group->setFlag(QGraphicsItem::ItemIsMovable,true);
+    group->setFlag(QGraphicsItem::ItemIsSelectable,true);
+    group->setFlag(QGraphicsItem::ItemIsFocusable,false);
+    group->setData(BBIIDK_ITEM_IS_GROUP,true);
+    group->setData(BBIIDK_ITEM_ID,id.isEmpty()?factory()->makeGroupId():id);
+    group->setSelected(true);
+    _groups << group;
+    if(id.isEmpty())
+        emit blackboard()->groupUped( { group } );
+}
+
+void BbScene::groupUp(QList<QString> itemIds,QString id)
+{
+    auto items = QList<QGraphicsItem*>();
+    enumAll([&items](IItemIndex *item,int idx){
+        items << dynamic_cast<QGraphicsItem*>(item);
+        return false;
+    });
+    groupUp(items);
+}
+
+void BbScene::groupUp(QString id)
+{
+    auto items = QList<QGraphicsItem*>();
+    auto oldGroups = QList<QGraphicsItemGroup*>();
+    for(auto item : selectedItems()){
+        if(true == item->data(BBIIDK_ITEM_IS_GROUP)){
+            auto group = static_cast<QGraphicsItemGroup*>(item);
+            for(auto item : group->childItems()){
+                items << item;
+            }
+            oldGroups << group;
+        }
+        else if(true == item->data(BBIIDK_ITEM_IS_SHAPE).toBool()){
+            items << item;
+        }
+    }
+    emit blackboard()->dismissed(oldGroups);
+    for(auto group : oldGroups){
+        _groups.removeAll(group);
+        destroyItemGroup(group);
+    }
+    groupUp(items,id);
+}
+
+void BbScene::dismiss(QList<QString> ids)
+{
+    auto groups = QList<QGraphicsItemGroup*>();
+
+    if(ids.empty()){
+        for(auto item : selectedItems()){
+            if(false == item->data(BBIIDK_ITEM_IS_GROUP).toBool())
+                continue;
+            groups << static_cast<QGraphicsItemGroup*>(item);
+        }
+    }else{
+        for(auto item : items()){
+            if(false == item->data(BBIIDK_ITEM_IS_GROUP).toBool() || !ids.contains(item->data(BBIIDK_ITEM_ID).toString()))
+                continue;
+            groups << static_cast<QGraphicsItemGroup*>(item);
+        }
+    }
+    emit blackboard()->dismissed(groups);
+    for(auto group: groups){
+        auto items = group->childItems();
+        _groups.removeAll(group);
+        destroyItemGroup(group);
+        for(auto item: items){
+            if(true == item->data(BBIIDK_ITEM_IS_SHAPE).toBool()){
+                item->setFlag(QGraphicsItem::ItemIsFocusable);
+                item->setFlag(QGraphicsItem::ItemIsMovable);
+                item->setFlag(QGraphicsItem::ItemIsSelectable);
+                item->setSelected(true);
+            }
+            else{
+                // group->removeFromGroup(item);
+                // NOTE: delete? -Gim
+            }
+        }
+    }
 }
 
 void BbScene::onToolChanged(BbToolType previous)

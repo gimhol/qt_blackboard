@@ -4,6 +4,7 @@
 #include "IItemIndex.h"
 #include "BbItemDeleter.h"
 #include <QGraphicsItem>
+#include "BbItemInnerDataKey.h"
 
 IItemIndex::~IItemIndex(){
     BbItemDeleter::get()->remove(this);
@@ -24,6 +25,9 @@ void IItemIndex::setId(const QString &id){
     auto d = data();
     if(d)
         d->lid = id;
+    auto i = item();
+    if(i)
+       i->setData(BBIIDK_ITEM_ID,id);
 }
 
 BbToolType IItemIndex::toolType(){

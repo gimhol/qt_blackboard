@@ -2,6 +2,7 @@
 #include "BbItemEllipseData.h"
 #include "Blackboard.h"
 #include "BbScene.h"
+#include "BbItemInnerDataKey.h"
 #include <QPainter>
 
 BbItemEllipse::BbItemEllipse():
@@ -34,8 +35,10 @@ void BbItemEllipse::init()
     {
         _data = Blackboard::defaultFactory()->createItemData<BbItemEllipseData>(BBTT_Ellipse);
     }
+    setId(_data->lid);
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
+    setData(BBIIDK_ITEM_IS_SHAPE,true);
 }
 
 void BbItemEllipse::modifiersChanged(Qt::KeyboardModifiers modifiers)

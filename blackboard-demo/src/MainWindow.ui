@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>213</width>
-    <height>88</height>
+    <width>290</width>
+    <height>117</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,7 +24,14 @@
    <item>
     <widget class="QPushButton" name="startBlackboardClient">
      <property name="text">
-      <string>新建黑板客户端</string>
+      <string>新建黑板客户端(viewPort:QWidget)</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="startBlackboardClientOpenGL">
+     <property name="text">
+      <string>新建黑板客户端(viewPort:QOpenGLWidget)</string>
      </property>
     </widget>
    </item>

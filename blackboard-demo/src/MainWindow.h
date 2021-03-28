@@ -20,6 +20,8 @@ private slots:
 
     void on_startBlackboardClient_clicked();
 
+    void on_startBlackboardClientOpenGL_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

@@ -91,3 +91,10 @@ qreal BbFactory::makeItemZ(BbToolType bbtt)
 BbItemData *BbFactory::createItemData(BbToolType bbtt){
     return BbHelper::createItemData(bbtt);
 }
+
+QString BbFactory::makeGroupId()
+{
+    ++_bbIdCount;
+    auto msec = QDateTime::currentMSecsSinceEpoch();
+    return QString("group_%1_%2").arg(msec).arg(_bbIdCount);
+}

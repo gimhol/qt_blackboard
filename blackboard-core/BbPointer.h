@@ -11,12 +11,27 @@ public:
 
     ~BbPointer() override;
 
-    void setPixmap(const QPixmap & pixmap);
+    BbPointer *setPixmap(const QPixmap & pixmap);
 
+    BbPointer *setText(const QString &text);
+
+    BbPointer *setPixmapAnchor(const QPointF &pixmapAnchor);
+
+    BbPointer *setTextAnchor(const QPointF &textAnchor);
+
+    void pixmap();
+
+    void text();
+
+    void pixmapAnchor();
+
+    void textAnchor();
 protected:
+    void updatePixmap();
+
     virtual void paintEvent(QPaintEvent *event) override;
 
-    BbPointerPrivate *_private;
+    BbPointerPrivate *dptr;
 };
 
 #endif // BBPOINTER_H

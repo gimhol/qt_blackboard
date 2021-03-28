@@ -2,38 +2,42 @@
 #include "BbItemTextData.h"
 #include "Blackboard.h"
 #include "BbScene.h"
+#include "BbItemInnerDataKey.h"
 #include <QKeyEvent>
 #include<QDebug>
 
 BbItemText::BbItemText():
     QGraphicsTextItem(),
-    _myData(new BbItemTextData())
+    _data(new BbItemTextData())
 {
     init();
 }
 
 BbItemText::BbItemText(BbItemData *data):
     QGraphicsTextItem(),
-    _myData(dynamic_cast<BbItemTextData*>(data))
+    _data(dynamic_cast<BbItemTextData*>(data))
 {
     init();
 }
 
 BbItemText::~BbItemText()
 {
-    delete _myData;
+    delete _data;
 }
 
 void BbItemText::init()
 {
-    if(!_myData)
+    if(!_data)
     {
-        _myData = new BbItemTextData();
+        _data = new BbItemTextData();
     }
+    setId(_data->lid);
     setFlag(ItemSendsScenePositionChanges);
-    setFont(_myData->font);
-    setDefaultTextColor(_myData->color);
+    setFont(_data->font);
+    setDefaultTextColor(_data->color);
     setAcceptedMouseButtons(Qt::LeftButton);
+    setData(BBIIDK_ITEM_IS_SHAPE,true);
+    document()->setDocumentMargin(0);
 }
 
 void BbItemText::focusOutEvent(QFocusEvent *)
@@ -61,10 +65,10 @@ void BbItemText::focusOutEvent(QFocusEvent *)
                 bbScene()->remove(this); // 空白的不要保留，移除本地的。
             }
         }
-        else if(_myData->prevText != _myData->text)
+        else if(_data->prevText != _data->text)
         {
             emit blackboard()->itemChanged(BBIET_textDone,this);
-            _myData->prevText = _myData->text;
+            _data->prevText = _data->text;
         }
     }
 }
@@ -134,55 +138,55 @@ QVariant BbItemText::itemChange(GraphicsItemChange change,
 
 void BbItemText::repaint()
 {
-    setFont(_myData->font);
-    setDefaultTextColor(_myData->color);
-    setPlainText(_myData->text);
-    if( _myData->isPositionValid() ){
-        setPos(_myData->x,_myData->y);
+    setFont(_data->font);
+    setDefaultTextColor(_data->color);
+    setPlainText(_data->text);
+    if( _data->isPositionValid() ){
+        setPos(_data->x,_data->y);
     }
     setSelected(false);
     setEnabled(true);
-    setZValue(_myData->z);
+    setZValue(_data->z);
     update();
 }
 
 void BbItemText::setFont(const QFont &font)
 {
-    _myData->font = font;
-    QGraphicsTextItem::setFont(_myData->font);
+    _data->font = font;
+    QGraphicsTextItem::setFont(_data->font);
 }
 
 const QFont &BbItemText::font()
 {
-    return _myData->font;
+    return _data->font;
 }
 
 void BbItemText::setColor(const QColor &color)
 {
-    _myData->color = color;
+    _data->color = color;
     QGraphicsTextItem::setDefaultTextColor(color);
 }
 
 void BbItemText::setDefaultTextColor(const QColor &color)
 {
-    _myData->color = color;
+    _data->color = color;
     QGraphicsTextItem::setDefaultTextColor(color);
 }
 
 const QColor &BbItemText::color()
 {
-    return _myData->color;
+    return _data->color;
 }
 
 void BbItemText::setWeight(qreal weight)
 {
-    _myData->setPointWeight(weight);
-    QGraphicsTextItem::setFont(_myData->font);
+    _data->setPointWeight(weight);
+    QGraphicsTextItem::setFont(_data->font);
 }
 
 qreal BbItemText::weight()
 {
-    return _myData->pointWeight();
+    return _data->pointWeight();
 }
 
 void BbItemText::done()
@@ -192,8 +196,8 @@ void BbItemText::done()
 
 void BbItemText::updateContent()
 {
-    _myData->text = text();
-    if(_lastContent != _myData->text)
+    _data->text = text();
+    if(_lastContent != _data->text)
     {
         auto prevEmpty = _lastContent.replace(QRegExp("\\s"),"").isEmpty();
         auto currEmpty = isEmpty();
@@ -209,14 +213,14 @@ void BbItemText::updateContent()
         {
             emit blackboard()->itemChanged(BBIET_textChanged,this);
         }
-        _lastContent = _myData->text;
+        _lastContent = _data->text;
     }
 }
 
 void BbItemText::setText(const QString &text)
 {
     setPlainText(text);
-    _myData->text = text;
+    _data->text = text;
     _lastContent = text;
 }
 
@@ -232,39 +236,39 @@ bool BbItemText::isEmpty()
 
 void BbItemText::writeStream(QDataStream &stream)
 {
-    _myData->text = text();
-    _myData->x = x();
-    _myData->y = y();
-    _myData->z = zValue();
-    _myData->writeStream(stream);
+    _data->text = text();
+    _data->x = x();
+    _data->y = y();
+    _data->z = zValue();
+    _data->writeStream(stream);
 }
 
 void BbItemText::readStream(QDataStream &stream)
 {
-    _myData->readStream(stream);
+    _data->readStream(stream);
     absolutize();
     repaint();
 }
 
 QJsonObject BbItemText::toJsonObject()
 {
-    _myData->text = text();
-    _myData->x = x();
-    _myData->y = y();
-    _myData->z = zValue();
-    return _myData->toJsonObject();
+    _data->text = text();
+    _data->x = x();
+    _data->y = y();
+    _data->z = zValue();
+    return _data->toJsonObject();
 }
 
 void BbItemText::fromJsonObject(const QJsonObject &jobj)
 {
-    _myData->fromJsonObject(jobj);
+    _data->fromJsonObject(jobj);
     absolutize();
     repaint();
 }
 
 BbItemData *BbItemText::data()
 {
-    return _myData;
+    return _data;
 }
 
 void BbItemText::toolDown(const QPointF &pos)
@@ -280,8 +284,8 @@ void BbItemText::toolDown(const QPointF &pos)
             else
             {
                 setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
-                _myData->updatePostion(this);
-                _myData->updatePrevPostion();
+                _data->updatePostion(this);
+                _data->updatePrevPostion();
                 if(!isEmpty())
                 {
                     emit blackboard()->itemChanged(BBIET_itemMoved,this);
@@ -303,8 +307,8 @@ void BbItemText::toolDown(const QPointF &pos)
         setTextInteractionFlags(Qt::TextEditorInteraction);
         setFocus();
         setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
-        _myData->updatePostion(this);
-        _myData->updatePrevPostion();
+        _data->updatePostion(this);
+        _data->updatePrevPostion();
         bbScene()->setCurrentItem(this);
 
         if(!isEmpty())
@@ -334,19 +338,19 @@ void BbItemText::removed()
 
 void BbItemText::absolutize()
 {
-    if(_myData->mode == BbItemData::CM_PERCENTAGE)
+    if(_data->mode == BbItemData::CM_PERCENTAGE)
     {
-        _myData->mode = BbItemData::CM_ABSOLUTE;
+        _data->mode = BbItemData::CM_ABSOLUTE;
         qreal ratio = bbScene()->width() / 100;
-        if(_myData->isPositionValid())
+        if(_data->isPositionValid())
         {
-            _myData->x *= ratio;
-            _myData->y *= ratio;
+            _data->x *= ratio;
+            _data->y *= ratio;
         }
-        if(_myData->isPrevPositionValid())
+        if(_data->isPrevPositionValid())
         {
-            _myData->prevX *= ratio;
-            _myData->prevY *= ratio;
+            _data->prevX *= ratio;
+            _data->prevY *= ratio;
         }
     }
 }

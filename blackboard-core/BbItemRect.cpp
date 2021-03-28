@@ -2,6 +2,7 @@
 #include "BbItemRectData.h"
 #include "Blackboard.h"
 #include "BbScene.h"
+#include "BbItemInnerDataKey.h"
 #include <QPainter>
 
 BbItemRect::BbItemRect():
@@ -33,8 +34,10 @@ void BbItemRect::init()
     {
         _data = Blackboard::defaultFactory()->createItemData<BbItemRectData>(BBTT_Rectangle);
     }
+    setId(_data->lid);
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
+    setData(BBIIDK_ITEM_IS_SHAPE,true);
 }
 
 void BbItemRect::repaint()

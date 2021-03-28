@@ -16,6 +16,10 @@ public:
     bool isRunning();
     void start(int port);
     void stop();
+signals:
+    void clientConnected(BlackboardClient *client);
+    void msgRead(int type, QByteArray data);
+    void clientDisconnected(BlackboardClient *client);
 protected:
     void onNewConnection();
     void onClientMsgRead();

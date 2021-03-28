@@ -33,6 +33,11 @@ public:
     void onLocalPenStraighting(IItemIndex *index);
     void onLocalPenDone(IItemIndex *index);
 
+    void onLocalPenDown2(IItemIndex *index);
+    void onLocalPenDraw2(IItemIndex *index);
+    void onLocalPenStraighting2(IItemIndex *index);
+    void onLocalPenDone2(IItemIndex *index);
+
     void onLocalTextAdded(IItemIndex *index);
     void onLocalTextChanged(IItemIndex *index);
     void onLocalTextDone(IItemIndex *index);
@@ -50,10 +55,18 @@ public:
     void onLocalTriangleDown(IItemIndex *index);
     void onLocalTriangleDraw(IItemIndex *index);
     void onLocalTriangleDone(IItemIndex *index);
+
+    void onLocalItemGroupUped(QList<QGraphicsItemGroup *> groups);
+    void onLocalItemGroupDismissed(QList<QGraphicsItemGroup *> groups);
+
     void onImageHasPath(IItemIndex *index);
     void onImageHasUrl(IItemIndex *index);
 
     void onMeMsgRead();
+
+    void onRemoteItemGroupUped();
+    void onRemoteItemGroupDismissed();
+
     void onRemoteBlackboardScrolled();
     void onRemotePointerShown();
     void onRemotePointerMoving();

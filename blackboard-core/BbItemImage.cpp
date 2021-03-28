@@ -2,6 +2,7 @@
 #include "BbItemImageData.h"
 #include "BbScene.h"
 #include "Blackboard.h"
+#include "BbItemInnerDataKey.h"
 #include <QPainter>
 #include <QDebug>
 #include <QStaticText>
@@ -36,8 +37,10 @@ void BbItemImage::init()
     if(!_data)
         _data = Blackboard::defaultFactory()->createItemData<BbItemImageData>(BBTT_Image);
 
+    setId(_data->lid);
     setAcceptedMouseButtons(Qt::LeftButton);
     setAcceptHoverEvents(true);
+    setData(BBIIDK_ITEM_IS_SHAPE,true);
 }
 
 qreal BbItemImage::minWidth()

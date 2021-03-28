@@ -7,6 +7,8 @@
 #include <QTimer>
 #include <QScrollBar>
 #include <QApplication>
+#include <QOpenGLWidget>
+#include <QOpenGLContext>
 
 class BlackboardPrivate
 {
@@ -210,8 +212,6 @@ void Blackboard::resizeEvent(QResizeEvent *event)
         scale(dptr->scaleRatio,dptr->scaleRatio);
     }
     QGraphicsView::resizeEvent(event);
-    horizontalScrollBar()->setValue(dptr->scrollValue.rx() * event->size().width() / 100);
-    verticalScrollBar()->setValue(dptr->scrollValue.ry() * event->size().width() / 100);
 
     dptr->resizing = false;
 
@@ -592,6 +592,26 @@ QSizeF Blackboard::backgroundSize()
 QList<QPair<QString, QGraphicsItem *> > Blackboard::backgrounds()
 {
     return scene()->backgrounds();
+}
+
+void Blackboard::groupUp()
+{
+    return scene()->groupUp();
+}
+
+void Blackboard::dismiss()
+{
+    return scene()->dismiss();
+}
+
+void Blackboard::groupUp(QList<QString> itemIds, QString groupId)
+{
+    return scene()->groupUp(itemIds,groupId);
+}
+
+void Blackboard::dismiss(QList<QString> groupIds)
+{
+    return scene()->dismiss(groupIds);
 }
 
 QPointF Blackboard::tabletPenPos()

@@ -18,7 +18,7 @@ public:
     virtual QString makeBackgroundId();
     virtual qreal makeItemZ(BbToolType bbtt = BBTT_None);
     virtual BbItemData *createItemData(BbToolType bbtt);
-
+    virtual QString makeGroupId();
     template<typename T>
     inline T *createItemData(BbToolType bbtt){
         return dynamic_cast<T*>(createItemData(bbtt));

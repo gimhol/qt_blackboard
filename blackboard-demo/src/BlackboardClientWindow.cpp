@@ -33,6 +33,9 @@
 #include <QJsonArray>
 #include <QListView>
 #include <QGraphicsDropShadowEffect>
+#include <QFontDialog>
+#include <QFileDialog>
+#include <QFontDataBase.h>
 
 static QNetworkAccessManager *networkManager()
 {
@@ -111,9 +114,14 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
 
     QPixmap pm(5,5);
     pm.fill("red");
-    ui->blackboard->setCanvasSize(ui->blackboard->baseSize().width(),1000);
+    ui->blackboardWidth->setValue(800);
+    ui->blackboardHeight->setValue(2000);
+    ui->blackboard->setCanvasSize(
+                ui->blackboardWidth->value(),
+                ui->blackboardHeight->value()
+                );
     ui->blackboard->setPointerPixmap(pm);
-    ui->blackboard->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    ui->blackboard->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 //    ui->blackboard->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->blackboard->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -172,80 +180,63 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
         ui->cb_pen_join->addItem(itr.value(),int(itr.key()));
     ui->cb_pen_join->setCurrentText(penJoinStyles[penSetting->pen.joinStyle()]);
 
+//    auto points = std::vector<qreal>{
+//            180,200,
+//            150,120,
+//            50,80,
+//            93,500,
+//            460,340,
+//            123,564,
+//            400,684
+//    };
+//    {
+//        auto path = QPainterPath();
+//        auto size = points.size();
+//        path.moveTo(points[0],points[1]);
 
-    auto points = std::vector<qreal>{
-            180,200,
-            150,120,
-            50,80,
-            93,500,
-            460,340,
-            123,564,
-            400,684
-    };
-    {
-        auto path = QPainterPath();
-        auto size = points.size();
-
-//        for(auto i = 0; i < size; i += 2){
-//            if(i == 0){
-//                path.moveTo(points[i],points[i+1]);
-//                continue;
+//        auto add = [&](qreal dx, qreal dy){
+//            auto elementCount = path.elementCount();
+//            auto radius = 5.0;
+//            if(elementCount == 1){
+//                auto element = path.elementAt(0);
+//                path.cubicTo(dx,dy,dx,dy,dx,dy);
+//            }else{
+//                auto a = path.elementAt(elementCount-3);
+//                auto ax = a.x;
+//                auto ay = a.y;
+//                path.setElementPositionAt(elementCount-1,(dx+ax)/2,(dy+ay)/2);
+//                path.setElementPositionAt(elementCount-2,ax,ay);
+//                path.setElementPositionAt(elementCount-3,ax,ay);
+//                path.cubicTo(dx,dy,dx,dy,dx,dy);
 //            }
-//            if(i < 4)
-//                continue;
-//            auto bX = points[i-2];
-//            auto bY = points[i-1];
-//            auto dX = (points[i-2] + points[i])/2;
-//            auto dY = (points[i-1] + points[i+1])/2;
-//            path.cubicTo(bX,bY,bX,bY,dX,dY);
-////            path.lineTo(dX,dY);
+//        };
+//        for(auto i = 2; i < size; i += 2){
+//            add(points[i],points[i+1]);
 //        }
-        path.moveTo(points[0],points[1]);
-
-        auto add = [&](qreal dx, qreal dy){
-            auto elementCount = path.elementCount();
-            auto radius = 5.0;
-            if(elementCount == 1){
-                auto element = path.elementAt(0);
-                path.cubicTo(dx,dy,dx,dy,dx,dy);
-            }else{
-                auto a = path.elementAt(elementCount-3);
-                auto ax = a.x;
-                auto ay = a.y;
-                path.setElementPositionAt(elementCount-1,(dx+ax)/2,(dy+ay)/2);
-                path.setElementPositionAt(elementCount-2,ax,ay);
-                path.setElementPositionAt(elementCount-3,ax,ay);
-                path.cubicTo(dx,dy,dx,dy,dx,dy);
-            }
-        };
-        for(auto i = 2; i < size; i += 2){
-            add(points[i],points[i+1]);
-        }
-        auto item = new PathItem(path);
-        item->setPen(QPen(Qt::white,3,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin));
-        item->setBrush(Qt::transparent);
-        item->setFlag(QGraphicsItem::ItemIsSelectable);
-        item->setFlag(QGraphicsItem::ItemIsFocusable);
-        item->setFlag(QGraphicsItem::ItemIsMovable);
-        ui->blackboard->scene()->addItem(item);
-    }{
-        auto path = QPainterPath();
-        auto size = points.size();
-        for(auto i = 0; i < size; i+=2){
-            if(i == 0)
-                path.moveTo(points[i],points[i+1]);
-            else
-                path.lineTo(points[i],points[i+1]);
-        }
-        auto item = new PathItem(path);
-        item->setPen(QPen(Qt::red,1,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin));
-        item->setBrush(Qt::transparent);
-        item->setFlag(QGraphicsItem::ItemIsSelectable);
-        item->setFlag(QGraphicsItem::ItemIsFocusable);
-        item->setFlag(QGraphicsItem::ItemIsMovable);
-        ui->blackboard->scene()->addItem(item);
-    }
-
+//        auto item = new PathItem(path);
+//        item->setPen(QPen(Qt::white,3,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin));
+//        item->setBrush(Qt::transparent);
+//        item->setFlag(QGraphicsItem::ItemIsSelectable);
+//        item->setFlag(QGraphicsItem::ItemIsFocusable);
+//        item->setFlag(QGraphicsItem::ItemIsMovable);
+//        ui->blackboard->scene()->addItem(item);
+//    }{
+//        auto path = QPainterPath();
+//        auto size = points.size();
+//        for(auto i = 0; i < size; i+=2){
+//            if(i == 0)
+//                path.moveTo(points[i],points[i+1]);
+//            else
+//                path.lineTo(points[i],points[i+1]);
+//        }
+//        auto item = new PathItem(path);
+//        item->setPen(QPen(Qt::red,1,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin));
+//        item->setBrush(Qt::transparent);
+//        item->setFlag(QGraphicsItem::ItemIsSelectable);
+//        item->setFlag(QGraphicsItem::ItemIsFocusable);
+//        item->setFlag(QGraphicsItem::ItemIsMovable);
+//        ui->blackboard->scene()->addItem(item);
+//    }
 }
 
 BlackboardClientWindow::~BlackboardClientWindow()
@@ -440,14 +431,17 @@ void BlackboardClientWindow::on_imageInsert_clicked()
     loadImage(item);
 }
 
+void BlackboardClientWindow::on_blackboardWidth_editingFinished()
+{
+    auto height = blackboard()->canvasSize().height();
+    blackboard()->setCanvasSize(ui->blackboardWidth->value(),height);
+}
+
 void BlackboardClientWindow::on_blackboardHeight_editingFinished()
 {
     auto width = blackboard()->canvasSize().width();
     blackboard()->setCanvasSize(width,ui->blackboardHeight->value());
-
 }
-
-
 
 void BlackboardClientWindow::on_btn_set_background_clicked()
 {
@@ -555,4 +549,62 @@ void BlackboardClientWindow::on_cut_clicked()
 void BlackboardClientWindow::on_cb_cubic_pen_clicked(bool checked)
 {
     BbItemPenData::setDefaultCubic(checked);
+}
+
+void BlackboardClientWindow::on_btnFont_clicked()
+{
+
+    bool ok = false;
+    QFont font = QFontDialog::getFont(&ok, QFont(u8"宋体", 24), nullptr, u8"选择字体");
+    if (!ok)
+        return;
+    qDebug() << font.family().toUtf8().data() << font.bold() << font.italic() << font.pointSize();
+    auto settings = ui->blackboard->toolSettings<BbItemTextData>(BBTT_Text);
+    settings->font = font;
+}
+
+static QStringList loadFont(const QString& path)
+{
+    QFile file(path);
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::warning(nullptr,u8"无法加载字体！",u8"无法打开字体文件。");
+        return {};
+    }
+    auto id = QFontDatabase::addApplicationFontFromData(file.readAll());
+    if(id == -1)
+    {
+        QMessageBox::warning(nullptr,u8"无法加载字体！",u8"字体文件不可用。");
+        return {};
+    }
+    auto familys = QFontDatabase::applicationFontFamilies(id);
+    if(familys.empty())
+    {
+        QMessageBox::warning(nullptr,u8"无法加载字体！",u8"无法获取字体簇！");
+        return {};
+    }
+    return familys;
+}
+
+void BlackboardClientWindow::on_btnFontFile_clicked()
+{
+    /*
+    static QString getOpenFileName(QWidget *parent = nullptr,
+                                   const QString &caption = QString(),
+                                   const QString &dir = QString(),
+                                   const QString &filter = QString(),
+                                   QString *selectedFilter = nullptr,
+                                   Options options = Options());
+     */
+
+    auto caption = u8"选择字体文件";
+    auto dir = "";
+    auto filter = "OTF(*.otf);;TTF(*.ttf)";
+    auto path = QFileDialog::getOpenFileName(nullptr,caption,dir,filter);
+    auto fontFamilys = loadFont(path);
+    for(auto family: fontFamilys){
+        ui->textBrowser->append(family);
+    }
+    auto settings = ui->blackboard->toolSettings<BbItemTextData>(BBTT_Text);
+    settings->font = QFont(fontFamilys.at(0));
 }
