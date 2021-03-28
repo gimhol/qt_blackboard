@@ -37,6 +37,7 @@ void BbItemText::init()
     setDefaultTextColor(_data->color);
     setAcceptedMouseButtons(Qt::LeftButton);
     setData(BBIIDK_ITEM_IS_SHAPE,true);
+    document()->setDocumentMargin(0);
 }
 
 void BbItemText::focusOutEvent(QFocusEvent *)
