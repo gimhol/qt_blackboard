@@ -35,6 +35,7 @@ const QColor &BbItemTextData::getDefalutColor()
 void BbItemTextData::setMinFontSize(const qreal &value)
 {
     minFontSize = value;
+    defalutFont.setPixelSize(minFontSize);
 }
 
 void BbItemTextData::setMaxFontSize(const qreal &value)
@@ -45,6 +46,7 @@ void BbItemTextData::setMaxFontSize(const qreal &value)
 void BbItemTextData::setDefalutFont(const QFont &value)
 {
     defalutFont = value;
+    defalutFont.setPixelSize(minFontSize);
 }
 
 void BbItemTextData::setDefalutColor(const QColor &value)
