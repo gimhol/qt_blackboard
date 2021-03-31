@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>822</width>
-    <height>874</height>
+    <width>1292</width>
+    <height>893</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -742,10 +742,13 @@ outline: 0px;
             <string>%</string>
            </property>
            <property name="minimum">
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="maximum">
             <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>50</number>
            </property>
           </widget>
          </item>
@@ -1249,10 +1252,22 @@ outline: 0px;
      </property>
      <item>
       <widget class="Blackboard" name="blackboard">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="baseSize">
         <size>
-         <width>668</width>
-         <height>671</height>
+         <width>1120</width>
+         <height>690</height>
         </size>
        </property>
       </widget>

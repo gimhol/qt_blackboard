@@ -12,12 +12,12 @@
 class NSB_BLACKBOARD_EXPORT BbItemTextData : public BbItemData
 {
 public:
-    static const qreal &getMinPointSize();
-    static const qreal &getMaxPointSize();
+    static const qreal &getMinFontSize();
+    static const qreal &getMaxFontSize();
     static const QFont &getDefalutFont();
     static const QColor &getDefalutColor();
-    static void setMinPointSize(const qreal &value);
-    static void setMaxPointSize(const qreal &value);
+    static void setMinFontSize(const qreal &value);
+    static void setMaxFontSize(const qreal &value);
     static void setDefalutFont(const QFont &value);
     static void setDefalutColor(const QColor &value);
 
@@ -46,9 +46,9 @@ public:
      */
     explicit BbItemTextData(CoordMode mode = CM_ABSOLUTE);
 
-    void setPointWeight(qreal pointWeight);
+    void setFontSizeFactor(qreal factor);
 
-    qreal pointWeight();
+    qreal fontSizeFactor();
 
     QJsonObject toJsonObject() override;
 

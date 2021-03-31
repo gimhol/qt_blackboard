@@ -27,9 +27,9 @@ public:
 
     void init();
 
-    void focusOutEvent(QFocusEvent *event) override;
+    void setupTextBlockFormat();
 
-    void inputMethodEvent(QInputMethodEvent *event) override;
+    void focusOutEvent(QFocusEvent *event) override;
 
     void keyPressEvent(QKeyEvent *event) override;
 
@@ -47,9 +47,9 @@ public:
 
     const QColor & color();
 
-    void setWeight(qreal weight);
+    void setFontSizeFactor(qreal weight);
 
-    qreal weight();
+    qreal fontSizeFactor();
 
     void done();
 

@@ -5,6 +5,8 @@
 #include "BbItemInnerDataKey.h"
 #include <QKeyEvent>
 #include<QDebug>
+#include <QTextBlock>
+#include <QTextDocument>
 
 BbItemText::BbItemText():
     QGraphicsTextItem(),
@@ -37,7 +39,45 @@ void BbItemText::init()
     setDefaultTextColor(_data->color);
     setAcceptedMouseButtons(Qt::LeftButton);
     setData(BBIIDK_ITEM_IS_SHAPE,true);
-    document()->setDocumentMargin(0);
+//    document()->setDocumentMargin(0);
+    connect(document(), &QTextDocument::contentsChanged, this,[&](){
+        updateContent();
+    });
+    connect(document(), &QTextDocument::contentsChange, this, [&](int from, int charsRemoved, int charsAdded){
+        qDebug() << from << charsRemoved << charsAdded;
+    });
+
+    setupTextBlockFormat();
+
+}
+
+void BbItemText::setupTextBlockFormat()
+{
+    auto doc = document();
+    auto cursor = textCursor();
+    auto position = cursor.position();
+    auto fontSize = _data->font.pixelSize();
+    auto blockFormat = QTextBlockFormat();
+    blockFormat.setLineHeight(fontSize,QTextBlockFormat::FixedHeight);
+    blockFormat.setAlignment(Qt::AlignCenter);
+    if(doc->blockCount() > 0)
+    {
+        for(auto block = doc->firstBlock(); block.isValid(); block = block.next())
+        {
+            cursor.setPosition(block.position());
+            cursor.setBlockFormat(blockFormat);
+            setTextCursor(cursor);
+        }
+        cursor.setPosition(position);
+        setTextCursor(cursor);
+    }
+    else
+    {
+        cursor.setBlockFormat(blockFormat);
+        cursor.setPosition(position);
+        setTextCursor(cursor);
+    }
+
 }
 
 void BbItemText::focusOutEvent(QFocusEvent *)
@@ -62,6 +102,7 @@ void BbItemText::focusOutEvent(QFocusEvent *)
         {
             if(!isRemoved)
             {
+                emit blackboard()->multipleItemChanged(BBIET_itemDelete,{this});
                 bbScene()->remove(this); // 空白的不要保留，移除本地的。
             }
         }
@@ -71,13 +112,6 @@ void BbItemText::focusOutEvent(QFocusEvent *)
             _data->prevText = _data->text;
         }
     }
-}
-
-// 输入法会走这个。
-void BbItemText::inputMethodEvent(QInputMethodEvent *event)
-{
-    QGraphicsTextItem::inputMethodEvent(event);
-    updateContent();
 }
 
 // 没输入法时，或其他功能按键会走这个。
@@ -92,32 +126,35 @@ void BbItemText::keyPressEvent(QKeyEvent *event)
      */
     const auto key = event->key();
     const auto modifiers = event->modifiers();
-    if(Qt::Key_Escape == key ||
-       (Qt::Key_Return == key && Qt::ControlModifier == modifiers))
-    {
+    const auto ctrlEnterPressed = Qt::Key_Return == key && Qt::ControlModifier == modifiers;
+    const auto escPressed = Qt::Key_Escape == key;
+    if(escPressed || ctrlEnterPressed) {
         done();
         return;
     }
-    /*
-     * NOTE:必須先調用keyPressEvent,
-     *      updateContent中獲取的文本内容才會是當前文本内容，
-     *      否則會獲取到修改前的。
-     */
+
+//    /*
+//     * NOTE:必須先調用keyPressEvent,
+//     *      updateContent中獲取的文本内容才會是當前文本内容，
+//     *      否則會獲取到修改前的文本。
+//     */
     QGraphicsTextItem::keyPressEvent(event);
-#ifdef QT_DEBUG
-    qInfo() << modifiers << key;
-    qInfo() << text();
-#endif
-    updateContent();
 
     // Note: 移除粘贴来的文本的格式。若还有其他粘贴的路径呢？-Gim
-    if(Qt::ControlModifier == modifiers && key == Qt::Key_V){
-        auto a = textCursor();
-        auto p = a.position();
+    auto ctrlVPressed = Qt::ControlModifier == modifiers && key == Qt::Key_V;
+    if(ctrlVPressed){
+        auto a = textCursor(); // 光标位置
+        auto p = a.position(); // 位置
+
+        qDebug() << "?: " << p;
         // 不能直接QGraphicsTextItem::setPlainText，会带颜色的。
         document()->setPlainText(text());
+
+        // setPlainText会导致光标位置被改变，这里需要还原它。
         a.setPosition(p);
         setTextCursor(a);
+
+        setupTextBlockFormat();
     }
 }
 
@@ -141,6 +178,7 @@ void BbItemText::repaint()
     setFont(_data->font);
     setDefaultTextColor(_data->color);
     setPlainText(_data->text);
+    setupTextBlockFormat();
     if( _data->isPositionValid() ){
         setPos(_data->x,_data->y);
     }
@@ -178,15 +216,16 @@ const QColor &BbItemText::color()
     return _data->color;
 }
 
-void BbItemText::setWeight(qreal weight)
+void BbItemText::setFontSizeFactor(qreal factor)
 {
-    _data->setPointWeight(weight);
+    _data->setFontSizeFactor(factor);
     QGraphicsTextItem::setFont(_data->font);
+    setupTextBlockFormat();
 }
 
-qreal BbItemText::weight()
+qreal BbItemText::fontSizeFactor()
 {
-    return _data->pointWeight();
+    return _data->fontSizeFactor();
 }
 
 void BbItemText::done()
@@ -197,22 +236,9 @@ void BbItemText::done()
 void BbItemText::updateContent()
 {
     _data->text = text();
-    if(_lastContent != _data->text)
+    if(_lastContent != _data->text && blackboard())
     {
-        auto prevEmpty = _lastContent.replace(QRegExp("\\s"),"").isEmpty();
-        auto currEmpty = isEmpty();
-        if(prevEmpty && !currEmpty) // 无》有
-        {
-            emit blackboard()->itemChanged(BBIET_textAdded,this);
-        }
-        else if(!prevEmpty && currEmpty) // 有》无
-        {
-            emit blackboard()->itemChanged(BBIET_itemDelete,this);
-        }
-        else if(!prevEmpty && !currEmpty) // 有》有
-        {
-            emit blackboard()->itemChanged(BBIET_textChanged,this);
-        }
+        emit blackboard()->itemChanged(BBIET_textChanged,this);
         _lastContent = _data->text;
     }
 }
@@ -301,7 +327,7 @@ void BbItemText::toolDown(const QPointF &pos)
 
         auto settings = blackboard()->toolSettings<BbItemTextData>(BBTT_Text);
         setFont(settings->font);
-        setWeight(settings->pointWeight());
+        setFontSizeFactor(settings->fontSizeFactor());
         setColor(settings->color);
 
         setTextInteractionFlags(Qt::TextEditorInteraction);
@@ -311,10 +337,7 @@ void BbItemText::toolDown(const QPointF &pos)
         _data->updatePrevPostion();
         bbScene()->setCurrentItem(this);
 
-        if(!isEmpty())
-        {
-            emit blackboard()->itemChanged(BBIET_textAdded,this);
-        }
+        emit blackboard()->itemChanged(BBIET_textAdded,this);
     }
 }
 

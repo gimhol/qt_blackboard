@@ -114,8 +114,8 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
 
     QPixmap pm(5,5);
     pm.fill("red");
-    ui->blackboardWidth->setValue(800);
-    ui->blackboardHeight->setValue(2000);
+    ui->blackboardWidth->setValue(1120);
+    ui->blackboardHeight->setValue(690);
     ui->blackboard->setCanvasSize(
                 ui->blackboardWidth->value(),
                 ui->blackboardHeight->value()
@@ -282,11 +282,11 @@ void BlackboardClientWindow::on_penWeight_valueChanged(int arg1)
 
 void BlackboardClientWindow::on_textWeight_valueChanged(int arg1)
 {
-    blackboard()->toolSettings<BbItemTextData>(BBTT_Text)->setPointWeight(arg1 * 0.01);
-    ui->blackboard->scene()->enumSelected([&](IItemIndex *index,int num){
+    blackboard()->toolSettings<BbItemTextData>(BBTT_Text)->setFontSizeFactor(arg1 * 0.01);
+    ui->blackboard->scene()->enumSelectedItems([&](IItemIndex *index){
         if(index->toolType() == BBTT_Text){
             auto text = static_cast<BbItemText*>(index);
-            text->setWeight(arg1 * 0.01);
+            text->setFontSizeFactor(arg1 * 0.01);
         }
         return false;
     });
@@ -396,7 +396,7 @@ void BlackboardClientWindow::onColorChanged(const QColor &color)
     case WhichColor_Text:
         blackboard()->toolSettings<BbItemTextData>(BBTT_Text)->color = color;
         ui->textColor->setColor(color);
-        ui->blackboard->scene()->enumSelected([&](IItemIndex *index,int){
+        ui->blackboard->scene()->enumSelectedItems([&](IItemIndex *index){
             if(index->toolType() == BBTT_Text){
                 auto text = static_cast<BbItemText*>(index);
                 text->setColor(color);
@@ -601,6 +601,9 @@ void BlackboardClientWindow::on_btnFontFile_clicked()
     auto dir = "";
     auto filter = "OTF(*.otf);;TTF(*.ttf)";
     auto path = QFileDialog::getOpenFileName(nullptr,caption,dir,filter);
+    if(path.isEmpty())
+        return;
+
     auto fontFamilys = loadFont(path);
     for(auto family: fontFamilys){
         ui->textBrowser->append(family);
