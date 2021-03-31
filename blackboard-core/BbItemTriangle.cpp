@@ -67,7 +67,7 @@ void BbItemTriangle::toolDraw(const QPointF &pos)
     emit blackboard()->itemChanged(BBIET_triangleDraw,this);
 }
 
-void BbItemTriangle::toolDone(const QPointF &pos)
+void BbItemTriangle::toolUp(const QPointF &pos)
 {
     Q_UNUSED(pos)
     done();
@@ -119,8 +119,7 @@ void BbItemTriangle::begin(const QPointF &point)
     _data->empty = false;
 
     setupRectWithABC();
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
 }
 
 void BbItemTriangle::draw(const QPointF &point)
@@ -135,15 +134,13 @@ void BbItemTriangle::draw(const QPointF &point)
         _data->points[2] = point;
     }
     setupRectWithABC();
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
 }
 
 void BbItemTriangle::done()
 {
     ++_step;
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
     if(_step == 2)
     {
         _editing = false;

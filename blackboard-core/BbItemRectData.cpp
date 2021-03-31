@@ -99,5 +99,5 @@ void BbItemRectData::setWeight(qreal weight)
 void BbItemRectData::fromJsonObject(const QJsonObject &jobj)
 {
     BbItemData::fromJsonObject(jobj);
-    empty = size.isNull();
+    empty = isSizeNull();
 }

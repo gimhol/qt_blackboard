@@ -78,21 +78,24 @@ public:
      */
     virtual void repaint() = 0;
     /**
-     * @brief toolDown
+     * @brief toolDown [鼠标左键/数位板]按下
      * @param pos 鼠标位置
      */
     virtual void toolDown(const QPointF &pos){Q_UNUSED(pos)}
     /**
-     * @brief toolDraw
+     * @brief toolDraw [鼠标左键/数位板]按下时移动
      * @param pos 鼠标位置
      */
     virtual void toolDraw(const QPointF &pos){Q_UNUSED(pos)}
     /**
-     * @brief toolDraw
+     * @brief toolUp [鼠标左键/数位板]按下时抬起
      * @param pos 鼠标位置
      */
-    virtual void toolDone(const QPointF &pos){Q_UNUSED(pos)}
-
+    virtual void toolUp(const QPointF &pos){Q_UNUSED(pos)}
+    /**
+     * @brief modifiersChanged
+     * @param modifiers
+     */
     virtual void modifiersChanged(Qt::KeyboardModifiers modifiers){ Q_UNUSED(modifiers) }
     /**
      * @brief removed 被移除时调用

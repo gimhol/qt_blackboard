@@ -43,8 +43,6 @@ public:
 
     void setColor(const QColor & color);
 
-    void setDefaultTextColor(const QColor &color);
-
     const QColor & color();
 
     void setFontSizeFactor(qreal weight);
@@ -54,8 +52,6 @@ public:
     void done();
 
     void updateContent();
-
-    void setText(const QString &text);
 
     QString text();
 
@@ -76,7 +72,7 @@ public:
     BbItemData *data() override;
     void toolDown(const QPointF &pos) override;
     void toolDraw(const QPointF &pos) override;
-    void toolDone(const QPointF &pos) override;
+    void toolUp(const QPointF &pos) override;
     void removed() override;
     void absolutize() override;
 protected:

@@ -39,16 +39,11 @@ void BbItemText::init()
     setDefaultTextColor(_data->color);
     setAcceptedMouseButtons(Qt::LeftButton);
     setData(BBIIDK_ITEM_IS_SHAPE,true);
-//    document()->setDocumentMargin(0);
+    document()->setPlainText(_data->text);
+    setupTextBlockFormat();
     connect(document(), &QTextDocument::contentsChanged, this,[&](){
         updateContent();
     });
-    connect(document(), &QTextDocument::contentsChange, this, [&](int from, int charsRemoved, int charsAdded){
-        qDebug() << from << charsRemoved << charsAdded;
-    });
-
-    setupTextBlockFormat();
-
 }
 
 void BbItemText::setupTextBlockFormat()
@@ -175,16 +170,24 @@ QVariant BbItemText::itemChange(GraphicsItemChange change,
 
 void BbItemText::repaint()
 {
-    setFont(_data->font);
-    setDefaultTextColor(_data->color);
-    setPlainText(_data->text);
+    const auto &font = _data->font;
+    const auto &color = _data->color;
+    const auto &text = _data->text;
+    const auto &isPositionValid = _data->isPositionValid();
+    const auto &x = _data->x;
+    const auto &y = _data->y;
+    const auto &z = _data->z;
+
+    setFont(font);
+    setDefaultTextColor(color);
+    setPlainText(text);
     setupTextBlockFormat();
-    if( _data->isPositionValid() ){
-        setPos(_data->x,_data->y);
+    if(isPositionValid){
+        setPos(x,y);
     }
     setSelected(false);
     setEnabled(true);
-    setZValue(_data->z);
+    setZValue(z);
     update();
 }
 
@@ -200,12 +203,6 @@ const QFont &BbItemText::font()
 }
 
 void BbItemText::setColor(const QColor &color)
-{
-    _data->color = color;
-    QGraphicsTextItem::setDefaultTextColor(color);
-}
-
-void BbItemText::setDefaultTextColor(const QColor &color)
 {
     _data->color = color;
     QGraphicsTextItem::setDefaultTextColor(color);
@@ -241,13 +238,6 @@ void BbItemText::updateContent()
         emit blackboard()->itemChanged(BBIET_textChanged,this);
         _lastContent = _data->text;
     }
-}
-
-void BbItemText::setText(const QString &text)
-{
-    setPlainText(text);
-    _data->text = text;
-    _lastContent = text;
 }
 
 QString BbItemText::text()
@@ -310,8 +300,7 @@ void BbItemText::toolDown(const QPointF &pos)
             else
             {
                 setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
-                _data->updatePostion(this);
-                _data->updatePrevPostion();
+                _data->fixPostion(this);
                 if(!isEmpty())
                 {
                     emit blackboard()->itemChanged(BBIET_itemMoved,this);
@@ -333,8 +322,7 @@ void BbItemText::toolDown(const QPointF &pos)
         setTextInteractionFlags(Qt::TextEditorInteraction);
         setFocus();
         setPos(pos.x(), pos.y() - 0.5 * boundingRect().height());
-        _data->updatePostion(this);
-        _data->updatePrevPostion();
+        _data->fixPostion(this);
         bbScene()->setCurrentItem(this);
 
         emit blackboard()->itemChanged(BBIET_textAdded,this);
@@ -346,7 +334,7 @@ void BbItemText::toolDraw(const QPointF &)
     // do nothing.
 }
 
-void BbItemText::toolDone(const QPointF &)
+void BbItemText::toolUp(const QPointF &)
 {
     if(bbScene()->toolType() != BBTT_Text)
     {

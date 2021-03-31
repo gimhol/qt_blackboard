@@ -63,7 +63,7 @@ public:
     BbItemData *data() override;
     void toolDown(const QPointF &pos) override;
     void toolDraw(const QPointF &pos) override;
-    void toolDone(const QPointF &pos) override;
+    void toolUp(const QPointF &pos) override;
     void absolutize() override;
     bool isEditing() override;
 };

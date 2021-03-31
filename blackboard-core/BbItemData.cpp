@@ -14,37 +14,93 @@ BbItemData::~BbItemData()
 
 }
 
-bool BbItemData::isPositionValid()
+bool BbItemData::isPositionValid() const
 {
     return x > -9998 && y > -9998;
 }
 
-bool BbItemData::isPrevPositionValid()
+bool BbItemData::isPrevPositionValid() const
 {
     return prevX > -9998 && prevY > -9998;
 }
 
-void BbItemData::updatePostion(IItemIndex *itemIdx)
+bool BbItemData::isSizeValid() const
 {
-    auto itemBase = dynamic_cast<QGraphicsItem*>(itemIdx);
-    if(itemBase)
+    return width >=0 && height >=0;
+}
+
+bool BbItemData::isPrevSizeValid() const
+{
+    return prevWidth >=0 && prevHeight >=0;
+}
+
+bool BbItemData::isSizeNull() const { return width == 0 && height == 0; }
+
+bool BbItemData::isSizeEmpty() const { return width < 1 || height < 1; }
+
+bool BbItemData::isPrevSizeNull() const { return prevWidth == 0 && prevHeight == 0; }
+
+bool BbItemData::isPrevSizeEmpty() const { return prevWidth < 1 || prevHeight < 1; }
+
+void BbItemData::fixPostion(const qreal &x, const qreal &y)
+{
+    this->x = x;
+    this->y = y;
+    prevX = x;
+    prevY = y;
+}
+
+void BbItemData::updatePostion(const qreal &x, const qreal &y)
+{
+    this->x = x;
+    this->y = y;
+    if(!isPrevPositionValid())
     {
-        auto scene = itemIdx->bbScene();
-        if(scene && CM_PERCENTAGE == mode)
-        {
-            qreal ratio = scene->width() / 100;
-            x = itemBase->x() / ratio;
-            y = itemBase->y() / ratio;
-        }
-        else
-        {
-            x = itemBase->x();
-            y = itemBase->y();
-        }
-        if(!isPrevPositionValid())
-        {
-            updatePrevPostion();
-        }
+        updatePrevPostion();
+    }
+}
+
+void BbItemData::fixPostion(IItemIndex *index)
+{
+    auto item = index->item();
+    if(!item)
+        return;
+    auto scene = index->bbScene();
+    if(scene && CM_PERCENTAGE == mode)
+    {
+        qreal ratio = scene->width() / 100;
+        x = item->x() / ratio;
+        y = item->y() / ratio;
+    }
+    else
+    {
+        x = item->x();
+        y = item->y();
+    }
+    prevX = x;
+    prevY = y;
+}
+
+void BbItemData::updatePostion(IItemIndex *index)
+{
+    auto item = index->item();
+    if(!item)
+        return;
+    auto scene = index->bbScene();
+    if(scene && CM_PERCENTAGE == mode)
+    {
+        qreal ratio = scene->width() / 100;
+        x = item->x() / ratio;
+        y = item->y() / ratio;
+    }
+    else
+    {
+        x = item->x();
+        y = item->y();
+    }
+    if(!isPrevPositionValid())
+    {
+        updatePrevPostion();
     }
 }
 
@@ -56,7 +112,8 @@ void BbItemData::updatePrevPostion()
 
 void BbItemData::updatePrevSize()
 {
-    prevSize = size;
+    prevWidth = width;
+    prevHeight = height;
 }
 
 void BbItemData::writeStream(QDataStream &stream){
@@ -99,10 +156,10 @@ QJsonObject BbItemData::toJsonObject()
         jobj["brush"] = jbrush;
     }
     if(needSize){
-        jobj["width"] = size.width();
-        jobj["height"] = size.height();
-        jobj["prev_width"] = prevSize.width();
-        jobj["prev_height"] = prevSize.height();
+        jobj["width"] = width;
+        jobj["height"] = height;
+        jobj["prev_width"] = prevWidth;
+        jobj["prev_height"] = prevHeight;
     }
     return jobj;
 }
@@ -132,8 +189,8 @@ void BbItemData::fromJsonObject(const QJsonObject &jobj)
     brush.setColor(QColor::fromRgba(QRgb(jbrush["color"].toInt())));
     brush.setStyle(Qt::BrushStyle(jbrush["style"].toInt()));
 
-    size.setWidth(jobj["width"].toDouble());
-    size.setHeight(jobj["height"].toDouble());
-    prevSize.setWidth(jobj["prev_width"].toDouble());
-    prevSize.setHeight(jobj["prev_height"].toDouble());
+    width = jobj["width"].toDouble();
+    height = jobj["height"].toDouble();
+    prevWidth = jobj["prev_width"].toDouble();
+    prevHeight = jobj["prev_height"].toDouble();
 }

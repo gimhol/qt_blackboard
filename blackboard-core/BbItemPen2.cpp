@@ -104,8 +104,7 @@ void BbItemPen2::penDown(const QPointF &point){
     _path.moveTo(point);
     _changed << point;
     _data->coords << point.x() << point.y();
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
     update();
 #endif
 }
@@ -134,8 +133,7 @@ void BbItemPen2::penDraw(const QPointF &point)
     _path.lineTo(point);
     _changed << point;
     _data->coords << point.x() << point.y();
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
     update();
 #endif
 }
@@ -239,8 +237,7 @@ void BbItemPen2::straightLineDragging(const QPointF &point)
     _rect.setHeight(h + 2 * halfPenW);
 
     update();
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
 }
 
 void BbItemPen2::repaint()
@@ -432,7 +429,7 @@ void BbItemPen2::toolDraw(const QPointF &pos)
     }
 }
 
-void BbItemPen2::toolDone(const QPointF &pos)
+void BbItemPen2::toolUp(const QPointF &pos)
 {
 #ifdef NSB_PEN_DEBUG
     qDebug() << __FUNCTION__ << pos;

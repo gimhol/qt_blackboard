@@ -42,11 +42,8 @@ void BbItemRect::init()
 
 void BbItemRect::repaint()
 {
-    qreal x = _data->x;
-    qreal y = _data->y;
-    QSizeF size = _data->size;
-    setPos(x,y);
-    setRect(0,0,size.width(),size.height());
+    setPos(_data->x, _data->y);
+    setRect(0,0,_data->width,_data->height);
     setSelected(false);
     setEnabled(true);
     setZValue(_data->z);
@@ -58,7 +55,8 @@ void BbItemRect::writeStream(QDataStream &stream)
     _data->x = x();
     _data->y = y();
     _data->z = z();
-    _data->size = rect().size();
+    _data->width = rect().width();
+    _data->height = rect().height();
     _data->writeStream(stream);
 }
 
@@ -76,8 +74,7 @@ void BbItemRect::begin(const QPointF &point)
     _beginX = point.x();
     _beginY = point.y();
     setPos(point);
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
 }
 void BbItemRect::draw(const QPointF &point)
 {
@@ -98,17 +95,15 @@ void BbItemRect::draw(const QPointF &point)
     setRect(0,0,
             std::abs(_dragX-_beginX),
             std::abs(_dragY-_beginY));
-    _data->size.setWidth(std::abs(_dragX-_beginX));
-    _data->size.setHeight(std::abs(_dragY-_beginY));
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->width = (std::abs(_dragX-_beginX));
+    _data->height = (std::abs(_dragY-_beginY));
+    _data->fixPostion(this);
     _data->empty = !rect().size().isEmpty();
 }
 
 void BbItemRect::done()
 {
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
     _data->updatePrevSize();
     _editing = false;
     update();
@@ -142,7 +137,7 @@ void BbItemRect::toolDraw(const QPointF &pos)
     emit blackboard()->itemChanged(BBIET_rectDraw,this);
 }
 
-void BbItemRect::toolDone(const QPointF &pos)
+void BbItemRect::toolUp(const QPointF &pos)
 {
     Q_UNUSED(pos)
     done();
@@ -175,9 +170,10 @@ void BbItemRect::absolutize()
             _data->prevX *= ratio;
             _data->prevY *= ratio;
         }
-        if(_data->size.isValid())
+        if(_data->isSizeValid())
         {
-            _data->size *= ratio;
+            _data->width *= ratio;
+            _data->height *= ratio;
         }
     }
 }
@@ -192,7 +188,8 @@ QJsonObject BbItemRect::toJsonObject()
     _data->x = x();
     _data->y = y();
     _data->z = z();
-    _data->size = rect().size();
+    _data->width = rect().width();
+    _data->height = rect().height();
     return _data->toJsonObject();
 }
 
