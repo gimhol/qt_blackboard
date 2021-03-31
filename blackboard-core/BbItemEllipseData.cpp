@@ -95,5 +95,5 @@ void BbItemEllipseData::setWeight(qreal weight)
 void BbItemEllipseData::fromJsonObject(const QJsonObject &jobj)
 {
     BbItemData::fromJsonObject(jobj);
-    empty = size.isNull();
+    empty = isSizeNull();
 }

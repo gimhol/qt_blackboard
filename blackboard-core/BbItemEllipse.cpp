@@ -58,24 +58,24 @@ void BbItemEllipse::modifiersChanged(Qt::KeyboardModifiers modifiers)
 
 void BbItemEllipse::absolutize()
 {
-    if(_data->mode == BbItemData::CM_PERCENTAGE)
+    if(_data->mode != BbItemData::CM_PERCENTAGE)
+        return;
+    _data->mode = BbItemData::CM_ABSOLUTE;
+    qreal ratio = bbScene()->width() / 100;
+    if(_data->isPositionValid())
     {
-        _data->mode = BbItemData::CM_ABSOLUTE;
-        qreal ratio = bbScene()->width() / 100;
-        if(_data->isPositionValid())
-        {
-            _data->x *= ratio;
-            _data->y *= ratio;
-        }
-        if(_data->isPrevPositionValid())
-        {
-            _data->prevX *= ratio;
-            _data->prevY *= ratio;
-        }
-        if(_data->size.isValid())
-        {
-            _data->size *= ratio;
-        }
+        _data->x *= ratio;
+        _data->y *= ratio;
+    }
+    if(_data->isPrevPositionValid())
+    {
+        _data->prevX *= ratio;
+        _data->prevY *= ratio;
+    }
+    if(_data->isSizeValid())
+    {
+        _data->width *= ratio;
+        _data->height *= ratio;
     }
 }
 
@@ -88,9 +88,8 @@ void BbItemEllipse::repaint()
 {
     qreal x = _data->x;
     qreal y = _data->y;
-    QSizeF size = _data->size;
     setPos(x,y);
-    setRect(0,0,size.width(),size.height());
+    setRect(0,0,_data->width,_data->height);
     setSelected(false);
     setEnabled(true);
     setZValue(_data->z);
@@ -102,7 +101,8 @@ void BbItemEllipse::writeStream(QDataStream &stream)
     _data->x = x();
     _data->y = y();
     _data->z = zValue();
-    _data->size = rect().size();
+    _data->width = rect().width();
+    _data->height = rect().height();
     _data->writeStream(stream);
 }
 
@@ -135,32 +135,31 @@ void BbItemEllipse::draw(const QPointF &point)
     if(_startFromCenter){
         _data->x = _beginX - std::abs(_dragX-_beginX);
         _data->y = _beginY - std::abs(_dragY-_beginY);
-        _data->size.setWidth(2 * std::abs(_dragX-_beginX));
-        _data->size.setHeight(2 * std::abs(_dragY-_beginY));
+        _data->width = 2 * std::abs(_dragX-_beginX);
+        _data->height = 2 * std::abs(_dragY-_beginY);
 
     }else if(_pointcut){
         qreal radius = std::sqrt(std::pow(std::abs(_dragX-_beginX),2)+
                                  std::pow(std::abs(_dragY-_beginY),2));
         _data->x = _beginX-radius;
         _data->y = _beginY-radius;
-        _data->size.setWidth(2*radius);
-        _data->size.setHeight(2*radius);
+        _data->width = 2*radius;
+        _data->height = 2*radius;
     }else{
         _data->x = std::min(_dragX,_beginX);
         _data->y = std::min(_dragY,_beginY);
-        _data->size.setWidth(std::abs(_dragX-_beginX));
-        _data->size.setHeight(std::abs(_dragY-_beginY));
+        _data->width = std::abs(_dragX-_beginX);
+        _data->height = std::abs(_dragY-_beginY);
     }
     _data->updatePrevPostion();
     setPos(_data->x,_data->y);
-    setRect(0,0,_data->size.width(),_data->size.height());
+    setRect(0,0, _data->width, _data->height);
     _data->empty = !rect().size().isEmpty();
 }
 
 void BbItemEllipse::done()
 {
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
     _data->updatePrevSize();
     _editing = false;
     update();
@@ -204,7 +203,7 @@ void BbItemEllipse::toolDraw(const QPointF &pos)
     emit blackboard()->itemChanged(BBIET_ellipseDraw,this);
 }
 
-void BbItemEllipse::toolDone(const QPointF &pos)
+void BbItemEllipse::toolUp(const QPointF &pos)
 {
     Q_UNUSED(pos)
     done();
@@ -310,7 +309,8 @@ QJsonObject BbItemEllipse::toJsonObject()
     _data->x = x();
     _data->y = y();
     _data->z = zValue();
-    _data->size = rect().size();
+    _data->width = rect().width();
+    _data->height = rect().height();
     return _data->toJsonObject();
 }
 

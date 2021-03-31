@@ -45,8 +45,8 @@ void BbItemImage::init()
 
 qreal BbItemImage::minWidth()
 {
-    auto w = _data->size.width();
-    auto h = _data->size.height();
+    auto w = _data->width;
+    auto h = _data->height;
     if(h > 0 && h > w && ratioLock())
     {
         return 6 * _dotSize * w / h;
@@ -56,8 +56,8 @@ qreal BbItemImage::minWidth()
 
 qreal BbItemImage::minHeight()
 {
-    auto w = _data->size.width();
-    auto h = _data->size.height();
+    auto w = _data->width;
+    auto h = _data->height;
     if(w > 0 && w > h && ratioLock())
     {
         return 6 * _dotSize * h / w;
@@ -109,8 +109,8 @@ void BbItemImage::setText(QString text)
 
 qreal BbItemImage::ratio()
 {
-    auto w = _data->size.width();
-    auto h = _data->size.height();
+    auto w = _data->width;
+    auto h = _data->height;
     if(_data->pixmap.isNull())
     {
         if(equal(0,h))
@@ -269,8 +269,8 @@ void BbItemImage::resize(qreal width, qreal height)
     {
         height = minHeight();
     }
-    _data->size.setWidth(width);
-    _data->size.setHeight(height);
+    _data->width = width;
+    _data->height = height;
     setRect(0,0,width,height);
 }
 
@@ -441,8 +441,8 @@ bool BbItemImage::done()
     _lastY = y;
     _lastW = w;
     _lastH = h;
-    _data->size.setWidth(w);
-    _data->size.setHeight(h);
+    _data->width = (w);
+    _data->height = (h);
     return changed;
 }
 
@@ -497,8 +497,9 @@ void BbItemImage::absolutize()
             _data->prevX *= ratio;
             _data->prevY *= ratio;
         }
-        _data->size *= ratio;
-        resize(_data->size);
+        _data->width *= ratio;
+        _data->height *= ratio;
+        resize(_data->width, _data->height);
     }
 }
 
@@ -622,7 +623,7 @@ void BbItemImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 
 void BbItemImage::repaint()
 {
-    setRect(0,0,_data->size.width(),_data->size.height());
+    setRect(0,0,_data->width,_data->height);
     setPos(_data->x,_data->y);
     setZValue(_data->z);
     setPixmap(_data->pixmap);
@@ -633,7 +634,8 @@ void BbItemImage::writeStream(QDataStream &stream)
 {
     _data->x = x();
     _data->y = y();
-    _data->size = rect().size();
+    _data->width = rect().width();
+    _data->height = rect().height();
     _data->z = zValue();
     _data->writeStream(stream);
 }
@@ -655,7 +657,8 @@ QJsonObject BbItemImage::toJsonObject()
 {
     _data->x = x();
     _data->y = y();
-    _data->size = rect().size();
+    _data->width = rect().width();
+    _data->height = rect().height();
     _data->z = zValue();
     return _data->toJsonObject();
 }

@@ -129,8 +129,7 @@ void BbItemPen::penDown(const QPointF &point){
         _straightTo = _straightFrom;
     }
     update();
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
 }
 
 void BbItemPen::penDraw(const QPointF &point)
@@ -170,8 +169,7 @@ void BbItemPen::done()
 #endif
 
     _editing = false;
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
 
 #ifdef NSB_SAVE_PEN_TO_PIXMAP_WHEN_DONE
     do{
@@ -241,8 +239,7 @@ void BbItemPen::straightLineDragging(const QPointF &point)
     _rect.setHeight(h + 2 * halfPenW);
 
     update();
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
 }
 
 void BbItemPen::addPointToPath(const QPointF &point)
@@ -306,8 +303,7 @@ void BbItemPen::addPointToPath(const QPointF &point)
     _rect.moveTop(_rect.y()-halfPenW);
     _rect.setWidth(_rect.width()+2*halfPenW);
     _rect.setHeight(_rect.height()+2*halfPenW);
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
 }
 
 #ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
@@ -527,7 +523,7 @@ void BbItemPen::toolDraw(const QPointF &pos)
     }
 }
 
-void BbItemPen::toolDone(const QPointF &pos)
+void BbItemPen::toolUp(const QPointF &pos)
 {
 #ifdef NSB_PEN_DEBUG
     qDebug() << __FUNCTION__ << pos;

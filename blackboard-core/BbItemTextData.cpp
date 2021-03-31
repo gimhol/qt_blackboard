@@ -70,20 +70,20 @@ void BbItemTextData::setFontSizeFactor(qreal factor)
 
 qreal BbItemTextData::fontSizeFactor()
 {
-    return (font.pointSizeF()-minFontSize)/(maxFontSize-minFontSize);
+    return (font.pixelSize()-minFontSize)/(maxFontSize-minFontSize);
 }
 
 QJsonObject BbItemTextData::toJsonObject()
 {
     auto jobj = BbItemData::toJsonObject();
-    jobj["family"]      = font.family();
-    jobj["font_size"]   = font.pointSizeF();
-    jobj["weight"]      = font.weight();
-    jobj["italic"]      = font.italic();
-    jobj["bold"]        = font.bold();
-    jobj["color"]       = int(color.rgba());
-    jobj["text"]        = text;
-    jobj["prev_text"]   = prevText;
+    jobj["family"]              = font.family();
+    jobj["weight"]              = font.weight();
+    jobj["italic"]              = font.italic();
+    jobj["bold"]                = font.bold();
+    jobj["color"]               = int(color.rgba());
+    jobj["text"]                = text;
+    jobj["prev_text"]           = prevText;
+    jobj["font_size_factor"]    = fontSizeFactor();
     return jobj;
 }
 
@@ -91,7 +91,6 @@ void BbItemTextData::fromJsonObject(const QJsonObject &jobj)
 {
     BbItemData::fromJsonObject(jobj);
     font.setFamily(jobj["family"].toString());
-    font.setPixelSize(jobj["font_size"].toDouble());
     font.setWeight(jobj["weight"].toInt());
     font.setItalic(jobj["italic"].toBool());
     font.setBold(jobj["bold"].toBool());
@@ -99,4 +98,5 @@ void BbItemTextData::fromJsonObject(const QJsonObject &jobj)
     text = jobj["text"].toString();
     prevText = jobj["prev_text"].toString();
     empty = text.length() == 0;
+    setFontSizeFactor(jobj["font_size_factor"].toDouble());
 }

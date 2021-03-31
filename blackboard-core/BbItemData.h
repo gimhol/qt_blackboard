@@ -53,12 +53,12 @@ public:
     qreal z = -9999;
 
     /**
-     * @brief x 上一次的x坐标， -9999代表没有移动
+     * @brief x 上一次的x坐标， -9999代表没有移动, 在移动的事件中，此值将仍未为移动前的位置，直至移动完成。
      */
     qreal prevX = -9999;
 
     /**
-     * @brief y 上一次的y坐标,-9999代表没有移动
+     * @brief y 上一次的y坐标,-9999代表没有移动, 在移动的事件中，此值将仍未为移动前的位置，直至移动完成。
      */
     qreal prevY = -9999;
 
@@ -103,13 +103,14 @@ public:
      */
     bool needSize = false;
     /**
-     * @brief size item尺寸
+     * @brief width, height item的尺寸
      */
-    QSizeF size;
+    qreal width = -1, height = -1;
+
     /**
-     * @brief prevSize 修改前的尺寸
+     * @brief prevWidth, prevHeight 修改前的尺寸, 拖拽图片边缘改变图片尺寸时，此值应为修改前的尺寸，直至松开鼠标。
      */
-    QSizeF prevSize;
+    qreal prevWidth = -1, prevHeight = -1;
 
     virtual qreal weight(){return 1;}
 
@@ -123,12 +124,45 @@ public:
 
     virtual QPointF prevPosition() { return QPointF(prevX,prevY); }
 
-    virtual bool isPositionValid();
+    virtual bool isPositionValid() const;
 
-    virtual bool isPrevPositionValid();
+    virtual bool isPrevPositionValid() const;
 
-    virtual void updatePostion(IItemIndex *itemIdx);
+    virtual bool isSizeValid() const;
 
+    virtual bool isPrevSizeValid() const;
+
+    virtual bool isSizeNull() const;
+
+    virtual bool isSizeEmpty() const;
+
+    virtual bool isPrevSizeNull() const;
+
+    virtual bool isPrevSizeEmpty() const;
+
+    /**
+     * @brief fixPostion 更新data中的x与y，同时修改prevX与prevY。
+     * @param index 用于读取x与y的item。
+     */
+    virtual void fixPostion(const qreal &x, const qreal &y);
+    /**
+     * @brief updatePostion 更新data中的x与y，当prevX与prevY为非正常值（或未初始化）时，同时修改prevX与prevY。
+     * @param index 用于读取x与y的item。
+     */
+    virtual void updatePostion(const qreal &x, const qreal &y);
+    /**
+     * @brief fixPostion 更新data中的x与y，同时修改prevX与prevY。
+     * @param index 用于读取x与y的item。
+     */
+    virtual void fixPostion(IItemIndex *index);
+    /**
+     * @brief updatePostion 更新data中的x与y，当prevX与prevY为非正常值（或未初始化）时，同时修改prevX与prevY。
+     * @param index 用于读取x与y的item。
+     */
+    virtual void updatePostion(IItemIndex *index);
+    /**
+     * @brief updatePrevPostion prevX = x; prevY = y;
+     */
     virtual void updatePrevPostion();
 
     virtual void updatePrevSize();

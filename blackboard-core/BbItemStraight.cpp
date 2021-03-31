@@ -65,7 +65,7 @@ void BbItemStraight::toolDraw(const QPointF &pos)
     emit blackboard()->itemChanged(BBIET_straightDraw,this);
 }
 
-void BbItemStraight::toolDone(const QPointF &pos)
+void BbItemStraight::toolUp(const QPointF &pos)
 {
     Q_UNUSED(pos)
     done();
@@ -123,8 +123,7 @@ void BbItemStraight::begin(const QPointF &point)
     _data->empty = false;
     _mousePos = point;
     setupRectWithAB();
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
 }
 
 void BbItemStraight::draw(const QPointF &point)
@@ -139,14 +138,12 @@ void BbItemStraight::draw(const QPointF &point)
         _data->b = point;
     }
     setupRectWithAB();
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
 }
 
 void BbItemStraight::done()
 {
-    _data->updatePostion(this);
-    _data->updatePrevPostion();
+    _data->fixPostion(this);
     _editing = false;
 }
 

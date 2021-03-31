@@ -171,7 +171,7 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             if(!event->isAccepted()) // 点中一个item，就不框选了。
                 startPicking();
             if(_curItemIndex)
-                _curItemIndex->toolDone(_mousePos);
+                _curItemIndex->toolUp(_mousePos);
         }else{
             stopPicking();
             deselectAll();
@@ -185,7 +185,7 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
              *      调用mousePressEvent：
              *          焦点text的文字才能被鼠标框选。
              *          如果点击的不是焦点text，焦点text将会失去焦点，
-             *          然后toolDone，使_curItemIndex=nullptr，
+             *          然后toolUp，使_curItemIndex=nullptr，
              *          以实现点击其他地方立刻创建一个text。
              *      -Gim
              */
@@ -203,7 +203,7 @@ void BbScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
     else if(event->button() == Qt::RightButton){
         if(_curItemIndex){
-            _curItemIndex->toolDone(_mousePos);
+            _curItemIndex->toolUp(_mousePos);
         }
 
         /*
@@ -276,7 +276,7 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             emitItemMovedSignals();
         }
         else if(_curItemIndex){
-            _curItemIndex->toolDone(_mousePos);
+            _curItemIndex->toolUp(_mousePos);
         }
         /*
          * NOTE:
@@ -286,7 +286,11 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
          */
         for(auto idx: _deletingItems)
         {
-            auto item = dynamic_cast<QGraphicsItem*>(idx);
+            auto item = idx->item();
+            if(!item) // ??
+            {
+                continue;
+            }
             removeItem(item);
             BbItemDeleter::get()->addItem(idx);
         }
@@ -437,7 +441,7 @@ void BbScene::pasteItems()
         text->setPlainText(QString::fromUtf8(data));
         text->updateContent();
         text->setupTextBlockFormat();
-        text->toolDone(pos);
+        text->toolUp(pos);
         return;
     }
 
@@ -493,11 +497,14 @@ void BbScene::pasteItems()
     auto offsetY = visionRect.top() + 0.5f * (visionRect.height() - boundingRect.height()) - boundingRect.top();
 
     QList<IItemIndex*> indexes;
-    for(auto jVal : jItems){
+    for(auto jVal : jItems)
+    {
         auto curr = factory()->createItem(jVal.toObject());
-        auto item = dynamic_cast<QGraphicsItem*>(curr);
+        auto item = curr->item();
         if(!item)
+        {
             continue;
+        }
         curr->setId(factory()->makeItemId(curr->toolType()));
         curr->setZ(factory()->makeItemZ(curr->toolType()));
         add(curr);
@@ -846,7 +853,7 @@ void BbScene::groupUp(QList<IItemIndex*> indexes, const QString &id){
         return;
     QList<QGraphicsItem*> items;
     for(auto index : indexes){
-        auto item = dynamic_cast<QGraphicsItem*>(index);
+        auto item = index->item();
         if(!item)
             continue;
         item->setFlag(QGraphicsItem::ItemIsMovable,false);
@@ -950,7 +957,7 @@ void BbScene::onToolChanged(BbToolType previous)
 //    if(BBTT_Picker == previous)
 //        setItemPicking(false);
     if(_curItemIndex)
-        _curItemIndex->toolDone(_mousePos);
+        _curItemIndex->toolUp(_mousePos);
 //    if(BBTT_Picker == _toolType)
     //        setItemPicking(true);
 }
@@ -1038,7 +1045,7 @@ void BbScene::remove(IItemIndex *index)
     if(_curItemIndex == index)
         _curItemIndex = nullptr;
 
-    auto item = dynamic_cast<QGraphicsItem*>(index);
+    auto item = index->item();
     if(item)
     {
         item->clearFocus();
@@ -1074,7 +1081,7 @@ void BbScene::add(IItemIndex *index)
         qWarning() << "[BlackboardScene::add] fail to add item, pointer is nullptr!";
         return;
     }
-    auto item = dynamic_cast<QGraphicsItem *>(index);
+    auto item = index->item();
     if(item)
     {
         item->setFlag(QGraphicsItem::ItemIsMovable,true);
@@ -1274,7 +1281,7 @@ void BbScene::emitItemMovedSignals()
             若第一item位置沒有变化，就可以判定为未拖动。此时return true打断。
                 - Gim
         */
-        auto item = dynamic_cast<QGraphicsItem *>(index);
+        auto item = index->item();
         auto d = std::abs(index->data()->prevX - item->x()) +
                  std::abs(index->data()->prevY - item->y());
         moved = d > 0;
