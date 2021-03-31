@@ -85,30 +85,17 @@ void BlackboardConnector::onLocalPointerHidden(QPoint){
     _me->send(MsgTypeBlackboardPointerHidden,QJsonDocument(jobj).toBinaryData());
 }
 
-void BlackboardConnector::onLocalMultipleItemChanged(BBItemEventType eventType, IItemIndex *index){
-
-#ifdef NSB_BB_CONNECTOR_DEBUG
-    qDebug().noquote() << "multiple items changed eventType: " << eventType;
-    auto a = index;
-    auto i = 0;
-    while(a){
-        auto t = QJsonDocument(a->data()->toJsonObject()).toJson();
-        qDebug().noquote() << "item_" << i << ":" << t;
-        ++i;
-        a = a->next;
-    }
-    qDebug() << "";
-#endif
+void BlackboardConnector::onLocalMultipleItemChanged(BBItemEventType eventType, QList<IItemIndex *> indexes){
     switch(eventType)
     {
     case BBIET_itemMoving:
-        onLocalItemsMoving(index);
+        onLocalItemsMoving(indexes);
         break;
     case BBIET_itemMoved:
-        onLocalItemsMoved(index);
+        onLocalItemsMoved(indexes);
         break;
     case BBIET_itemDelete:
-        onLocalItemsDelete(index);
+        onLocalItemsDelete(indexes);
         break;
     case BBIET_itemPaste:
         // do it better.
@@ -118,39 +105,36 @@ void BlackboardConnector::onLocalMultipleItemChanged(BBItemEventType eventType, 
     }
 }
 
-void BlackboardConnector::onLocalItemsMoving(IItemIndex *index){
+void BlackboardConnector::onLocalItemsMoving(QList<IItemIndex *> indexes){
     QJsonArray jarr;
-    while(index){
+    for(auto index: indexes){
         QJsonObject jobj;
         jobj["id"] = index->id();
         jobj["x"] = index->positionX()/_bb->canvasWidth();
         jobj["y"] = index->positionY()/_bb->canvasWidth();
         jarr << jobj;
-        index = index->next;
     }
     _me->send(BBIET_itemMoving,QJsonDocument(jarr).toBinaryData());
 }
 
-void BlackboardConnector::onLocalItemsMoved(IItemIndex *index)
+void BlackboardConnector::onLocalItemsMoved(QList<IItemIndex *> indexes)
 {
     QJsonArray jarr;
-    while(index){
+    for(auto index: indexes){
         QJsonObject jobj;
         jobj["id"] = index->id();
         jobj["x"] = index->positionX()/_bb->canvasWidth();
         jobj["y"] = index->positionY()/_bb->canvasWidth();
         jarr << jobj;
-        index = index->next;
     }
     _me->send(BBIET_itemMoved,QJsonDocument(jarr).toBinaryData());
 }
 
-void BlackboardConnector::onLocalItemsDelete(IItemIndex *index)
+void BlackboardConnector::onLocalItemsDelete(QList<IItemIndex *> indexes)
 {
     QJsonArray jarr;
-    while(index){
+    for(auto index: indexes){
         jarr << index->id();
-        index = index->next;
     }
     _me->send(BBIET_itemDelete,QJsonDocument(jarr).toBinaryData());
 }
@@ -294,7 +278,7 @@ void BlackboardConnector::onLocalTextAdded(IItemIndex *index){
     jobj["id"] = item->id();
     jobj["z"] = item->z();
     jobj["font"] = item->font().toString();
-    jobj["weight"] = item->weight();
+    jobj["weight"] = item->fontSizeFactor();
     jobj["color"] = int(item->color().rgba());
     jobj["x"] = item->positionX()/_bb->canvasWidth();
     jobj["y"] = item->positionY()/_bb->canvasWidth();
@@ -731,7 +715,7 @@ void BlackboardConnector::onRemoteTextAdded()
     QFont f;
     f.fromString(jobj["font"].toString());
     copy->setFont(f);
-    copy->setWeight(jobj["weight"].toDouble());
+    copy->setFontSizeFactor(jobj["weight"].toDouble());
     copy->setColor(QColor::fromRgba(QRgb(jobj["color"].toInt())));
     copy->moveToPosition(
             jobj["x"].toDouble()*_bb->canvasWidth(),

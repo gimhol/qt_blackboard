@@ -21,10 +21,10 @@ public:
     void onLocalPointerMoved(QPoint localPoint);
     void onLocalPointerHidden(QPoint localPoint);
 
-    void onLocalMultipleItemChanged(BBItemEventType eventType,IItemIndex *index);
-    void onLocalItemsMoving(IItemIndex *index);
-    void onLocalItemsMoved(IItemIndex *index);
-    void onLocalItemsDelete(IItemIndex *index);
+    void onLocalMultipleItemChanged(BBItemEventType eventType,QList<IItemIndex *> indexes);
+    void onLocalItemsMoving(QList<IItemIndex *> indexes);
+    void onLocalItemsMoved(QList<IItemIndex *> indexes);
+    void onLocalItemsDelete(QList<IItemIndex *> indexes);
 
     void onLocalItemChanged(BBItemEventType eventType,IItemIndex *index);
 

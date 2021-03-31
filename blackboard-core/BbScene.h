@@ -74,9 +74,9 @@ public:
 
     BbToolType toolType();
 
-    IItemIndex *enumAll(std::function<bool(IItemIndex *,int)> job);
+    QList<IItemIndex*> enumAllItems(std::function<bool(IItemIndex *)> job = nullptr);
 
-    IItemIndex *enumSelected(std::function<bool(IItemIndex *,int)> job);
+    QList<IItemIndex*> enumSelectedItems(std::function<bool(IItemIndex *)> job = nullptr);
 
     /**
      * @brief removeSelectedElement 移除当前所有被选择的元素
@@ -193,11 +193,11 @@ public:
 
     QHash<int,QRectF> getNotEmptyPageAreas();
 
-    void groupUp(QList<QGraphicsItem*> items, QString id = "");
+    void groupUp(QList<IItemIndex*> items, const QString &id = "");
 
-    void groupUp(QList<QString> itemIds, QString id = "");
+    void groupUp(QList<QString> itemIds, const QString &id = "");
 
-    void groupUp(QString id = "");
+    void groupUp(const QString &id = "");
 
     void dismiss(QList<QString> ids = {});
 
@@ -234,7 +234,7 @@ protected:
 
     virtual void keyReleaseEvent(QKeyEvent *e) override;
 
-    IItemIndex *selectedItems2Clipboard();
+    QList<IItemIndex *> selectedItems2Clipboard();
 
     void checkItemsPicking();
 

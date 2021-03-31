@@ -2,19 +2,24 @@
 
 #include <QDebug>
 
-static qreal minPointSize = 9;
-static qreal maxPointSize = 72;
-static QFont defalutFont = QFont(QStringLiteral("宋体"), minPointSize);
+static qreal minFontSize = 17;
+static qreal maxFontSize = 37;
+static QFont makeDefaultFont(){
+    QFont ret(QStringLiteral("宋体"));
+    ret.setPixelSize(minFontSize);
+    return ret;
+}
+static QFont defalutFont = makeDefaultFont();
 static QColor defalutColor = QColor(100,100,180);
 
-const qreal &BbItemTextData::getMinPointSize()
+const qreal &BbItemTextData::getMinFontSize()
 {
-    return minPointSize;
+    return minFontSize;
 }
 
-const qreal &BbItemTextData::getMaxPointSize()
+const qreal &BbItemTextData::getMaxFontSize()
 {
-    return maxPointSize;
+    return maxFontSize;
 }
 
 const QFont &BbItemTextData::getDefalutFont()
@@ -27,19 +32,21 @@ const QColor &BbItemTextData::getDefalutColor()
     return defalutColor;
 }
 
-void BbItemTextData::setMinPointSize(const qreal &value)
+void BbItemTextData::setMinFontSize(const qreal &value)
 {
-    minPointSize = value;
+    minFontSize = value;
+    defalutFont.setPixelSize(minFontSize);
 }
 
-void BbItemTextData::setMaxPointSize(const qreal &value)
+void BbItemTextData::setMaxFontSize(const qreal &value)
 {
-    maxPointSize = value;
+    maxFontSize = value;
 }
 
 void BbItemTextData::setDefalutFont(const QFont &value)
 {
     defalutFont = value;
+    defalutFont.setPixelSize(minFontSize);
 }
 
 void BbItemTextData::setDefalutColor(const QColor &value)
@@ -55,22 +62,22 @@ BbItemTextData::BbItemTextData(BbItemData::CoordMode mode):
     tooltype = BBTT_Text;
 }
 
-void BbItemTextData::setPointWeight(qreal weight)
+void BbItemTextData::setFontSizeFactor(qreal factor)
 {
-    qreal pointSize = minPointSize + weight * (maxPointSize - minPointSize);
-    font.setPointSizeF(pointSize);
+    auto size = minFontSize + factor * (maxFontSize - minFontSize);
+    font.setPixelSize(size);
 }
 
-qreal BbItemTextData::pointWeight()
+qreal BbItemTextData::fontSizeFactor()
 {
-    return (font.pointSizeF()-minPointSize)/(maxPointSize-minPointSize);
+    return (font.pointSizeF()-minFontSize)/(maxFontSize-minFontSize);
 }
 
 QJsonObject BbItemTextData::toJsonObject()
 {
     auto jobj = BbItemData::toJsonObject();
     jobj["family"]      = font.family();
-    jobj["point_size"]  = font.pointSizeF();
+    jobj["font_size"]   = font.pointSizeF();
     jobj["weight"]      = font.weight();
     jobj["italic"]      = font.italic();
     jobj["bold"]        = font.bold();
@@ -84,7 +91,7 @@ void BbItemTextData::fromJsonObject(const QJsonObject &jobj)
 {
     BbItemData::fromJsonObject(jobj);
     font.setFamily(jobj["family"].toString());
-    font.setPointSizeF(jobj["point_size"].toDouble());
+    font.setPixelSize(jobj["font_size"].toDouble());
     font.setWeight(jobj["weight"].toInt());
     font.setItalic(jobj["italic"].toBool());
     font.setBold(jobj["bold"].toBool());

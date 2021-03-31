@@ -33,34 +33,6 @@
 #pragma comment(lib, "user32")
 #endif
 
-#define GRAPHICS_ITEM_DATA_KEY_DELETING 1000
-
-#define MAKE_IITEMINDEX_LIST_BEGIN(_FIRST_ITEM_NAME_,_PREV_ITEM_NAME_) \
-    IItemIndex *_FIRST_ITEM_NAME_ = nullptr; \
-    IItemIndex *_PREV_ITEM_NAME_ = nullptr;
-
-#define MAKE_IITEMINDEX_LIST(_FIRST_ITEM_NAME_,_PREV_ITEM_NAME_,_CURRENT_ITEM_NAME_) \
-    do{ \
-        if(_FIRST_ITEM_NAME_){ \
-            _PREV_ITEM_NAME_->next = _CURRENT_ITEM_NAME_; \
-            _CURRENT_ITEM_NAME_->last = _PREV_ITEM_NAME_; \
-        } \
-        else{ \
-            _CURRENT_ITEM_NAME_->last = nullptr; \
-            _FIRST_ITEM_NAME_ = _CURRENT_ITEM_NAME_; \
-        } \
-        _CURRENT_ITEM_NAME_->next = nullptr; \
-        _PREV_ITEM_NAME_ = _CURRENT_ITEM_NAME_; \
-    } while(0);
-
-#define IITEMINDEX_TRAVERSAl_BEGIN(_FIRST_ITEM_NAME_,_CURRENT_ITEM_NAME_) \
-    auto _CURRENT_ITEM_NAME_ = _FIRST_ITEM_NAME_; \
-    while(_CURRENT_ITEM_NAME_){ \
-        auto _NEXT_ITEM_ = _CURRENT_ITEM_NAME_->next;
-
-#define IITEMINDEX_TRAVERSAl_END(_CURRENT_ITEM_NAME_) \
-    _CURRENT_ITEM_NAME_ = _NEXT_ITEM_; }
-
 BbScene::BbScene(Blackboard *parent):
     QGraphicsScene(parent),
     _backgroundRect(0,0,0,0),
@@ -115,71 +87,68 @@ BbToolType BbScene::toolType()
     return _toolType;
 }
 
-IItemIndex *BbScene::enumAll(std::function<bool (IItemIndex *, int)> job)
+QList<IItemIndex*> BbScene::enumAllItems(std::function<bool (IItemIndex *)> job)
 {
-    IItemIndex *first = nullptr;
-    IItemIndex *current = nullptr;
-    int i = 0;
+    QList<IItemIndex*> list;
     for(auto item: items())
     {
         // 忽略正在被移除的item。
         if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
             continue;
 
-        IItemIndex *index = dynamic_cast<IItemIndex *>(item);
-        if(index){
-            if(first){
-                index->last = current;
-                current->next = index;
-            }
-            else{
-                index->last = nullptr;
-                first = index;
-            }
-            index->next = nullptr;
-            if(job && job(index,i)){
-                break;
-            }
-            current = index;
-            i++;
-        }
-    }
-    return first;
-}
-
-IItemIndex *BbScene::enumSelected(std::function<bool(IItemIndex *,int)> job)
-{
-    MAKE_IITEMINDEX_LIST_BEGIN(first,prev)
-    int i = 0;
-    for(auto item: selectedItems()){
-        // 忽略正在被移除的item。
-        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
-            continue;
         auto index = dynamic_cast<IItemIndex *>(item);
         if(!index)
             continue;
-        MAKE_IITEMINDEX_LIST(first,prev,index)
-        if(job && job(index,i)){
-            break;
-        }
-        i++;
+
+        list << index;
     }
-    return first;
+    if(job)
+    {
+        for(auto index: list)
+        {
+            if(job(index))
+                break;
+        }
+    }
+    return list;
+}
+
+QList<IItemIndex*> BbScene::enumSelectedItems(std::function<bool(IItemIndex *)> job)
+{
+    QList<IItemIndex*> list;
+    for(auto item: selectedItems())
+    {
+        // 忽略正在被移除的item。
+        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool()) continue;
+
+        auto index = dynamic_cast<IItemIndex *>(item);
+        if(!index) continue;
+
+        list << index;
+    }
+    if(job)
+    {
+        for(auto index: list)
+        {
+            if(job(index))
+                break;
+        }
+    }
+
+    return list;
 }
 
 void BbScene::removeSelected()
 {
-    auto enumJob = [&](IItemIndex *index,int ){
+    auto enumJob = [&](IItemIndex *index){
         emit blackboard()->itemChanged(BBIET_itemDelete,index);
         return false;
     };
-    IItemIndex *index = enumSelected(enumJob);
-    emit blackboard()->multipleItemChanged(BBIET_itemDelete,index);
-    while(index)
+    auto indexes = enumSelectedItems(enumJob);
+    emit blackboard()->multipleItemChanged(BBIET_itemDelete,indexes);
+    for(auto index: indexes)
     {
-        auto next = index->next;
         remove(index);
-        index = next;
     }
 }
 
@@ -339,30 +308,32 @@ void BbScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 void BbScene::keyPressEvent(QKeyEvent *e)
 {
     QGraphicsScene::keyPressEvent(e);
-    if(_modifiers != e->modifiers()){
+    auto modifiers = e->modifiers();
+    if(_modifiers != modifiers){
         if(_curItemIndex)
-            _curItemIndex->modifiersChanged(e->modifiers());
-        _modifiers = e->modifiers();
+            _curItemIndex->modifiersChanged(modifiers);
+        _modifiers = modifiers;
     }
 }
 
 void BbScene::keyReleaseEvent(QKeyEvent *e)
 {
     QGraphicsScene::keyReleaseEvent(e);
-    if(_modifiers != e->modifiers()){
+    auto modifiers = e->modifiers();
+    if(_modifiers != modifiers){
         if(_curItemIndex)
-            _curItemIndex->modifiersChanged(e->modifiers());
-
-        _modifiers = e->modifiers();
+            _curItemIndex->modifiersChanged(modifiers);
+        _modifiers = modifiers;
     }
 }
 
-IItemIndex *BbScene::selectedItems2Clipboard()
+QList<IItemIndex *> BbScene::selectedItems2Clipboard()
 {
+    QList<IItemIndex *> ret;
     auto items = selectedItems();
 
     if(items.isEmpty())
-        return nullptr;
+        return ret;
 
     auto sortOp = [](QGraphicsItem *a, QGraphicsItem *b){
         return a->zValue() < b->zValue();
@@ -374,7 +345,7 @@ IItemIndex *BbScene::selectedItems2Clipboard()
     auto bounding_right = qreal(INT_MIN);
     auto bounding_top = qreal(INT_MAX);
     auto bounding_bottom = qreal(INT_MIN);
-    MAKE_IITEMINDEX_LIST_BEGIN(first,prev);
+
     for(auto item: items)
     {
         // 忽略正在被移除的item。
@@ -391,11 +362,11 @@ IItemIndex *BbScene::selectedItems2Clipboard()
         bounding_top = (std::min)(boundingRect.top(),bounding_top);
         bounding_bottom = (std::max)(boundingRect.bottom(),bounding_bottom);
         jArr << writer->toJsonObject();
-        MAKE_IITEMINDEX_LIST(first,prev,curr);
+        ret << curr;
     }
 
     if(jArr.isEmpty())
-        return nullptr;
+        return ret;
 
     QJsonObject jObj;
     jObj["items"] = jArr;
@@ -411,29 +382,28 @@ IItemIndex *BbScene::selectedItems2Clipboard()
     mimeData->setData("nsb/bb-items",data);
     clipboard->setMimeData(mimeData);
 
-    return first;
+    return ret;
 }
 
 void BbScene::cutItems()
 {
-    auto first = selectedItems2Clipboard();
-    if(!first)
+    auto indexes = selectedItems2Clipboard();
+    if(indexes.empty())
         return;
 
-    emit blackboard()->multipleItemChanged(BBIET_itemCut,first);
+    emit blackboard()->multipleItemChanged(BBIET_itemCut,indexes);
 
-    IITEMINDEX_TRAVERSAl_BEGIN(first,curr)
-    remove(curr);
-    IITEMINDEX_TRAVERSAl_END(curr)
+    for(auto index : indexes){
+        remove(index);
+    }
 }
 
 void BbScene::copyItems()
 {
-    auto first = selectedItems2Clipboard();
-    if(!first)
+    auto indexes = selectedItems2Clipboard();
+    if(indexes.empty())
         return;
-
-    emit blackboard()->multipleItemChanged(BBIET_itemCopy,first);
+    emit blackboard()->multipleItemChanged(BBIET_itemCopy,indexes);
 }
 
 void BbScene::pasteItems()
@@ -441,7 +411,37 @@ void BbScene::pasteItems()
     auto clipboard = QApplication::clipboard();
     auto mimeData = clipboard->mimeData();
 
-    if(!mimeData || !mimeData->hasFormat("nsb/bb-items"))
+    auto a = mimeData->formats();
+
+    if(!mimeData)
+        return;
+
+    if(mimeData->hasFormat("text/plain"))
+    {
+        auto data = mimeData->data("text/plain");
+        if(data.size() == 0)
+            return;
+        auto item = factory()->createItemWhenToolDown(BBTT_Text);
+        if(!item){ // ???
+            qWarning() << __FUNCTION__ << "failed to paste text! cant create Item by tool type BBTT_Text!";
+            return;
+        }
+        auto text = dynamic_cast<BbItemText*>(item);
+        if(!text){ // ???
+            qWarning() << __FUNCTION__ << "failed to paste text! cant cast Item to Text.";
+            return;
+        }
+        add(text);
+        auto pos = blackboard()->mapToScene(10,10);
+        text->toolDown(pos);
+        text->setPlainText(QString::fromUtf8(data));
+        text->updateContent();
+        text->setupTextBlockFormat();
+        text->toolDone(pos);
+        return;
+    }
+
+    if(!mimeData->hasFormat("nsb/bb-items"))
         return;
 
     auto data = mimeData->data("nsb/bb-items");
@@ -492,7 +492,7 @@ void BbScene::pasteItems()
     auto offsetX = visionRect.left() + 0.5f * (visionRect.width() - boundingRect.width()) - boundingRect.left();
     auto offsetY = visionRect.top() + 0.5f * (visionRect.height() - boundingRect.height()) - boundingRect.top();
 
-    MAKE_IITEMINDEX_LIST_BEGIN(first,prev)
+    QList<IItemIndex*> indexes;
     for(auto jVal : jItems){
         auto curr = factory()->createItem(jVal.toObject());
         auto item = dynamic_cast<QGraphicsItem*>(curr);
@@ -511,9 +511,9 @@ void BbScene::pasteItems()
             curr->moveByVector2(20,20);
             curr->updatePrevPosition();
         }
-        MAKE_IITEMINDEX_LIST(first,prev,curr)
+        indexes << curr;
     }
-    emit blackboard()->multipleItemChanged(BBIET_itemPaste,first);
+    emit blackboard()->multipleItemChanged(BBIET_itemPaste,indexes);
 }
 
 QSizeF BbScene::backgroundSize() const
@@ -818,8 +818,6 @@ QHash<int, QRectF> BbScene::getNotEmptyPageAreas()
     qreal maxH = height();
     qreal w = width();
     qreal h = w * pageAspectRatio();
-    qreal x = 0;
-    qreal y = 0;
     auto items = this->items();
     if(items.empty())
         return ret;
@@ -843,13 +841,18 @@ QHash<int, QRectF> BbScene::getNotEmptyPageAreas()
     return ret;
 }
 
-void BbScene::groupUp(QList<QGraphicsItem*> items,QString id){
-    if(items.isEmpty())
+void BbScene::groupUp(QList<IItemIndex*> indexes, const QString &id){
+    if(indexes.isEmpty())
         return;
-    for(auto item : items){
+    QList<QGraphicsItem*> items;
+    for(auto index : indexes){
+        auto item = dynamic_cast<QGraphicsItem*>(index);
+        if(!item)
+            continue;
         item->setFlag(QGraphicsItem::ItemIsMovable,false);
         item->setFlag(QGraphicsItem::ItemIsSelectable,false);
         item->setFlag(QGraphicsItem::ItemIsFocusable,false);
+        items << item;
     }
     auto group = QGraphicsScene::createItemGroup(items);
     group->setFlag(QGraphicsItem::ItemIsMovable,true);
@@ -863,18 +866,20 @@ void BbScene::groupUp(QList<QGraphicsItem*> items,QString id){
         emit blackboard()->groupUped( { group } );
 }
 
-void BbScene::groupUp(QList<QString> itemIds,QString id)
+void BbScene::groupUp(QList<QString> itemIds, const QString &id)
 {
-    auto items = QList<QGraphicsItem*>();
-    enumAll([&items](IItemIndex *item,int idx){
-        items << dynamic_cast<QGraphicsItem*>(item);
+    QList<IItemIndex *> items;
+    enumAllItems([&items,&id](IItemIndex *item){
+        if(item->id() == id)
+            items << item;
         return false;
     });
     groupUp(items);
 }
 
-void BbScene::groupUp(QString id)
+void BbScene::groupUp(const QString &id)
 {
+    auto indexes = QList<IItemIndex*>();
     auto items = QList<QGraphicsItem*>();
     auto oldGroups = QList<QGraphicsItemGroup*>();
     for(auto item : selectedItems()){
@@ -882,11 +887,17 @@ void BbScene::groupUp(QString id)
             auto group = static_cast<QGraphicsItemGroup*>(item);
             for(auto item : group->childItems()){
                 items << item;
+                auto index = dynamic_cast<IItemIndex*>(item);
+                if(index)
+                    indexes << index;
             }
             oldGroups << group;
         }
         else if(true == item->data(BBIIDK_ITEM_IS_SHAPE).toBool()){
             items << item;
+            auto index = dynamic_cast<IItemIndex*>(item);
+            if(index)
+                indexes << index;
         }
     }
     emit blackboard()->dismissed(oldGroups);
@@ -894,7 +905,7 @@ void BbScene::groupUp(QString id)
         _groups.removeAll(group);
         destroyItemGroup(group);
     }
-    groupUp(items,id);
+    groupUp(indexes,id);
 }
 
 void BbScene::dismiss(QList<QString> ids)
@@ -1081,12 +1092,10 @@ void BbScene::add(IItemIndex *index)
 
 void BbScene::clearItems()
 {
-    auto index = enumAll(nullptr);
-    while(index)
+    auto indexes = enumAllItems();
+    for(auto index : indexes)
     {
-        auto next = index->next;
         remove(index);
-        index = next;
     }
 }
 
@@ -1246,45 +1255,40 @@ IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)
 
 void BbScene::emitItemMovingSignals()
 {
-    auto enumJob = [&](IItemIndex *index,int ){
+    auto enumJob = [&](IItemIndex *index){
         index->data()->updatePostion(index);
         emit blackboard()->itemChanged(BBIET_itemMoving,index);
         return false;
     };
-    auto index = enumSelected(enumJob);
-    emit blackboard()->multipleItemChanged(BBIET_itemMoving,index);
+    auto indexes = enumSelectedItems(enumJob);
+    emit blackboard()->multipleItemChanged(BBIET_itemMoving,indexes);
 }
 
 void BbScene::emitItemMovedSignals()
 {
     bool moved = false;
-    auto enumJob = [&](IItemIndex *index,int n){
-        if(n == 0){
-            /*
-            NOTE:
-                是一堆item被拖动的，目前还不存在不能被拖动的item。
-                若第一item位置沒有变化，就可以判定为未拖动。此时return true打断。
-                    - Gim
-            */
-            auto item = dynamic_cast<QGraphicsItem *>(index);
-            auto d = std::abs(index->data()->prevX - item->x()) +
-                     std::abs(index->data()->prevY - item->y());
-            moved = d > 0;
-            if(!moved)
-                return true;
-        }
-        return false;
+    auto enumJob = [&](IItemIndex *index){
+        /*
+        NOTE:
+            是一堆item被拖动的，目前还不存在不能被拖动的item。
+            若第一item位置沒有变化，就可以判定为未拖动。此时return true打断。
+                - Gim
+        */
+        auto item = dynamic_cast<QGraphicsItem *>(index);
+        auto d = std::abs(index->data()->prevX - item->x()) +
+                 std::abs(index->data()->prevY - item->y());
+        moved = d > 0;
+        return true;
     };
-    auto index = enumSelected(enumJob);
-    if(moved){
-        emit blackboard()->multipleItemChanged(BBIET_itemMoved,index);
-        while(index){
-            auto next = index->next;
-            auto data = index->data();
-            data->updatePostion(index);
-            emit blackboard()->itemChanged(BBIET_itemMoved,index);
-            data->updatePrevPostion();
-            index = next;
-        }
+    auto indexes = enumSelectedItems(enumJob);
+    if(!moved)
+        return;
+
+    emit blackboard()->multipleItemChanged(BBIET_itemMoved,indexes);
+    for(auto index :indexes){
+        auto data = index->data();
+        data->updatePostion(index);
+        emit blackboard()->itemChanged(BBIET_itemMoved,index);
+        data->updatePrevPostion();
     }
 }

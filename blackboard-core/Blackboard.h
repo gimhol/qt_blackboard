@@ -254,8 +254,8 @@ public:
 signals:
     void scrolled(qreal x, qreal y);
 
-    void itemChanged(BBItemEventType eventType,IItemIndex *index);
-    void multipleItemChanged(BBItemEventType eventType,IItemIndex *first);
+    void itemChanged(BBItemEventType eventType, IItemIndex *index);
+    void multipleItemChanged(BBItemEventType eventType, QList<IItemIndex*>list);
 
     void groupUped(QList<QGraphicsItemGroup *> groups);
     void dismissed(QList<QGraphicsItemGroup *> groups);
