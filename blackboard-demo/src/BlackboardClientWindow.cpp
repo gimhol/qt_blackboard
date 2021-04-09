@@ -129,7 +129,12 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
     connect(menu,&BbMenu::toast,ui->textBrowser,&QTextBrowser::append);
 
     _connector = new BlackboardConnector(ui->blackboard);
-
+    connect(_connector->client(),&BlackboardClient::msgRead,this,[&](){
+        auto type = _connector->client()->msgType();
+        auto msg = QJsonDocument::fromBinaryData(_connector->client()->msgBody());
+        auto text = QStringLiteral("msg read:[%1]%2").arg(type).arg(msg.toJson().data());
+        ui->textBrowser->append(text);
+    },Qt::DirectConnection);
 
     QMap<Qt::PenStyle,QString> penStyles = {
         {Qt::NoPen,"NoPen"},

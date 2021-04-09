@@ -878,3 +878,8 @@ void BlackboardConnector::onRemoteTriangleDone()
          return;
      copy->done();
 }
+
+QPointer<BlackboardClient> BlackboardConnector::client()
+{
+    return _me;
+}
