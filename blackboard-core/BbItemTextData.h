@@ -12,6 +12,7 @@
 class NSB_BLACKBOARD_EXPORT BbItemTextData : public BbItemData
 {
 public:
+    friend class BbItemText;
     static const qreal &getMinFontSize();
     static const qreal &getMaxFontSize();
     static const QFont &getDefalutFont();
@@ -20,11 +21,11 @@ public:
     static void setMaxFontSize(const qreal &value);
     static void setDefalutFont(const QFont &value);
     static void setDefalutColor(const QColor &value);
-
     /**
      * @brief font 当前字体
      */
     QFont font;
+
     /**
      * @brief color 当前颜色
      */
@@ -53,6 +54,8 @@ public:
     QJsonObject toJsonObject() override;
 
     void fromJsonObject(const QJsonObject &jobj) override;
+
+    void setFont(const QFont &font);
 };
 
 #endif // BBITEMTEXTDATA_H

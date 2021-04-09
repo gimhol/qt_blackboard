@@ -100,3 +100,10 @@ void BbItemTextData::fromJsonObject(const QJsonObject &jobj)
     empty = text.length() == 0;
     setFontSizeFactor(jobj["font_size_factor"].toDouble());
 }
+
+void BbItemTextData::setFont(const QFont &font)
+{
+    auto factor = fontSizeFactor();
+    this->font = font;
+    setFontSizeFactor(factor);
+}

@@ -560,7 +560,7 @@ void BlackboardClientWindow::on_btnFont_clicked()
         return;
     qDebug() << font.family().toUtf8().data() << font.bold() << font.italic() << font.pointSize();
     auto settings = ui->blackboard->toolSettings<BbItemTextData>(BBTT_Text);
-    settings->font = font;
+    settings->setFont(font);
 }
 
 static QStringList loadFont(const QString& path)
@@ -609,5 +609,5 @@ void BlackboardClientWindow::on_btnFontFile_clicked()
         ui->textBrowser->append(family);
     }
     auto settings = ui->blackboard->toolSettings<BbItemTextData>(BBTT_Text);
-    settings->font = QFont(fontFamilys.at(0));
+    settings->setFont(fontFamilys.at(0));
 }
