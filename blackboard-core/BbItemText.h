@@ -57,6 +57,8 @@ public:
 
     bool isEmpty();
 
+    void setText(QString text, bool emitSignal = false);
+
     // ItemDataWR interface
 public:
     virtual void writeStream(QDataStream &stream) override;

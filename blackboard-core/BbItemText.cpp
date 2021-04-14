@@ -41,9 +41,7 @@ void BbItemText::init()
     setData(BBIIDK_ITEM_IS_SHAPE,true);
     document()->setPlainText(_data->text);
     setupTextBlockFormat();
-    connect(document(), &QTextDocument::contentsChanged, this,[&](){
-        updateContent();
-    });
+    connect(document(), &QTextDocument::contentsChanged, this, &BbItemText::updateContent);
 }
 
 void BbItemText::setupTextBlockFormat()
@@ -248,6 +246,22 @@ QString BbItemText::text()
 bool BbItemText::isEmpty()
 {
     return toPlainText().replace(QRegExp("\\s"),"").isEmpty();
+}
+
+void BbItemText::setText(QString text, bool emitSignal)
+{
+
+    if(!emitSignal)
+        disconnect(document(), &QTextDocument::contentsChanged, this, &BbItemText::updateContent);
+
+    _data->text = text;
+    _lastContent = text;
+    document()->setPlainText(text);
+    setupTextBlockFormat();
+
+    if(!emitSignal)
+        connect(document(), &QTextDocument::contentsChanged, this, &BbItemText::updateContent);
+
 }
 
 void BbItemText::writeStream(QDataStream &stream)

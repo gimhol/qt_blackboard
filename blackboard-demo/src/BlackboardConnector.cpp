@@ -353,8 +353,8 @@ void BlackboardConnector::onLocalRectDown(IItemIndex *index)
     jobj["z"] = item->z();
     jobj["x"] = item->data()->x/_bb->canvasWidth();
     jobj["y"] = item->data()->y/_bb->canvasWidth();
-    jobj["w"] = item->data()->size.width()/_bb->canvasWidth();
-    jobj["h"] = item->data()->size.height()/_bb->canvasWidth();
+    jobj["w"] = item->data()->width/_bb->canvasWidth();
+    jobj["h"] = item->data()->height/_bb->canvasWidth();
     _me->send(BBIET_rectDown,QJsonDocument(jobj).toBinaryData());
 }
 
@@ -367,8 +367,8 @@ void BlackboardConnector::onLocalRectDraw(IItemIndex *index)
     jobj["id"] = item->id();
     jobj["x"] = item->data()->x/_bb->canvasWidth();
     jobj["y"] = item->data()->y/_bb->canvasWidth();
-    jobj["w"] = item->data()->size.width()/_bb->canvasWidth();
-    jobj["h"] = item->data()->size.height()/_bb->canvasWidth();
+    jobj["w"] = item->data()->width/_bb->canvasWidth();
+    jobj["h"] = item->data()->height/_bb->canvasWidth();
     _me->send(BBIET_rectDraw,QJsonDocument(jobj).toBinaryData());
 }
 
@@ -394,8 +394,8 @@ void BlackboardConnector::onLocalEllipseDown(IItemIndex *index)
     jobj["z"] = item->z();
     jobj["x"] = item->data()->x/_bb->canvasWidth();
     jobj["y"] = item->data()->y/_bb->canvasWidth();
-    jobj["w"] = item->data()->size.width()/_bb->canvasWidth();
-    jobj["h"] = item->data()->size.height()/_bb->canvasWidth();
+    jobj["w"] = item->data()->width/_bb->canvasWidth();
+    jobj["h"] = item->data()->height/_bb->canvasWidth();
     _me->send(BBIET_ellipseDown,QJsonDocument(jobj).toBinaryData());
 }
 
@@ -408,8 +408,8 @@ void BlackboardConnector::onLocalEllipseDraw(IItemIndex *index)
     jobj["id"] = item->id();
     jobj["x"] = item->data()->x/_bb->canvasWidth();
     jobj["y"] = item->data()->y/_bb->canvasWidth();
-    jobj["w"] = item->data()->size.width()/_bb->canvasWidth();
-    jobj["h"] = item->data()->size.height()/_bb->canvasWidth();
+    jobj["w"] = item->data()->width/_bb->canvasWidth();
+    jobj["h"] = item->data()->height/_bb->canvasWidth();
     _me->send(BBIET_ellipseDraw,QJsonDocument(jobj).toBinaryData());
 }
 
@@ -877,4 +877,9 @@ void BlackboardConnector::onRemoteTriangleDone()
      if(!copy)
          return;
      copy->done();
+}
+
+QPointer<BlackboardClient> BlackboardConnector::client()
+{
+    return _me;
 }

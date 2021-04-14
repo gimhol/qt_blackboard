@@ -100,6 +100,7 @@ public:
     void onRemoteTriangleDraw();
     void onRemoteTriangleDone();
 
+    QPointer<BlackboardClient> client();
 protected:
     QPointer<Blackboard> _bb;
     QPointer<BlackboardClient> _me;

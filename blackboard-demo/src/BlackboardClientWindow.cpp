@@ -129,7 +129,12 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
     connect(menu,&BbMenu::toast,ui->textBrowser,&QTextBrowser::append);
 
     _connector = new BlackboardConnector(ui->blackboard);
-
+    connect(_connector->client(),&BlackboardClient::msgRead,this,[&](){
+        auto type = _connector->client()->msgType();
+        auto msg = QJsonDocument::fromBinaryData(_connector->client()->msgBody());
+        auto text = QStringLiteral("msg read:[%1]%2").arg(type).arg(msg.toJson().data());
+        ui->textBrowser->append(text);
+    },Qt::DirectConnection);
 
     QMap<Qt::PenStyle,QString> penStyles = {
         {Qt::NoPen,"NoPen"},
@@ -560,7 +565,7 @@ void BlackboardClientWindow::on_btnFont_clicked()
         return;
     qDebug() << font.family().toUtf8().data() << font.bold() << font.italic() << font.pointSize();
     auto settings = ui->blackboard->toolSettings<BbItemTextData>(BBTT_Text);
-    settings->font = font;
+    settings->setFont(font);
 }
 
 static QStringList loadFont(const QString& path)
@@ -609,5 +614,5 @@ void BlackboardClientWindow::on_btnFontFile_clicked()
         ui->textBrowser->append(family);
     }
     auto settings = ui->blackboard->toolSettings<BbItemTextData>(BBTT_Text);
-    settings->font = QFont(fontFamilys.at(0));
+    settings->setFont(fontFamilys.at(0));
 }
