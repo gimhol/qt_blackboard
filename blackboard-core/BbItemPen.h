@@ -20,12 +20,6 @@ protected:
     QPixmap _pixmap;
 #endif
 
-#ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
-    QList<QPointF> _temp;
-
-    float _distances[3];
-#endif
-
     QPainterPath _path;
 
     QList<QPointF> _changed;
@@ -76,10 +70,6 @@ protected:
     void straightLineDragging(const QPointF &point);
 
     void addPointToPath(const QPointF &point);
-
-#ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
-    void appendPointSmoothing(const QPointF &point);
-#endif
 
     // ItemDataWR interface
 public:

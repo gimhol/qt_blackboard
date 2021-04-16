@@ -6,23 +6,6 @@
 #include <QDebug>
 #include <QMessageBox>
 
-#ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
-float penSqrt(float number)
-{
-    long i;
-    float x, y;
-    const float f = 1.5F;
-    x = number * 0.5F;
-    y = number;
-    i = * ( long * ) &y;
-    i = 0x5f3759df - ( i >> 1 ); //魔术数
-    y = * ( float * ) &i;
-    y = y * ( f - ( x * y * y ) ); //迭代1 1/sqrt(number)
-    return number * y;
-}
-#endif
-
-
 #ifdef NSB_PEN_DEBUG
 static int deconstruct_count = 0;
 static int construct_count = 0;
@@ -54,11 +37,6 @@ void BbItemPen::init()
     {
         _data = Blackboard::defaultFactory()->createItemData<BbItemPenData>(BBTT_Pen);
     }
-#ifdef LINE_SMOOTHING
-    _distances[0] = -1;
-    _distances[1] = -1;
-    _distances[2] = -1;
-#endif
     setId(_data->lid);
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
@@ -141,11 +119,7 @@ void BbItemPen::penDraw(const QPointF &point)
 
     _mousePos = point;
 
-#ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
-    appendPointSmoothing(point);
-#else
     addPointToPath(point);
-#endif
     setRect(_rect);
 
     update();
@@ -305,76 +279,6 @@ void BbItemPen::addPointToPath(const QPointF &point)
     _rect.setHeight(_rect.height()+2*halfPenW);
     _data->fixPostion(this);
 }
-
-#ifdef NSB_BLACKBOARD_PEN_ITEM_SMOOTHING
-void BbItemPen::appendPointSmoothing(const QPointF &point)
-{
-    qreal halfPenW = 0.5 * _data->pen.widthF();
-    _temp.append(point - QPointF(halfPenW,halfPenW));
-    if(_temp.length() == 4){
-        // 曲线圆滑
-
-        const QPointF *a = &_temp.at(0);
-        const QPointF *b = &_temp.at(1);
-        const QPointF *c = &_temp.at(2);
-        const QPointF *d = &_temp.at(3);
-
-        static int cutting = 0;
-        static qreal t, tt, ttt, tt2, tt3, ttt2 = 0;
-
-        if(_distances[1] < 0){
-            _distances[0] = penSqrt(
-                                    std::powf(float(b->x()-a->x()),2) +
-                                    std::powf(float(b->y()-a->y()),2)
-                                    );
-        }
-        else{
-            _distances[0] = _distances[1];
-        }
-
-        if(_distances[2] < 0){
-            _distances[1] = penSqrt(
-                        std::powf(float(b->x()-c->x()),2) +
-                        std::powf(float(b->y()-c->y()),2)
-                        );
-        }else{
-            _distances[1] = _distances[2];
-        }
-        _distances[2] = penSqrt(
-                    std::powf(float(d->x()-c->x()),2) +
-                    std::powf(float(d->y()-c->y()),2)
-                    );
-
-        cutting = int(_distances[1] / NSB_BLACKBOARD_PEN_SMOOTHING_UNIT);
-        if (cutting > 0 && _distances[0] * 2 > 0.1f * (_distances[1] + _distances[2])) {
-
-            for (int i = 0; i < cutting; ++i) {
-                t = qreal(i) / (cutting);
-                tt = t*t;
-                ttt = tt*t;
-                tt2 = tt*2;
-                tt3 = tt*3;
-                ttt2 = ttt*2;
-                QPointF p =
-                        (*b) * (ttt2 - tt3 + 1) +
-                        (*c) * (-ttt2 + tt3 ) +
-                        0.5 * ((*c)-(*a)) * (ttt - tt2 + t) +
-                        0.5 * ((*d)-(*b))  * (ttt - tt);
-
-                addPointToPath(p);
-            }
-        }
-        else {
-            addPointToPath(*c);
-        }
-        _temp.pop_front();
-    }
-    else if(_temp.length() == 1)
-    {
-        addPointToPath(point- QPointF(halfPenW,halfPenW));
-    }
-}
-#endif
 
 void BbItemPen::repaint()
 {
