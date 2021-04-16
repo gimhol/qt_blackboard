@@ -373,3 +373,10 @@ void BbItemTail::absolutize()
         }
     }
 }
+
+void BbItemTail::added()
+{
+    setFlag(QGraphicsItem::ItemIsMovable,false);
+    setFlag(QGraphicsItem::ItemIsSelectable,false);
+    setFlag(QGraphicsItem::ItemIsFocusable,false);
+}

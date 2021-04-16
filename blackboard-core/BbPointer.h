@@ -3,10 +3,15 @@
 #include "BbHeader.h"
 #include <QWidget>
 class BbPointerPrivate;
+
 class NSB_BLACKBOARD_EXPORT BbPointer : public QWidget
 {
     Q_OBJECT
 public:
+    static QPixmap createPointerPixmap(
+            const QPixmap &pixmap, const QPointF &pixmapAnchor,
+            const QFont &font, const QString &text, const QPointF &textAnchor);
+
     explicit BbPointer(QWidget *parent = nullptr);
 
     ~BbPointer() override;
@@ -19,13 +24,15 @@ public:
 
     BbPointer *setTextAnchor(const QPointF &textAnchor);
 
-    void pixmap();
+    const QFont &font() const;
 
-    void text();
+    QPixmap pixmap() const;
 
-    void pixmapAnchor();
+    QString text() const;
 
-    void textAnchor();
+    QPointF pixmapAnchor() const;
+
+    QPointF textAnchor() const;
 protected:
     void updatePixmap();
 

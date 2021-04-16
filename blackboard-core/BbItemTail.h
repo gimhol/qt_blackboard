@@ -74,6 +74,7 @@ public:
     void toolUp(const QPointF &pos) override;
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void absolutize() override;
+    void added() override;
 };
 
 #endif // BBITEMTAIL_H
