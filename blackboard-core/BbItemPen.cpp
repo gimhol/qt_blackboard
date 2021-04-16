@@ -381,6 +381,8 @@ void BbItemPen::repaint()
     _path.clear();
     auto coords = _data->coords;
     _data->coords = QList<qreal>();
+    auto finalX = _data->x;
+    auto finalY = _data->y;
     for(int i = 0; i < coords.length(); i+=2)
     {
         QPointF point(coords[i], coords[i+1]);
@@ -392,6 +394,8 @@ void BbItemPen::repaint()
             done();
     }
     _changed.clear();
+    _data->x = finalX;
+    _data->y = finalY;
     if(_data->isPositionValid())
     {
         moveToPosition(_data->x,_data->y);

@@ -70,7 +70,7 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
     ui->blackboardHeight->setValue(1000);
     QButtonGroup * buttonGroup = new QButtonGroup(this);
     buttonGroup->addButton(ui->picker,BBTT_Picker);
-    buttonGroup->addButton(ui->pen,BBTT_Pen2);
+    buttonGroup->addButton(ui->pen,BBTT_Pen);
     buttonGroup->addButton(ui->text,BBTT_Text);
     buttonGroup->addButton(ui->pointer,BBTT_Pointer);
     buttonGroup->addButton(ui->straight,BBTT_Straight);
@@ -86,7 +86,7 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
         blackboard()->setToolType(BbToolType(id));
     });
 
-    auto bbtts = QList<BbToolType>({BBTT_Pen2,
+    auto bbtts = QList<BbToolType>({BBTT_Pen,
                                     BBTT_Pen,
                                     BBTT_Straight,
                                     BBTT_Text,
@@ -98,7 +98,7 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
         itemSettings[bbtt] = blackboard()->toolSettings(bbtt);
 
 
-    auto penSetting = blackboard()->toolSettings(BBTT_Pen2);
+    auto penSetting = blackboard()->toolSettings(BBTT_Pen);
     ui->penWeight->setValue(int(penSetting->weight()*100));
     ui->penColor->setColor(penSetting->pen.color());
     ui->penColor->setProperty("WhichColor",WhichColor_Pen);

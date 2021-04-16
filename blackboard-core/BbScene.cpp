@@ -500,9 +500,15 @@ void BbScene::pasteItems()
     for(auto jVal : jItems)
     {
         auto curr = factory()->createItem(jVal.toObject());
+        if(!curr)
+        {
+            qWarning() << __FUNCTION__ << "failed to createItem by JSON object!" << jVal;
+            continue;
+        }
         auto item = curr->item();
         if(!item)
         {
+            qWarning() << __FUNCTION__ << "failed to cast ItemIndex to QGraphicsItem!";
             continue;
         }
         curr->setId(factory()->makeItemId(curr->toolType()));
