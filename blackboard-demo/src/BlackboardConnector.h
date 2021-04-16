@@ -28,6 +28,11 @@ public:
 
     void onLocalItemChanged(BBItemEventType eventType,IItemIndex *index);
 
+    void onLocalTailDown(IItemIndex *index);
+    void onLocalTailDraw(IItemIndex *index);
+    void onLocalTailStraighting(IItemIndex *index);
+    void onLocalTailDone(IItemIndex *index);
+
     void onLocalPenDown(IItemIndex *index);
     void onLocalPenDraw(IItemIndex *index);
     void onLocalPenStraighting(IItemIndex *index);
@@ -76,6 +81,11 @@ public:
     void onRemoteItemsMoving();
     void onRemoteItemsMoved();
     void onRemoteItemsDelete();
+
+    void onRemoteTailDown();
+    void onRemoteTailDraw();
+    void onRemoteTailStraighting();
+    void onRemoteTailDone();
 
     void onRemotePenDown();
     void onRemotePenDraw();
