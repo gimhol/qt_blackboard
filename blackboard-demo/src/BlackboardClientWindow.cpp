@@ -70,13 +70,14 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
     ui->blackboardHeight->setValue(1000);
     QButtonGroup * buttonGroup = new QButtonGroup(this);
     buttonGroup->addButton(ui->picker,BBTT_Picker);
-    buttonGroup->addButton(ui->pen,BBTT_Pen);
+    buttonGroup->addButton(ui->pen,BBTT_Pen2);
     buttonGroup->addButton(ui->text,BBTT_Text);
     buttonGroup->addButton(ui->pointer,BBTT_Pointer);
     buttonGroup->addButton(ui->straight,BBTT_Straight);
     buttonGroup->addButton(ui->rect,BBTT_Rectangle);
     buttonGroup->addButton(ui->ellipse,BBTT_Ellipse);
     buttonGroup->addButton(ui->triangle,BBTT_Triangle);
+    buttonGroup->addButton(ui->tail,BBTT_Tail);
     ui->blackboard->setFactory(new DemoBbFactory(this));
     ui->blackboard->setToolType(BBTT_Pointer);
     ui->pointer->setChecked(true);
@@ -85,17 +86,19 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
         blackboard()->setToolType(BbToolType(id));
     });
 
-    auto bbtts = QList<BbToolType>({BBTT_Pen,
+    auto bbtts = QList<BbToolType>({BBTT_Pen2,
+                                    BBTT_Pen,
                                     BBTT_Straight,
                                     BBTT_Text,
                                     BBTT_Rectangle,
                                     BBTT_Ellipse,
-                                    BBTT_Triangle});
+                                    BBTT_Triangle,
+                                    BBTT_Tail});
     for(auto bbtt: bbtts)
         itemSettings[bbtt] = blackboard()->toolSettings(bbtt);
 
 
-    auto penSetting = blackboard()->toolSettings(BBTT_Pen);
+    auto penSetting = blackboard()->toolSettings(BBTT_Pen2);
     ui->penWeight->setValue(int(penSetting->weight()*100));
     ui->penColor->setColor(penSetting->pen.color());
     ui->penColor->setProperty("WhichColor",WhichColor_Pen);
@@ -615,4 +618,6 @@ void BlackboardClientWindow::on_btnFontFile_clicked()
     }
     auto settings = ui->blackboard->toolSettings<BbItemTextData>(BBTT_Text);
     settings->setFont(fontFamilys.at(0));
+
+    QApplication::setFont(fontFamilys.at(0));
 }

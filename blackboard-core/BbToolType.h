@@ -13,6 +13,7 @@ enum BbToolType{
     BBTT_Pointer = 3001,
     BBTT_Image = 4000,
     BBTT_Pen2 = 5000,
+    BBTT_Tail = 6000, // 拖尾
 };
 
 #endif // CANVASTOOLTYPE_H
