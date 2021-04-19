@@ -1,6 +1,7 @@
 INCLUDEPATH += $$PWD
 
 HEADERS += \
+    $$PWD/BbCursor.h \
     $$PWD/BbFactory.h \
     $$PWD/BbHeader.h \
     $$PWD/BbHelper.h \
@@ -31,10 +32,10 @@ HEADERS += \
     $$PWD/BbItemTriangle.h \
     $$PWD/BbItemImageData.h \
     $$PWD/BbItemImage.h \
-    $$PWD/BbPointer.h \
     $$PWD/BBItemEventType.h
 
 SOURCES += \
+    $$PWD/BbCursor.cpp \
     $$PWD/BbFactory.cpp \
     $$PWD/BbHelper.cpp \
     $$PWD/BbItemDeleter.cpp \
@@ -59,5 +60,4 @@ SOURCES += \
     $$PWD/BbItemTriangle.cpp \
     $$PWD/BbItemImageData.cpp \
     $$PWD/BbItemImage.cpp \
-    $$PWD/BbPointer.cpp \
     $$PWD/IItemIndex.cpp

@@ -10,6 +10,10 @@ class BlackboardConnector: public QObject
     Q_OBJECT
 public:
     BlackboardConnector(Blackboard *blackboard);
+    QString name() const;
+    void setName(const QString &name);
+    QString id() const;
+    void setId(const QString &id);
 
     bool isConnected();
     void connectToServer(const QString &hostName, quint16 port);
@@ -114,6 +118,8 @@ public:
 protected:
     QPointer<Blackboard> _bb;
     QPointer<BlackboardClient> _me;
+    QString _name;
+    QString _id;
 };
 
 #endif // BLACKBOARDCONNECTOR_H

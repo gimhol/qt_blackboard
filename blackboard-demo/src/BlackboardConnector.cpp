@@ -32,6 +32,26 @@ BlackboardConnector::BlackboardConnector(Blackboard *blackboard):
     connect(_me,&BlackboardClient::msgRead,this,&BlackboardConnector::onMeMsgRead);
 }
 
+
+QString BlackboardConnector::id() const
+{
+    return _id;
+}
+void BlackboardConnector::setId(const QString &id)
+{
+    _id = id;
+}
+
+QString BlackboardConnector::name() const
+{
+    return _name;
+}
+
+void BlackboardConnector::setName(const QString &name)
+{
+    _name = name;
+}
+
 bool BlackboardConnector::isConnected()
 {
     return _me->isConnected();
@@ -57,7 +77,8 @@ void BlackboardConnector::onLocalBlackboardScrolled(float x, float y)
 
 void BlackboardConnector::onLocalPointerShown(QPoint localPoint){
     QJsonObject jobj;
-    jobj["id"] = "remote_pointer";
+    jobj["id"] = _id;
+    jobj["name"] = _name;
     jobj["x"] = localPoint.x();
     jobj["y"] = localPoint.y();
     _me->send(MsgTypeBlackboardPointerShown,QJsonDocument(jobj).toBinaryData());
@@ -65,7 +86,7 @@ void BlackboardConnector::onLocalPointerShown(QPoint localPoint){
 
 void BlackboardConnector::onLocalPointerMoving(QPoint localPoint){
     QJsonObject jobj;
-    jobj["id"] = "remote_pointer";
+    jobj["id"] = _id;
     jobj["x"] = localPoint.x();
     jobj["y"] = localPoint.y();
     _me->send(MsgTypeBlackboardPointerMoving,QJsonDocument(jobj).toBinaryData());
@@ -73,7 +94,7 @@ void BlackboardConnector::onLocalPointerMoving(QPoint localPoint){
 
 void BlackboardConnector::onLocalPointerMoved(QPoint localPoint){
     QJsonObject jobj;
-    jobj["id"] = "remote_pointer";
+    jobj["id"] = _id;
     jobj["x"] = localPoint.x();
     jobj["y"] = localPoint.y();
     _me->send(MsgTypeBlackboardPointerMoved,QJsonDocument(jobj).toBinaryData());
@@ -81,7 +102,7 @@ void BlackboardConnector::onLocalPointerMoved(QPoint localPoint){
 
 void BlackboardConnector::onLocalPointerHidden(QPoint){
     QJsonObject jobj;
-    jobj["id"] = "remote_pointer";
+    jobj["id"] = _id;
     _me->send(MsgTypeBlackboardPointerHidden,QJsonDocument(jobj).toBinaryData());
 }
 
@@ -654,25 +675,26 @@ void BlackboardConnector::onRemoteBlackboardScrolled(){
             jobj["x"].toDouble() * _bb->canvasWidth(),
             jobj["y"].toDouble() * _bb->canvasWidth());
 }
-
+#include <BbCursor.h>
 void BlackboardConnector::onRemotePointerShown(){
     auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
-    _bb->movePointer(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
+    auto cursor = _bb->addRemoteCursor(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
+    cursor->setText(jobj["name"].toString());
 }
 
 void BlackboardConnector::onRemotePointerMoving(){
     auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
-    _bb->movePointer(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
+    _bb->moveRemoteCursor(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
 }
 
 void BlackboardConnector::onRemotePointerMoved(){
     auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
-    _bb->movePointer(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
+    _bb->moveRemoteCursor(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
 }
 
 void BlackboardConnector::onRemotePointerHidden(){
     auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
-    _bb->hidePointer(jobj["id"].toString());
+    _bb->removeRemoteCursor(jobj["id"].toString());
 }
 
 void BlackboardConnector::onRemoteItemsMoving()

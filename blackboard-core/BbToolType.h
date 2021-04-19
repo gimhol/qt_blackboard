@@ -10,7 +10,9 @@ enum BbToolType{
     BBTT_Ellipse = 2003,    // 椭圆
     BBTT_Triangle = 2004,    // 三角
     BBTT_Picker = 3000,
+
     BBTT_Pointer = 3001,
+
     BBTT_Image = 4000,
     BBTT_Pen2 = 5000,
     BBTT_Tail = 6000, // 拖尾
