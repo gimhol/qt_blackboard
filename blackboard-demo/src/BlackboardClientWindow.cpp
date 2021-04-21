@@ -36,6 +36,7 @@
 #include <QFontDialog>
 #include <QFileDialog>
 #include <QFontDataBase.h>
+#include <QCursor>
 
 static QNetworkAccessManager *networkManager()
 {
@@ -77,6 +78,7 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
     buttonGroup->addButton(ui->rect,BBTT_Rectangle);
     buttonGroup->addButton(ui->ellipse,BBTT_Ellipse);
     buttonGroup->addButton(ui->triangle,BBTT_Triangle);
+    buttonGroup->addButton(ui->tail,BBTT_Tail);
     ui->blackboard->setFactory(new DemoBbFactory(this));
     ui->blackboard->setToolType(BBTT_Pointer);
     ui->pointer->setChecked(true);
@@ -86,11 +88,13 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
     });
 
     auto bbtts = QList<BbToolType>({BBTT_Pen,
+                                    BBTT_Pen,
                                     BBTT_Straight,
                                     BBTT_Text,
                                     BBTT_Rectangle,
                                     BBTT_Ellipse,
-                                    BBTT_Triangle});
+                                    BBTT_Triangle,
+                                    BBTT_Tail});
     for(auto bbtt: bbtts)
         itemSettings[bbtt] = blackboard()->toolSettings(bbtt);
 
@@ -112,23 +116,43 @@ BlackboardClientWindow::BlackboardClientWindow(QWidget *parent) :
     connect(ui->textColor,&ColorDisplayer::clicked,
             this,&BlackboardClientWindow::onColorDisplayerClicked);
 
-    QPixmap pm(5,5);
-    pm.fill("red");
+    QPixmap pm(15,20);
+    pm.fill("transparent");
+
+    QPainter painter(&pm);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(QPen(QColor(0,0,0,100),2,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin));
+    painter.setBrush(Qt::white);
+    QPolygon polygon({QPoint(1,0),
+                      QPoint(1,19),
+                      QPoint(14,14)});
+    painter.drawPolygon(polygon);
+
+
     ui->blackboardWidth->setValue(1120);
     ui->blackboardHeight->setValue(690);
     ui->blackboard->setCanvasSize(
                 ui->blackboardWidth->value(),
                 ui->blackboardHeight->value()
                 );
-    ui->blackboard->setPointerPixmap(pm);
-//    ui->blackboard->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//    ui->blackboard->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->blackboard->setPointerPixmap(pm,QPointF(0,0));
+    ui->blackboard->setToolCursor(BBTT_Pointer, QCursor(pm,1,1));
+    ui->blackboard->setToolCursor(BBTT_Picker, QCursor(pm,1,1));
+    ui->blackboard->setToolCursor(BBTT_Tail, QCursor(pm,1,1));
+    ui->blackboard->setToolCursor(BBTT_Pen, QCursor(pm,1,1));
+    ui->blackboard->setToolCursor(BBTT_Pen2, QCursor(pm,1,1));
+    ui->blackboard->setToolCursor(BBTT_Rectangle, QCursor(pm,1,1));
+    ui->blackboard->setToolCursor(BBTT_Ellipse, QCursor(pm,1,1));
+    ui->blackboard->setToolCursor(BBTT_Straight, QCursor(pm,1,1));
+
     ui->blackboard->setContextMenuPolicy(Qt::CustomContextMenu);
 
     auto menu = new BbMenu(ui->blackboard);
     connect(menu,&BbMenu::toast,ui->textBrowser,&QTextBrowser::append);
 
     _connector = new BlackboardConnector(ui->blackboard);
+    connect(this,&QWidget::windowTitleChanged,_connector,&BlackboardConnector::setName);
+    connect(this,&QWidget::windowTitleChanged,_connector,&BlackboardConnector::setId);
     connect(_connector->client(),&BlackboardClient::msgRead,this,[&](){
         auto type = _connector->client()->msgType();
         auto msg = QJsonDocument::fromBinaryData(_connector->client()->msgBody());
@@ -615,4 +639,6 @@ void BlackboardClientWindow::on_btnFontFile_clicked()
     }
     auto settings = ui->blackboard->toolSettings<BbItemTextData>(BBTT_Text);
     settings->setFont(fontFamilys.at(0));
+
+    QApplication::setFont(fontFamilys.at(0));
 }

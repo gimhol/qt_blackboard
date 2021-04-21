@@ -1,6 +1,7 @@
 INCLUDEPATH += $$PWD
 
 HEADERS += \
+    $$PWD/BbCursor.h \
     $$PWD/BbFactory.h \
     $$PWD/BbHeader.h \
     $$PWD/BbHelper.h \
@@ -8,6 +9,8 @@ HEADERS += \
     $$PWD/BbItemInnerDataKey.h \
     $$PWD/BbItemPen2.h \
     $$PWD/BbItemPenData2.h \
+    $$PWD/BbItemTail.h \
+    $$PWD/BbItemTailData.h \
     $$PWD/BbScene.h \
     $$PWD/IJsonWR.h \
     $$PWD/IStreamWR.h \
@@ -29,15 +32,17 @@ HEADERS += \
     $$PWD/BbItemTriangle.h \
     $$PWD/BbItemImageData.h \
     $$PWD/BbItemImage.h \
-    $$PWD/BbPointer.h \
     $$PWD/BBItemEventType.h
 
 SOURCES += \
+    $$PWD/BbCursor.cpp \
     $$PWD/BbFactory.cpp \
     $$PWD/BbHelper.cpp \
     $$PWD/BbItemDeleter.cpp \
     $$PWD/BbItemPen2.cpp \
     $$PWD/BbItemPenData2.cpp \
+    $$PWD/BbItemTail.cpp \
+    $$PWD/BbItemTailData.cpp \
     $$PWD/BbScene.cpp \
     $$PWD/Blackboard.cpp \
     $$PWD/BbItemPen.cpp \
@@ -55,5 +60,4 @@ SOURCES += \
     $$PWD/BbItemTriangle.cpp \
     $$PWD/BbItemImageData.cpp \
     $$PWD/BbItemImage.cpp \
-    $$PWD/BbPointer.cpp \
     $$PWD/IItemIndex.cpp

@@ -1,32 +1,28 @@
-﻿#ifndef CANVASELEMENTPEN3_HPP
-#define CANVASELEMENTPEN3_HPP
+﻿#ifndef BBITEMTAIL_H
+#define BBITEMTAIL_H
 
 #include <QGraphicsItem>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
+#include <QTimer>
 #include "IStreamWR.h"
 #include "IItemIndex.h"
 #include "IJsonWR.h"
 
-class BbItemPenData;
-class NSB_BLACKBOARD_EXPORT BbItemPen :
+class BbItemTailData;
+class NSB_BLACKBOARD_EXPORT BbItemTail :
+        public QObject,
         public QGraphicsRectItem,
-        public IItemIndex,
-        public IStreamWR,
-        public IJsonWR{
+        public IItemIndex{
     BB_HIDE_POS_SETTER
 protected:
-#ifdef NSB_SAVE_PEN_TO_PIXMAP_WHEN_DONE
-    QPixmap _pixmap;
-#endif
-
     QPainterPath _path;
 
     QList<QPointF> _changed;
 
     QRectF _rect;
 
-    BbItemPenData * _data;
+    BbItemTailData * _data;
 
     /*直线相关的变量*/
     bool _straight = false;     // 是否开启了直线模式。
@@ -34,13 +30,12 @@ protected:
     QPointF _straightFrom = QPointF(-999999,-999999);  // 直线的起点。
     QPointF _straightTo = QPointF(-999999,-999999);    // 直线的终点。
     QPointF _mousePos;
-    bool _editing = false;
 public:
-    BbItemPen();
+    BbItemTail();
 
-    BbItemPen(BbItemData * data);
+    BbItemTail(BbItemData * data);
 
-    virtual ~BbItemPen() override;
+    virtual ~BbItemTail() override;
 
     void init();
 
@@ -71,17 +66,6 @@ protected:
 
     void addPointToPath(const QPointF &point);
 
-    // ItemDataWR interface
-public:
-    virtual void writeStream(QDataStream &steam) override;
-    virtual void readStream(QDataStream &steam) override;
-
-
-    // IJsonWR interface
-public:
-    virtual QJsonObject toJsonObject() override;
-    virtual void fromJsonObject(const QJsonObject &jobj) override;
-
     // IItemIndex interface
 public:
    BbItemData *data() override;
@@ -90,7 +74,7 @@ public:
     void toolUp(const QPointF &pos) override;
     void modifiersChanged(Qt::KeyboardModifiers modifiers) override;
     void absolutize() override;
-    bool isEditing() override;
+    void added() override;
 };
 
-#endif // CANVASELEMENTPEN3_HPP
+#endif // BBITEMTAIL_H

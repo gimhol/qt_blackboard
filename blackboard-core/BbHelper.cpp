@@ -5,6 +5,7 @@ IItemIndex *BbHelper::createItemWhenToolDown(BbToolType bbtt)
 {
     switch(bbtt)
     {
+    case BBTT_Tail: return new BbItemTail();
     case BBTT_Pen2: return new BbItemPen2();
     case BBTT_Triangle: return new BbItemTriangle();
     case BBTT_Ellipse: return new BbItemEllipse();
@@ -25,6 +26,7 @@ IItemIndex *BbHelper::createItem(BbToolType bbtt)
 {
     switch(bbtt)
     {
+    case BBTT_Tail: return new BbItemTail();
     case BBTT_Pen2: return new BbItemPen2();
     case BBTT_Triangle: return new BbItemTriangle();
     case BBTT_Ellipse: return new BbItemEllipse();
@@ -47,6 +49,7 @@ IItemIndex *BbHelper::createItem(BbItemData *data)
     {
         switch(data->tooltype)
         {
+        case BBTT_Tail: return new BbItemTail(data);
         case BBTT_Pen2: return new BbItemPen2(data);
         case BBTT_Triangle: return new BbItemTriangle(data);
         case BBTT_Ellipse: return new BbItemEllipse(data);
@@ -70,6 +73,12 @@ BbItemData *BbHelper::createToolSettings(BbToolType bbtt)
 {
     switch(bbtt)
     {
+    case BBTT_Tail:
+    {
+        auto ret = new BbItemTailData();
+        ret->pen = BbItemTailData::getDefaultPen();
+        return ret;
+    }
     case BBTT_Pen2:
     {
         auto ret = new BbItemPenData2();
@@ -133,6 +142,7 @@ BbItemData *BbHelper::createItemData(BbToolType bbtt)
 {
     switch(bbtt)
     {
+    case BBTT_Tail:      return new BbItemTailData();
     case BBTT_Pen2:      return new BbItemPenData2();
     case BBTT_Triangle:  return new BbItemTriangleData();
     case BBTT_Ellipse:   return new BbItemEllipseData();
@@ -152,6 +162,7 @@ BbItemData *BbHelper::createItemData(BbToolType bbtt)
 QString BbHelper::toolTypeName(BbToolType bbtt)
 {
     switch(bbtt){
+    case BBTT_Tail:         return QString("tail");
     case BBTT_Pen2:         return QString("pen2");
     case BBTT_Text:         return QString("text");         // = 1000,
     case BBTT_Pen:          return QString("pen");          // = 2000,

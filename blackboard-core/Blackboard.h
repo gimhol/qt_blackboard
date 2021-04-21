@@ -2,13 +2,14 @@
 #define CANVASVIEW3_H
 
 #include <QGraphicsView>
+#include <QPointer>
 #include "BBItemEventType.h"
 #include "BbHelper.h"
 #include "BbScene.h"
 #include "BbFactory.h"
 
 class BbItemData;
-class BbPointer;
+class BbCursor;
 class BlackboardPrivate;
 class NSB_BLACKBOARD_EXPORT Blackboard:
         public QGraphicsView,
@@ -31,11 +32,19 @@ public:
 
     BbScene *scene() const;
 
-    BbPointer *addPointer(const QString & pointerId, int x, int y);
+    QPointer<BbCursor> remoteCursor(const QString &remoteCursorId);
 
-    void movePointer(const QString & pointerId, int x, int y);
+    QPointer<BbCursor> addRemoteCursor(const QString &remoteCursorId, const int &x, const int &y);
 
-    void hidePointer(const QString & pointerId);
+    QPointer<BbCursor> addRemoteCursor(const QString &remoteCursorId);
+
+    bool moveRemoteCursor(const QString &remoteCursorId, const int &x, const int &y);
+
+    bool showRemoteCursor(const QString &remoteCursorId);
+
+    bool hideRemoteCursor(const QString &remoteCursorId);
+
+    bool removeRemoteCursor(const QString &remoteCursorId);
 
     void setToolCursor(const BbToolType &tool, const QCursor &cursor);
 
@@ -45,7 +54,7 @@ public:
 
     void revertToolCursor();
 
-    void setPointerPixmap(const QPixmap & pixmap);
+    void setPointerPixmap(const QPixmap & pixmap, const QPointF &hotAnchor = QPointF(0.5,0.5));
 
     void setScroll(const qreal &x, const qreal &y);
 
@@ -280,6 +289,28 @@ public:
 
 private:
     BlackboardPrivate *dptr;
+
+public: // 'deprecated' zone
+    [[deprecated("replace by addRemoteCursor.")]]
+    QPointer<BbCursor> addPointer(const QString & remoteCursorId, const int &x, const int &y) {return addRemoteCursor(remoteCursorId); }
+
+    [[deprecated("replace by addRemoteCursor.")]]
+    QPointer<BbCursor> addPointer(const QString & remoteCursorId) {return addRemoteCursor(remoteCursorId); }
+
+    [[deprecated("replace by findRemoteCursor.")]]
+    QPointer<BbCursor> findPointer(const QString & remoteCursorId) {return remoteCursor(remoteCursorId); }
+
+    [[deprecated("replace by moveRemoteCursor.")]]
+    bool movePointer(const QString &remoteCursorId, const int &x, const int &y) { return moveRemoteCursor(remoteCursorId,x,y); }
+
+    [[deprecated("replace by showRemoteCursor.")]]
+    bool showPointer(const QString &remoteCursorId) {return showRemoteCursor(remoteCursorId); }
+
+    [[deprecated("replace by hideRemoteCursor.")]]
+    bool hidePointer(const QString &remoteCursorId) {return hideRemoteCursor(remoteCursorId); }
+
+    [[deprecated("replace by removeRemoteCursor.")]]
+    bool removePointer(const QString &remoteCursorId) {return removeRemoteCursor(remoteCursorId); }
 };
 
 template<class Cls>

@@ -29,3 +29,7 @@ win32
         }
     }
 }
+
+HEADERS +=
+
+SOURCES +=

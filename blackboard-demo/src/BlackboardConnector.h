@@ -10,6 +10,10 @@ class BlackboardConnector: public QObject
     Q_OBJECT
 public:
     BlackboardConnector(Blackboard *blackboard);
+    QString name() const;
+    void setName(const QString &name);
+    QString id() const;
+    void setId(const QString &id);
 
     bool isConnected();
     void connectToServer(const QString &hostName, quint16 port);
@@ -27,6 +31,11 @@ public:
     void onLocalItemsDelete(QList<IItemIndex *> indexes);
 
     void onLocalItemChanged(BBItemEventType eventType,IItemIndex *index);
+
+    void onLocalTailDown(IItemIndex *index);
+    void onLocalTailDraw(IItemIndex *index);
+    void onLocalTailStraighting(IItemIndex *index);
+    void onLocalTailDone(IItemIndex *index);
 
     void onLocalPenDown(IItemIndex *index);
     void onLocalPenDraw(IItemIndex *index);
@@ -77,6 +86,11 @@ public:
     void onRemoteItemsMoved();
     void onRemoteItemsDelete();
 
+    void onRemoteTailDown();
+    void onRemoteTailDraw();
+    void onRemoteTailStraighting();
+    void onRemoteTailDone();
+
     void onRemotePenDown();
     void onRemotePenDraw();
     void onRemotePenStraighting();
@@ -104,6 +118,8 @@ public:
 protected:
     QPointer<Blackboard> _bb;
     QPointer<BlackboardClient> _me;
+    QString _name;
+    QString _id;
 };
 
 #endif // BLACKBOARDCONNECTOR_H

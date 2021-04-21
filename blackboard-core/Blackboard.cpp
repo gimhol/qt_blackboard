@@ -1,6 +1,6 @@
 ﻿#include "Blackboard.h"
 #include "BbScene.h"
-#include "BbPointer.h"
+#include "BbCursor.h"
 
 #include <QResizeEvent>
 #include <QDebug>
@@ -17,6 +17,7 @@ public:
     qreal scaleRatio = 1;
     QSizeF canvasSize;
     QPixmap pointerPixmap;
+    QPointF pointerHotAnchor;
     QPoint mousePos;
     QPointF scrollValue;
     QString cid;
@@ -24,6 +25,7 @@ public:
     QMap<BbToolType,BbItemData*> toolSettings;
     QMap<BbToolType,QCursor> cursors;
     QMap<QString, QPoint> lazerPenPositions;
+    QMap<QString, QPointer<BbCursor>> remoteCursors;
     bool tabletActive = false;
     BbFactory *factory = nullptr;
     QPointF tabletPenPos;
@@ -92,36 +94,69 @@ BbScene *Blackboard::scene() const
     return dynamic_cast<BbScene *>(QGraphicsView::scene());
 }
 
-BbPointer *Blackboard::addPointer(const QString &pointerId, int x, int y)
+QPointer<BbCursor> Blackboard::addRemoteCursor(const QString &pointerId, const int &x, const int &y)
 {
-    BbPointer *pointer = findChild<BbPointer *>(pointerId);
+    auto pointer = addRemoteCursor(pointerId);
+    pointer->setPixmap(dptr->pointerPixmap);
+    pointer->setHotAnchor(dptr->pointerHotAnchor);
+    pointer->raise();
+    pointer->show();
+    pointer->pointTo(x, y);
+    return pointer;
+}
+
+QPointer<BbCursor> Blackboard::addRemoteCursor(const QString &remoteCursorId)
+{
+    auto ret = dptr->remoteCursors.value(remoteCursorId);
+    if(ret)
+        return ret;
+    ret = new BbCursor(this);
+    ret->setObjectName(remoteCursorId);
+    dptr->remoteCursors.insert(remoteCursorId,ret);
+    return ret;
+}
+
+QPointer<BbCursor> Blackboard::remoteCursor(const QString &remoteCursorId)
+{
+    return dptr->remoteCursors.value(remoteCursorId);
+}
+
+bool Blackboard::moveRemoteCursor(const QString &remoteCursorId, const int &x, const int &y)
+{
+    auto pointer = dptr->remoteCursors.value(remoteCursorId);
     if(!pointer)
-    {
-        pointer = new BbPointer(this);
-        pointer->setObjectName(pointerId);
-        pointer->setPixmap(dptr->pointerPixmap);
-    }
-    if(pointer->isHidden())
-    {
-        pointer->raise();
-        pointer->show();
-    }
-    pointer->move(x-pointer->width()/2,y-pointer->height()/2);
-    return nullptr;
+        return false;
+
+    pointer->pointTo(x, y);
+
 }
 
-void Blackboard::movePointer(const QString &pointerId, int x, int y)
+bool Blackboard::showRemoteCursor(const QString &remoteCursorId)
 {
-    addPointer(pointerId,x,y);
+    auto pointer = dptr->remoteCursors.value(remoteCursorId);
+    if(!pointer)
+        return false;
+    pointer->raise();
+    pointer->show();
+    return true;
 }
 
-void Blackboard::hidePointer(const QString &pointerId)
+bool Blackboard::hideRemoteCursor(const QString &remoteCursorId)
 {
-    BbPointer *pointer = findChild<BbPointer *>(pointerId);
-    if(pointer)
-    {
-        pointer->hide();
-    }
+    auto pointer = dptr->remoteCursors.value(remoteCursorId);
+    if(!pointer)
+        return false;
+    pointer->hide();
+    return true;
+}
+
+bool Blackboard::removeRemoteCursor(const QString &remoteCursorId)
+{
+    auto pointer = dptr->remoteCursors.take(remoteCursorId);
+    if(!pointer)
+        return false;
+    pointer->deleteLater();
+    return true;
 }
 
 void Blackboard::setToolCursor(const BbToolType &tool, const QCursor &cursor)
@@ -130,6 +165,12 @@ void Blackboard::setToolCursor(const BbToolType &tool, const QCursor &cursor)
     if(toolType()==tool)
     {
         setCursor(cursor);
+    }
+    if(tool == BBTT_Pointer)
+    {
+        dptr->pointerPixmap = cursor.pixmap();
+        dptr->pointerHotAnchor.rx() = 1.0 * cursor.hotSpot().x() / dptr->pointerPixmap.width();
+        dptr->pointerHotAnchor.ry() = 1.0 * cursor.hotSpot().y() / dptr->pointerPixmap.height();
     }
 }
 
@@ -155,10 +196,9 @@ void Blackboard::revertToolCursor()
     setCursor(toolCursor(toolType()));
 }
 
-void Blackboard::setPointerPixmap(const QPixmap &pixmap)
+void Blackboard::setPointerPixmap(const QPixmap &pixmap, const QPointF &hotAnchor)
 {
-    dptr->pointerPixmap = pixmap;
-    setToolCursor(BBTT_Pointer,QCursor(pixmap,pixmap.width()/2,pixmap.height()/2));
+    setToolCursor(BBTT_Pointer, QCursor(pixmap,pixmap.width()*hotAnchor.x(),pixmap.height()*hotAnchor.y()));
 }
 
 void Blackboard::setScroll(const qreal &x,const qreal &y)

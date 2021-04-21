@@ -1,64 +1,49 @@
-﻿#include "BbItemPen.h"
+﻿#include "BbItemTail.h"
 #include "BbScene.h"
 #include "Blackboard.h"
-#include "BbItemPenData.h"
+#include "BbItemTailData.h"
 #include "BbItemInnerDataKey.h"
 #include <QDebug>
 #include <QMessageBox>
+#include <QGraphicsItemAnimation>
 
-#ifdef NSB_PEN_DEBUG
-static int deconstruct_count = 0;
-static int construct_count = 0;
-#endif
-
-BbItemPen::BbItemPen():
+BbItemTail::BbItemTail():
     QGraphicsRectItem(),
-    _data(new BbItemPenData())
+    _data(new BbItemTailData())
 {
-#ifdef NSB_PEN_DEBUG
-    construct_count++;
-#endif
     init();
 }
 
-BbItemPen::BbItemPen(BbItemData *data):
+BbItemTail::BbItemTail(BbItemData *data):
     QGraphicsRectItem(),
-    _data(dynamic_cast<BbItemPenData *>(data))
+    _data(dynamic_cast<BbItemTailData *>(data))
 {
-#ifdef NSB_PEN_DEBUG
-    construct_count++;
-#endif
     init();
 }
 
-void BbItemPen::init()
+void BbItemTail::init()
 {
     if(!_data)
     {
-        _data = Blackboard::defaultFactory()->createItemData<BbItemPenData>(BBTT_Pen);
+        _data = Blackboard::defaultFactory()->createItemData<BbItemTailData>(BBTT_Tail);
     }
     setId(_data->lid);
     setPen(Qt::NoPen);
     setBrush(Qt::NoBrush);
-    setData(BBIIDK_ITEM_IS_SHAPE,true);
 }
 
-BbItemPen::~BbItemPen()
+BbItemTail::~BbItemTail()
 {
-#ifdef NSB_PEN_DEBUG
-    ++deconstruct_count;
-    qDebug() << __func__ << int(this) << deconstruct_count << "remain:" << (construct_count-deconstruct_count);
-#endif
     if(_data){
         delete _data;
     }
 }
 
-QList<QPointF> *BbItemPen::changed(){ return &_changed ;}
+QList<QPointF> *BbItemTail::changed(){ return &_changed ;}
 
-bool BbItemPen::isEmpty() { return _data->empty; }
+bool BbItemTail::isEmpty() { return _data->empty; }
 
-void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
+void BbItemTail::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
     if(!_path.isEmpty()){
         painter->setRenderHint(QPainter::Antialiasing, true);
         painter->setPen(_data->pen);
@@ -79,23 +64,10 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         painter->setBrush(Qt::NoBrush);
         painter->drawLine(_straightFrom, _straightTo);
     }
-#ifdef NSB_SAVE_PEN_TO_PIXMAP_WHEN_DONE
-    if(!_pixmap.isNull()){  // draw a finished pixmap
-        auto w = int(rect().width());
-        auto h = int(rect().height());
-        auto halfPenW = int(_data->pen.widthF()/2);
-        painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
-        painter->drawPixmap(-halfPenW,-halfPenW,w,h,_pixmap);
-    }
-#endif
     QGraphicsRectItem::paint(painter,option,widget);
 }
 
-void BbItemPen::penDown(const QPointF &point){
-#ifdef NSB_PEN_DEBUG
-    qInfo() << __FUNCTION__ << point;
-#endif
-    _editing = true;
+void BbItemTail::penDown(const QPointF &point){
     setPos(point);
     _data->empty = false;
     _path.moveTo(0,0);
@@ -110,76 +82,45 @@ void BbItemPen::penDown(const QPointF &point){
     _data->fixPostion(this);
 }
 
-void BbItemPen::penDraw(const QPointF &point)
+void BbItemTail::penDraw(const QPointF &point)
 {
-#ifdef NSB_PEN_DEBUG
-    qInfo() << __FUNCTION__ << point;
-#endif
     _changed.clear();
-
     _mousePos = point;
-
     addPointToPath(point);
     setRect(_rect);
-
     update();
 }
 
-void BbItemPen::penStraighting(const QPointF &point)
+void BbItemTail::penStraighting(const QPointF &point)
 {
-#ifdef NSB_PEN_DEBUG
-    qInfo() << __FUNCTION__ << point;
-#endif
     _changed.clear();
     straightLineDragging(point);
     setRect(_rect);
     update();
 }
 
-void BbItemPen::done()
+void BbItemTail::done()
 {
-#ifdef NSB_PEN_DEBUG
-    qInfo() << __FUNCTION__;
-#endif
-
-    _editing = false;
     _data->fixPostion(this);
 
-#ifdef NSB_SAVE_PEN_TO_PIXMAP_WHEN_DONE
-    do{
-        if(!blackboard())
-            break;
-        auto scale = 4; // 倍数绘制, 保证放大后没那么模糊。但在放得过大得情况下无效。
-        auto width = int(scale * rect().width());
-        auto height = int(scale * rect().height());
-        auto halfPenW = _data->pen.widthF()/2;
-        _pixmap = QPixmap(width,height);
-        _pixmap.fill(Qt::transparent);
-        QPainter painter(&_pixmap);
-        painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
-        painter.translate(scale*halfPenW,
-                          scale*halfPenW);
-        painter.scale(scale,scale);
-
-        if(_path.isEmpty()){
-            painter.setPen(Qt::NoPen);
-            painter.setBrush(_data->pen.color());
-            QRectF rect(-halfPenW,-halfPenW,2*halfPenW,2*halfPenW);
-            painter.drawEllipse(rect);
+    auto fadeOutTimer = new QTimer(this);
+    auto interval = 1000/30;
+    auto delay = _data->fadeOutDelay;
+    fadeOutTimer->setInterval(interval);
+    connect(fadeOutTimer,&QTimer::timeout,this,[&,delay,interval,fadeOutTimer](){
+        _data->fadeOutDuration -= interval;
+        if(_data->fadeOutDuration <= 0){
+            setOpacity(0);
+            fadeOutTimer->stop();
+            deleteLater();
+        }else{
+            setOpacity(1.0 * _data->fadeOutDuration / delay);
         }
-        else{
-            painter.setPen(_data->pen);
-            painter.setBrush(Qt::NoBrush);
-            painter.drawPath(_path);
-        }
-        _path.clear();
-        update();
-    }while(false);
-#endif
-
+    });
+    QTimer::singleShot(_data->fadeOutDelay,fadeOutTimer,static_cast<void(QTimer::*)()>(&QTimer::start));
 }
 
-void BbItemPen::straightLineDragging(const QPointF &point)
+void BbItemTail::straightLineDragging(const QPointF &point)
 {
     _straightTo.setX(point.x() - pos().x());
     _straightTo.setY(point.y() - pos().y());
@@ -216,12 +157,8 @@ void BbItemPen::straightLineDragging(const QPointF &point)
     _data->fixPostion(this);
 }
 
-void BbItemPen::addPointToPath(const QPointF &point)
+void BbItemTail::addPointToPath(const QPointF &point)
 {
-#ifdef NSB_PEN_DEBUG
-    qInfo() << __FUNCTION__ << (_data->coords.size()/2) << ", point: " <<point;
-#endif
-
     _changed.append(point);
 
     auto isStraightEnd = false;
@@ -280,13 +217,11 @@ void BbItemPen::addPointToPath(const QPointF &point)
     _data->fixPostion(this);
 }
 
-void BbItemPen::repaint()
+void BbItemTail::repaint()
 {
     _path.clear();
     auto coords = _data->coords;
     _data->coords = QList<qreal>();
-    auto finalX = _data->x;
-    auto finalY = _data->y;
     for(int i = 0; i < coords.length(); i+=2)
     {
         QPointF point(coords[i], coords[i+1]);
@@ -298,8 +233,6 @@ void BbItemPen::repaint()
             done();
     }
     _changed.clear();
-    _data->x = finalX;
-    _data->y = finalY;
     if(_data->isPositionValid())
     {
         moveToPosition(_data->x,_data->y);
@@ -310,12 +243,12 @@ void BbItemPen::repaint()
     update();
 }
 
-bool BbItemPen::straight()
+bool BbItemTail::straight()
 {
     return _straight;
 }
 
-void BbItemPen::setStraight(const bool & straight)
+void BbItemTail::setStraight(const bool & straight)
 {
     if(straight == _straight)
         return;
@@ -351,114 +284,74 @@ void BbItemPen::setStraight(const bool & straight)
     _straight = straight;
 }
 
-QPointF BbItemPen::straightTo()
+QPointF BbItemTail::straightTo()
 {
     return _straightTo + pos();
 }
 
-void BbItemPen::writeStream(QDataStream &stream)
-{
-    _data->updatePostion(this);
-    _data->z = zValue();
-    _data->writeStream(stream);
-}
-
-void BbItemPen::readStream(QDataStream &stream)
-{
-    _data->readStream(stream);
-    absolutize();
-    repaint();
-}
-
-QJsonObject BbItemPen::toJsonObject()
-{
-    _data->updatePostion(this);
-    _data->z = zValue();
-    return _data->toJsonObject();
-}
-
-void BbItemPen::fromJsonObject(const QJsonObject &jobj)
-{
-    _data->fromJsonObject(jobj);
-    absolutize();
-    repaint();
-}
-
-BbItemData *BbItemPen::data()
+BbItemData *BbItemTail::data()
 {
     return _data;
 }
 
-void BbItemPen::toolDown(const QPointF &pos)
+void BbItemTail::toolDown(const QPointF &pos)
 {
-#ifdef NSB_PEN_DEBUG
-    qDebug() << __FUNCTION__ << pos;
-#endif
     setId(blackboard()->factory()->makeItemId(toolType()));
     setZ(blackboard()->factory()->makeItemZ(toolType()));
     updatePrevZ();
 
     setStraight(bbScene()->modifiers() & Qt::ShiftModifier);
-    auto settings = blackboard()->toolSettings<BbItemPenData>(BBTT_Pen);
+    auto settings = blackboard()->toolSettings<BbItemTailData>(BBTT_Tail);
     _data->setWeight(settings->weight());
     _data->pen = settings->pen;
     penDown(pos);
     bbScene()->setCurrentItem(this);
-    emit blackboard()->itemChanged(BBIET_penDown,this);
+    emit blackboard()->itemChanged(BBIET_tailDown,this);
 }
 
-void BbItemPen::toolDraw(const QPointF &pos)
+void BbItemTail::toolDraw(const QPointF &pos)
 {
-#ifdef NSB_PEN_DEBUG
-    qDebug() << __FUNCTION__ << pos;
-#endif
     if(_mousePos == pos){
-#ifdef NSB_PEN_DEBUG
-        qDebug() << __FUNCTION__ << "got same mouse pos!";
-#endif
         return;
     }
     setStraight(bbScene()->modifiers() == Qt::ShiftModifier);
     if(!straight())
     {
         penDraw(pos);
-        emit blackboard()->itemChanged(BBIET_penDraw,this);
+        emit blackboard()->itemChanged(BBIET_tailDraw,this);
     }
     else
     {
         penStraighting(pos);
-        emit blackboard()->itemChanged(BBIET_penStraighting,this);
+        emit blackboard()->itemChanged(BBIET_tailStraighting,this);
     }
 }
 
-void BbItemPen::toolUp(const QPointF &pos)
+void BbItemTail::toolUp(const QPointF &pos)
 {
-#ifdef NSB_PEN_DEBUG
-    qDebug() << __FUNCTION__ << pos;
-#endif
     if(straight())
     {
         setStraight(false);
-        emit blackboard()->itemChanged(BBIET_penDraw,this);
+        emit blackboard()->itemChanged(BBIET_tailDraw,this);
     }
     done();
-    emit blackboard()->itemChanged(BBIET_penDone,this);
+    emit blackboard()->itemChanged(BBIET_tailDone,this);
     bbScene()->unsetCurrentItem(this);
 }
 
-void BbItemPen::modifiersChanged(Qt::KeyboardModifiers modifiers)
+void BbItemTail::modifiersChanged(Qt::KeyboardModifiers modifiers)
 {
     if(_straight != (modifiers == Qt::ShiftModifier))
     {
         setStraight(modifiers == Qt::ShiftModifier);
         if(!_straight)
         {
-            emit blackboard()->itemChanged(BBIET_penDraw,this);
+            emit blackboard()->itemChanged(BBIET_tailDraw,this);
         }
     }
 }
 
-void BbItemPen::absolutize()
+void BbItemTail::absolutize()
 {
     if(_data->mode == BbItemData::CM_PERCENTAGE)
     {
@@ -481,8 +374,9 @@ void BbItemPen::absolutize()
     }
 }
 
-bool BbItemPen::isEditing()
+void BbItemTail::added()
 {
-    return _editing;
+    setFlag(QGraphicsItem::ItemIsMovable,false);
+    setFlag(QGraphicsItem::ItemIsSelectable,false);
+    setFlag(QGraphicsItem::ItemIsFocusable,false);
 }
-

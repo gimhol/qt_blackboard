@@ -32,6 +32,26 @@ BlackboardConnector::BlackboardConnector(Blackboard *blackboard):
     connect(_me,&BlackboardClient::msgRead,this,&BlackboardConnector::onMeMsgRead);
 }
 
+
+QString BlackboardConnector::id() const
+{
+    return _id;
+}
+void BlackboardConnector::setId(const QString &id)
+{
+    _id = id;
+}
+
+QString BlackboardConnector::name() const
+{
+    return _name;
+}
+
+void BlackboardConnector::setName(const QString &name)
+{
+    _name = name;
+}
+
 bool BlackboardConnector::isConnected()
 {
     return _me->isConnected();
@@ -57,7 +77,8 @@ void BlackboardConnector::onLocalBlackboardScrolled(float x, float y)
 
 void BlackboardConnector::onLocalPointerShown(QPoint localPoint){
     QJsonObject jobj;
-    jobj["id"] = "remote_pointer";
+    jobj["id"] = _id;
+    jobj["name"] = _name;
     jobj["x"] = localPoint.x();
     jobj["y"] = localPoint.y();
     _me->send(MsgTypeBlackboardPointerShown,QJsonDocument(jobj).toBinaryData());
@@ -65,7 +86,7 @@ void BlackboardConnector::onLocalPointerShown(QPoint localPoint){
 
 void BlackboardConnector::onLocalPointerMoving(QPoint localPoint){
     QJsonObject jobj;
-    jobj["id"] = "remote_pointer";
+    jobj["id"] = _id;
     jobj["x"] = localPoint.x();
     jobj["y"] = localPoint.y();
     _me->send(MsgTypeBlackboardPointerMoving,QJsonDocument(jobj).toBinaryData());
@@ -73,7 +94,7 @@ void BlackboardConnector::onLocalPointerMoving(QPoint localPoint){
 
 void BlackboardConnector::onLocalPointerMoved(QPoint localPoint){
     QJsonObject jobj;
-    jobj["id"] = "remote_pointer";
+    jobj["id"] = _id;
     jobj["x"] = localPoint.x();
     jobj["y"] = localPoint.y();
     _me->send(MsgTypeBlackboardPointerMoved,QJsonDocument(jobj).toBinaryData());
@@ -81,7 +102,7 @@ void BlackboardConnector::onLocalPointerMoved(QPoint localPoint){
 
 void BlackboardConnector::onLocalPointerHidden(QPoint){
     QJsonObject jobj;
-    jobj["id"] = "remote_pointer";
+    jobj["id"] = _id;
     _me->send(MsgTypeBlackboardPointerHidden,QJsonDocument(jobj).toBinaryData());
 }
 
@@ -168,6 +189,10 @@ void BlackboardConnector::onLocalItemChanged(BBItemEventType eventType, IItemInd
     case BBIET_triangleDone:    onLocalTriangleDone(index); break;
     case BBIET_imageHasPath:    onImageHasPath(index); break;
     case BBIET_imageHasUrl:     onImageHasUrl(index); break;
+    case BBIET_tailDown:        onLocalTailDown(index); break;
+    case BBIET_tailDraw:        onLocalTailDraw(index); break;
+    case BBIET_tailStraighting: onLocalTailStraighting(index); break;
+    case BBIET_tailDone:        onLocalTailDone(index); break;
     default:
         break;
     }
@@ -187,6 +212,46 @@ static void readPenFromJsonObject(BbItemData* data, const QJsonObject &jobj){
     data->pen.setCapStyle(Qt::PenCapStyle(jobj["pen_cap"].toInt()));
     data->pen.setJoinStyle(Qt::PenJoinStyle(jobj["pen_join"].toInt()));
     data->setWeight(jobj["pen_weight"].toDouble());
+}
+
+void BlackboardConnector::onLocalTailDown(IItemIndex *index){
+    auto item = dynamic_cast<BbItemTail*>(index);
+    QJsonObject jobj;
+    jobj["id"] = item->id();
+    jobj["z"] = item->z();
+    setPenToJsonObject(item->data(),jobj);
+    auto dot = item->changed()->first();
+    jobj["x"] = qreal(dot.x())/_bb->canvasWidth();
+    jobj["y"] = qreal(dot.y())/_bb->canvasWidth();
+    _me->send(BBIET_tailDown,QJsonDocument(jobj).toBinaryData());
+}
+
+void BlackboardConnector::onLocalTailDraw(IItemIndex *index){
+    auto pen = dynamic_cast<BbItemTail*>(index);
+    QJsonObject jobj;
+    jobj["id"] = pen->id();
+    QJsonArray dots;
+    for(auto p: *pen->changed()){
+        dots << (p.x()/_bb->canvasWidth())
+             << (p.y()/_bb->canvasWidth());
+    }
+    jobj["dots"] = dots;
+    _me->send(BBIET_tailDraw,QJsonDocument(jobj).toBinaryData());
+}
+
+void BlackboardConnector::onLocalTailStraighting(IItemIndex *index){
+    auto pen = dynamic_cast<BbItemTail*>(index);
+    QJsonObject jobj;
+    jobj["id"] = pen->id();
+    jobj["x"] = qreal(pen->straightTo().x())/_bb->canvasWidth();
+    jobj["y"] = qreal(pen->straightTo().y())/_bb->canvasWidth();
+    _me->send(BBIET_tailStraighting,QJsonDocument(jobj).toBinaryData());
+}
+
+void BlackboardConnector::onLocalTailDone(IItemIndex *index){
+    QJsonObject jobj;
+    jobj["id"] = index->id();
+    _me->send(BBIET_tailDone,QJsonDocument(jobj).toBinaryData());
 }
 
 void BlackboardConnector::onLocalPenDown(IItemIndex *index){
@@ -539,6 +604,11 @@ void BlackboardConnector::onMeMsgRead()
     case BBIET_itemPaste:
         // do it better.
         break;
+    case BBIET_tailDown:         onRemoteTailDown(); break;
+    case BBIET_tailDraw:         onRemoteTailDraw(); break;
+    case BBIET_tailStraighting:  onRemoteTailStraighting(); break;
+    case BBIET_tailDone:         onRemoteTailDone(); break;
+
     case BBIET_penDown:         onRemotePenDown(); break;
     case BBIET_penDraw:         onRemotePenDraw(); break;
     case BBIET_penStraighting:  onRemotePenStraighting(); break;
@@ -605,25 +675,26 @@ void BlackboardConnector::onRemoteBlackboardScrolled(){
             jobj["x"].toDouble() * _bb->canvasWidth(),
             jobj["y"].toDouble() * _bb->canvasWidth());
 }
-
+#include <BbCursor.h>
 void BlackboardConnector::onRemotePointerShown(){
     auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
-    _bb->movePointer(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
+    auto cursor = _bb->addRemoteCursor(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
+    cursor->setText(jobj["name"].toString());
 }
 
 void BlackboardConnector::onRemotePointerMoving(){
     auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
-    _bb->movePointer(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
+    _bb->moveRemoteCursor(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
 }
 
 void BlackboardConnector::onRemotePointerMoved(){
     auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
-    _bb->movePointer(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
+    _bb->moveRemoteCursor(jobj["id"].toString(),jobj["x"].toInt(),jobj["y"].toInt());
 }
 
 void BlackboardConnector::onRemotePointerHidden(){
     auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
-    _bb->hidePointer(jobj["id"].toString());
+    _bb->removeRemoteCursor(jobj["id"].toString());
 }
 
 void BlackboardConnector::onRemoteItemsMoving()
@@ -660,6 +731,51 @@ void BlackboardConnector::onRemoteItemsDelete()
     for(auto jval: jarr){
         _bb->remove(jval.toString());
     }
+}
+
+void BlackboardConnector::onRemoteTailDown(){
+    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody()).object();
+    auto item = new BbItemTail();
+    _bb->add(item);
+    item->setId(jobj["id"].toString());
+    item->setZ(jobj["z"].toDouble());
+    readPenFromJsonObject(item->data(),jobj);
+    QPointF dot(jobj["x"].toDouble()*_bb->canvasWidth(),
+                jobj["y"].toDouble()*_bb->canvasWidth());
+    item->penDown(dot);
+}
+
+void BlackboardConnector::onRemoteTailDraw(){
+    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+    auto item = _bb->find<BbItemTail>(jobj["id"].toString());
+    if(!item)
+        return;
+    auto dots = jobj["dots"].toArray();
+    for(auto itr = dots.begin(); itr!=dots.end(); ++itr){
+
+        QPointF dot;
+        dot.setX(itr->toDouble()*_bb->canvasWidth());
+        ++itr;
+        dot.setY(itr->toDouble()*_bb->canvasWidth());
+        item->penDraw(dot);
+    }
+}
+
+void BlackboardConnector::onRemoteTailStraighting(){
+    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+    auto item = _bb->find<BbItemTail>(jobj["id"].toString());
+    if(!item)
+        return;
+    QPointF dot(jobj["x"].toDouble()* _bb->canvasWidth(),
+            jobj["y"].toDouble()*_bb->canvasWidth());
+    item->penStraighting(dot);
+}
+
+void BlackboardConnector::onRemoteTailDone(){
+    auto jobj = QJsonDocument::fromBinaryData(_me->msgBody());
+    auto item = _bb->find<BbItemTail>(jobj["id"].toString());
+    if(item)
+        item->done();
 }
 
 void BlackboardConnector::onRemotePenDown(){

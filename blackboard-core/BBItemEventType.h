@@ -54,6 +54,11 @@ enum BBItemEventType
     BBIET_itemGroupUp,
     BBIET_itemGroupDismiss,
 
+    BBIET_tailDown,
+    BBIET_tailDraw,
+    BBIET_tailDone,
+    BBIET_tailStraighting,
+
     BBIET_max
 };
 #endif // BBITEMEVENTTYPE_H

@@ -18,6 +18,8 @@
 #include "BbItemImageData.h"
 #include "BbItemPen2.h"
 #include "BbItemPenData2.h"
+#include "BbItemTail.h"
+#include "BbItemTailData.h"
 
 class NSB_BLACKBOARD_EXPORT BbHelper
 {
