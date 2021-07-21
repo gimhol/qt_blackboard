@@ -94,7 +94,7 @@ public:
 
     void mouseReleaseEvent(QMouseEvent * event) override;
 
-    void removeSelectedElement(Blackboard* blackboard);
+    void removeSelectedElement();
 
     void setToolType(BbToolType toolType);
 
@@ -279,8 +279,6 @@ signals:
     void cursorMoved(QPoint localPoint);
     void cursorHidden(QPoint localPoint);
     void toolChanged(BbToolType previous, BbToolType current);
-
-    void selectedStatusChange(bool);//add by lijie
 
 public:
     virtual void writeStream(QDataStream &stream) override;
