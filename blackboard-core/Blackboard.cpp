@@ -332,9 +332,10 @@ void Blackboard::mouseReleaseEvent(QMouseEvent *event)
     QGraphicsView::mouseReleaseEvent(event);
 }
 
-void Blackboard::removeSelectedElement()
+void Blackboard::removeSelectedElement(Blackboard *blackboard)
 {
-    scene()->removeSelected();
+    if(this == blackboard)
+        scene()->removeSelected();
 }
 
 void Blackboard::setToolType(BbToolType toolType)
