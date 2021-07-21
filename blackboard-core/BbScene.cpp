@@ -56,6 +56,23 @@ BbScene::BbScene(Blackboard *parent):
     _pageAspectRatio = 1.414285714285714;
     _pageSplitterTextFormat = QStringLiteral("- 牛师帮在线一对一 第%1页 -");
     _pageSpliiterTextFont = QFont("Microsoft YaHei");
+
+    connect(qApp, &QApplication::focusChanged, this, [=](QWidget *old, QWidget *now){
+        if(old == now)
+            return;
+
+        //qInfo()<<__FUNCTION__<<__LINE__<<"失去焦点";
+//        if(old == blackboard())
+//        {
+//            emit blackboard()->selectedStatusChange(false);
+//        }
+
+        if(now == blackboard())
+        {
+            emit blackboard()->selectedStatusChange(true);
+        }
+        //deselectAll();
+    });
 }
 
 BbScene::~BbScene()
@@ -299,6 +316,7 @@ void BbScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         if(isPicking())
             stopPicking();
     }
+    update();
 }
 
 void BbScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
