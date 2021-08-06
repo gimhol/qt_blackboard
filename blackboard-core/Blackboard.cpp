@@ -828,4 +828,7 @@ void Blackboard::tabletEvent(QTabletEvent *event)
     default:
         break;
     }
+
+    QGraphicsView::tabletEvent(event);
+    event->accept();
 }
