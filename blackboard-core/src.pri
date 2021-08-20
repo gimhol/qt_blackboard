@@ -11,6 +11,7 @@ HEADERS += \
     $$PWD/BbItemPenData2.h \
     $$PWD/BbItemTail.h \
     $$PWD/BbItemTailData.h \
+    $$PWD/BbOperatorLabel.h \
     $$PWD/BbScene.h \
     $$PWD/IJsonWR.h \
     $$PWD/IStreamWR.h \
@@ -43,6 +44,7 @@ SOURCES += \
     $$PWD/BbItemPenData2.cpp \
     $$PWD/BbItemTail.cpp \
     $$PWD/BbItemTailData.cpp \
+    $$PWD/BbOperatorLabel.cpp \
     $$PWD/BbScene.cpp \
     $$PWD/Blackboard.cpp \
     $$PWD/BbItemPen.cpp \
