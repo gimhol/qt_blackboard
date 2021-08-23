@@ -56,15 +56,19 @@ const QString &BbOperatorLabel::text() const
 
 void BbOperatorLabel::setShowDuration(int msec)
 {
-   this->setVisible(true);
-
-   if(!dptr)
-       return;
-
-   dptr->nameCursor->setVisible(true);
    dptr->showTime = msec;
-   if(dptr->showTime>=0)
-       dptr->timer->start(dptr->showTime);
+   if(dptr->showTime == 0)
+   {
+       this->setVisible(false);
+       dptr->nameCursor->setVisible(false);
+   }
+   else
+   {
+       this->setVisible(true);
+       dptr->nameCursor->setVisible(true);
+       if(dptr->showTime>0)
+           dptr->timer->start(dptr->showTime);
+   }
 }
 
 void BbOperatorLabel::setAnchor(const float &x, const float &y)

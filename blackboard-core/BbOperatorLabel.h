@@ -16,7 +16,7 @@ public:
 
     void setAnchor(const float &x,const float &y);
     void setOffset(const int &offsetX, const int &offsetY);
-    void setShowDuration(int msec = -1);
+    void setShowDuration(int msec = 0);
     void setTargetPosition(const QPoint &point);
     void setFollowZone(const float &x, const float &y,int widget,int height);
     void setOperationCursor(const QPixmap &pixmap,const QPointF &hotPoint);

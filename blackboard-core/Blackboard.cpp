@@ -498,7 +498,7 @@ void Blackboard::onToolChanged(BbToolType previous)
     {
     case BBTT_Pointer:
     {
-        emit pointerHidden(dptr->mousePos);
+        //emit pointerHidden(dptr->mousePos);
         break;
     }
     default:
@@ -512,7 +512,7 @@ void Blackboard::onToolChanged(BbToolType previous)
     {
     case BBTT_Pointer:
     {
-        emit pointerShown(dptr->mousePos);
+        //emit pointerShown(dptr->mousePos);
         break;
     }
     default:
@@ -760,7 +760,7 @@ void Blackboard::onMousePress(const QPoint &pos, const Qt::MouseButton &button)
     {
         if(button == Qt::LeftButton)
         {
-            emit pointerShown(dptr->mousePos);
+            emit leftMouseTrack(dptr->mousePos);
         }
         break;
     }
@@ -814,22 +814,15 @@ void Blackboard::onMouseRelease(const QPoint &pos, const Qt::MouseButton &button
     switch(scene()->toolType())
     {
     case BBTT_Pointer:
-    {
-        if(button == Qt::LeftButton)
-        {
-            emit pointerHidden(dptr->mousePos);
-        }
-        break;
-    }
     case BBTT_Picker:
         break;
     default:
     {
-        if(button == Qt::LeftButton)
-        {
-            //emit pointerHidden(dptr->mousePos);
-            //emit leftMouseTrack(dptr->mousePos);
-        }
+//        if(button == Qt::LeftButton)
+//        {
+//            //emit pointerHidden(dptr->mousePos);
+//            //emit leftMouseTrack(dptr->mousePos);
+//        }
         break;
     }
     }
