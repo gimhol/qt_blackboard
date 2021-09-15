@@ -120,7 +120,7 @@ void Blackboard::onCanvasMouseTrack(const QString &remoteUserId, const float &x,
         dptr->remoteMouseTrack.insert(remoteUserId,operatorLabel);
     }
 
-    if(dptr->cursors.contains(tool))
+    if(false)//dptr->cursors.contains(tool)
     {
         auto pixmap = dptr->cursors[tool].pixmap();
         QPointF hotAncho;
