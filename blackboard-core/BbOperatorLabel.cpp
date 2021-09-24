@@ -186,7 +186,18 @@ void BbOperatorLabel::followerShowZonePosition(QPoint &point) const
 void BbOperatorLabel::setupUi()
 {
     dptr->text = new QLabel(this);
-    dptr->text->setStyleSheet("border:2px solid red;");
+
+    QString style = u8R"(
+                    padding:6px;
+                    color: #A7A7A7;
+                    font-size: 12px;
+                    background: #373739;
+                    border-top-left-radius:8px;
+                    border-top-right-radius:8px;
+                    border-bottom-right-radius:8px;
+                    border-bottom-left-radius:0px;
+                    )";
+    dptr->text->setStyleSheet(style);
 
     auto layout = new QGridLayout(this);
     layout->setContentsMargins(0,0,0,0);
@@ -196,5 +207,5 @@ void BbOperatorLabel::setupUi()
 
     this->setLayout(layout);
 
-    //this->setMinimumWidth(200);
+//    this->setMinimumHeight(25);
 }
