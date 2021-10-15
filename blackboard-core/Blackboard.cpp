@@ -9,6 +9,7 @@
 #include <QApplication>
 #include <QOpenGLWidget>
 #include <QOpenGLContext>
+#include "BbOperatorLabel.h"
 
 class BlackboardPrivate
 {
@@ -29,6 +30,8 @@ public:
     bool tabletActive = false;
     BbFactory *factory = nullptr;
     QPointF tabletPenPos;
+
+    QMap<QString, QPointer<BbOperatorLabel>> remoteMouseTrack;
 };
 
 static BbFactory *_defaultFactory = BbFactory::get();
@@ -92,6 +95,64 @@ Blackboard::~Blackboard()
 BbScene *Blackboard::scene() const
 {
     return dynamic_cast<BbScene *>(QGraphicsView::scene());
+}
+
+void Blackboard::onCanvasMouseTrack(const QString &remoteUserId, const float &x, const float &y, const QString name, int msec, const BbToolType &tool)
+{
+    auto operatorLabel = dptr->remoteMouseTrack.value(remoteUserId);
+    if(!operatorLabel)
+    {
+//        pointer = new BbCursor(this);
+//        pointer->setObjectName(remoteUserId);
+
+        operatorLabel = new BbOperatorLabel(this);
+//        connect(pointer,&BbCursor::destroyed,operatorLabel,[=](){
+//            delete operatorLabel;
+//        });
+//        operatorLabel->setFollowed(pointer);
+//        operatorLabel->setFollowedAnchor(1,0);
+        operatorLabel->setAnchor(0,1);
+        //operatorLabel->setOffset(20,-20);
+
+        operatorLabel->setText(name);
+        operatorLabel->setShowDuration(msec);
+
+        dptr->remoteMouseTrack.insert(remoteUserId,operatorLabel);
+    }
+
+    if(dptr->cursors.contains(tool))
+    {
+        auto pixmap = dptr->cursors[tool].pixmap();
+        QPointF hotAncho;
+        hotAncho.rx() = 1.0 * dptr->cursors[tool].hotSpot().x() / dptr->pointerPixmap.width();
+        hotAncho.ry() = 1.0 * dptr->cursors[tool].hotSpot().y() / dptr->pointerPixmap.height();
+
+        operatorLabel->setOperationCursor(pixmap,hotAncho);
+    }
+    else
+    {
+        operatorLabel->setOperationCursor(QPixmap(1,1),QPointF(0,0));
+    }
+
+    operatorLabel->raise();
+    operatorLabel->setTargetPosition(QPoint(x,y));
+    //    else
+    //    {
+    //        auto operatorLabel = dptr->remoteMouseTrack.value(remoteUserId);
+    //        if(!operatorLabel)
+    //        {
+    //            operatorLabel = new BbOperatorLabel(this);
+    //            operatorLabel->setObjectName(remoteUserId);
+    //            operatorLabel->setFollowerAnchor(0,1);
+    //            operatorLabel->setOffset(20,-20);
+    //            operatorLabel->setText(name);
+    //            operatorLabel->setOperationShowTime(msec);
+    //            dptr->remoteMouseTrack.insert(remoteUserId,operatorLabel);
+    //        }
+
+    //        //toolCursor();
+    //        operatorLabel->setFollowTargetPosition(QPoint(x,y));
+    //    }
 }
 
 QPointer<BbCursor> Blackboard::addRemoteCursor(const QString &pointerId, const int &x, const int &y)
@@ -260,53 +321,53 @@ void Blackboard::resizeEvent(QResizeEvent *event)
 #endif
 }
 
-void Blackboard::enterEvent(QEvent *event)
-{
-    Q_UNUSED(event)
-    switch(scene()->toolType())
-    {
-        case BBTT_Pointer:
-        {
-            if(isEnabled())
-            {
-                emit pointerShown(dptr->mousePos);
-            }
-            return;
-        }
-        default:
-        {
-            if(isEnabled())
-            {
-                emit cursorShown(dptr->mousePos);
-            }
-            break;
-        }
-    }
-}
+//void Blackboard::enterEvent(QEvent *event)
+//{
+//    Q_UNUSED(event)
+//    switch(scene()->toolType())
+//    {
+//    case BBTT_Pointer:
+//    {
+//        if(isEnabled())
+//        {
+//            emit pointerShown(dptr->mousePos);
+//        }
+//        return;
+//    }
+//    default:
+//    {
+//        if(isEnabled())
+//        {
+//            emit cursorShown(dptr->mousePos);
+//        }
+//        break;
+//    }
+//    }
+//}
 
-void Blackboard::leaveEvent(QEvent *event)
-{
-    Q_UNUSED(event)
-    switch(scene()->toolType())
-    {
-        case BBTT_Pointer:
-        {
-            if(isEnabled())
-            {
-                emit pointerHidden(dptr->mousePos);
-            }
-            return;
-        }
-        default:
-        {
-            if(isEnabled())
-            {
-                emit cursorHidden(dptr->mousePos);
-            }
-            break;
-        }
-    }
-}
+//void Blackboard::leaveEvent(QEvent *event)
+//{
+//    Q_UNUSED(event)
+//    switch(scene()->toolType())
+//    {
+//    case BBTT_Pointer:
+//    {
+//        if(isEnabled())
+//        {
+//            emit pointerHidden(dptr->mousePos);
+//        }
+//        return;
+//    }
+//    default:
+//    {
+//        if(isEnabled())
+//        {
+//            emit cursorHidden(dptr->mousePos);
+//        }
+//        break;
+//    }
+//    }
+//}
 
 void Blackboard::mousePressEvent(QMouseEvent *event)
 {
@@ -435,29 +496,29 @@ void Blackboard::onToolChanged(BbToolType previous)
 {
     switch(previous)
     {
-        case BBTT_Pointer:
-        {
-            emit pointerHidden(dptr->mousePos);
-            break;
-        }
-        default:
-        {
-            break;
-        }
+    case BBTT_Pointer:
+    {
+        //emit pointerHidden(dptr->mousePos);
+        break;
+    }
+    default:
+    {
+        break;
+    }
     }
     BbToolType current = toolType();
     setCursor(toolCursor(current));
     switch(current)
     {
-        case BBTT_Pointer:
-        {
-            emit pointerShown(dptr->mousePos);
-            break;
-        }
-        default:
-        {
-            break;
-        }
+    case BBTT_Pointer:
+    {
+        //emit pointerShown(dptr->mousePos);
+        break;
+    }
+    default:
+    {
+        break;
+    }
     }
     emit toolChanged(previous,current);
 }
@@ -695,19 +756,27 @@ void Blackboard::onMousePress(const QPoint &pos, const Qt::MouseButton &button)
     dptr->mousePos = pos;
     switch(scene()->toolType())
     {
-        case BBTT_Pointer:
-        case BBTT_Picker:
+    case BBTT_Pointer:
+    {
+        if(button == Qt::LeftButton)
         {
-            break;
+            emit leftMouseTrack(dptr->mousePos);
         }
-        default:
+        break;
+    }
+    case BBTT_Picker:
+    {
+        break;
+    }
+    default:
+    {
+        if(button == Qt::LeftButton)
         {
-            if(button == Qt::LeftButton)
-            {
-                emit cursorHidden(dptr->mousePos);
-            }
-            break;
+            //emit cursorHidden(dptr->mousePos);
+            //emit leftMouseTrack(dptr->mousePos);
         }
+        break;
+    }
     }
 }
 
@@ -717,24 +786,25 @@ void Blackboard::onMouseMove(const QPoint &pos)
     dptr->mousePos = pos;
     switch(scene()->toolType())
     {
-        case BBTT_Pointer:
+//    case BBTT_Pointer:
+//    {
+//        break;
+//    }
+    case BBTT_Picker:
+    {
+        //emit cursorMoving(dptr->mousePos);
+        //emit leftMouseTrack(dptr->mousePos);
+        break;
+    }
+    default:
+    {
+        if(scene()->isMouseLeftButtonDown())
         {
-            emit pointerMoving(dptr->mousePos);
-            return;
+//            emit pointerMoving(dptr->mousePos);
+            emit leftMouseTrack(dptr->mousePos);
         }
-        case BBTT_Picker:
-        {
-            emit cursorMoving(dptr->mousePos);
-            break;
-        }
-        default:
-        {
-            if(!scene()->isMouseLeftButtonDown())
-            {
-                emit cursorMoving(dptr->mousePos);
-            }
-            break;
-        }
+        break;
+    }
     }
 }
 
@@ -743,17 +813,18 @@ void Blackboard::onMouseRelease(const QPoint &pos, const Qt::MouseButton &button
     dptr->mousePos = pos;
     switch(scene()->toolType())
     {
-        case BBTT_Pointer:
-        case BBTT_Picker:
-            break;
-        default:
-        {
-            if(button == Qt::LeftButton)
-            {
-                emit cursorShown(dptr->mousePos);
-            }
-            break;
-        }
+    case BBTT_Pointer:
+    case BBTT_Picker:
+        break;
+    default:
+    {
+//        if(button == Qt::LeftButton)
+//        {
+//            //emit pointerHidden(dptr->mousePos);
+//            //emit leftMouseTrack(dptr->mousePos);
+//        }
+        break;
+    }
     }
 }
 
@@ -790,10 +861,10 @@ void Blackboard::tabletEvent(QTabletEvent *event)
         onMousePress(event->pos(),event->button());
         updateTabletPenPos();
         QMouseEvent mouseEvent(QEvent::MouseMove,
-                    event->pos(),
-                    event->button(),
-                    event->buttons(),
-                    event->modifiers());
+                               event->pos(),
+                               event->button(),
+                               event->buttons(),
+                               event->modifiers());
         QGraphicsView::mousePressEvent(&mouseEvent);
         break;
     }
@@ -806,10 +877,10 @@ void Blackboard::tabletEvent(QTabletEvent *event)
         updateTabletPenPos();
         onMouseMove(event->pos());
         QMouseEvent mouseEvent(QEvent::MouseMove,
-                    event->pos(),
-                    event->button(),
-                    event->buttons(),
-                    event->modifiers());
+                               event->pos(),
+                               event->button(),
+                               event->buttons(),
+                               event->modifiers());
         QGraphicsView::mouseMoveEvent(&mouseEvent);
         break;
     }
@@ -818,14 +889,17 @@ void Blackboard::tabletEvent(QTabletEvent *event)
         updateTabletPenPos();
         onMouseRelease(event->pos(),event->button());
         QMouseEvent mouseEvent(QEvent::MouseButtonRelease,
-                    event->pos(),
-                    event->button(),
-                    event->buttons(),
-                    event->modifiers());
+                               event->pos(),
+                               event->button(),
+                               event->buttons(),
+                               event->modifiers());
         QGraphicsView::mouseReleaseEvent(&mouseEvent);
         break;
     }
     default:
         break;
     }
+
+    QGraphicsView::tabletEvent(event);
+    event->accept();
 }

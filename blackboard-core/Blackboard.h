@@ -32,6 +32,8 @@ public:
 
     BbScene *scene() const;
 
+    void onCanvasMouseTrack(const QString &remoteUserId, const float &x, const float &y, const QString name, int msec,const BbToolType &tool);
+
     QPointer<BbCursor> remoteCursor(const QString &remoteCursorId);
 
     QPointer<BbCursor> addRemoteCursor(const QString &remoteCursorId, const int &x, const int &y);
@@ -84,9 +86,9 @@ public:
 
     void resizeEvent(QResizeEvent * event) override;
 
-    void enterEvent(QEvent *event) override;
+//    void enterEvent(QEvent *event) override;
 
-    void leaveEvent(QEvent *event) override;
+//    void leaveEvent(QEvent *event) override;
 
     void mousePressEvent(QMouseEvent * event) override;
 
@@ -279,6 +281,8 @@ signals:
     void cursorMoved(QPoint localPoint);
     void cursorHidden(QPoint localPoint);
     void toolChanged(BbToolType previous, BbToolType current);
+
+    void leftMouseTrack(QPoint localPoint);
 
 public:
     virtual void writeStream(QDataStream &stream) override;
