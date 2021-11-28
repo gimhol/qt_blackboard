@@ -294,10 +294,9 @@ void BlackboardClientWindow::on_repaint_clicked()
     mutex.lock();
     for(auto blackboard : findChildren<Blackboard*>())
     {
-        QByteArray ba;
-        blackboard->saveByteArray(ba);
+        auto a = blackboard->toJsonObject();
         blackboard->clearItems();
-        blackboard->readByteArray(ba);
+        blackboard->fromJsonObject(a);
     }
     mutex.unlock();
 }

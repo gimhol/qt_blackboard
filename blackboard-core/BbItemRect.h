@@ -2,14 +2,14 @@
 #define BBITEMRECT_H
 
 #include <QGraphicsItem>
-#include "IStreamWR.h"
+
 #include "IItemIndex.h"
 
 class BbItemRectData;
 class NSB_BLACKBOARD_EXPORT BbItemRect:
         public QGraphicsRectItem,
         public IItemIndex,
-        public IStreamWR,
+        
         public IJsonWR
 {
     BB_HIDE_POS_SETTER
@@ -35,10 +35,6 @@ public:
     void init();
 
     void repaint() override;
-
-    void writeStream(QDataStream &stream) override;
-
-    void readStream(QDataStream &stream) override;
 
     void begin(const QPointF & point);
 

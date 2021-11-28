@@ -3,6 +3,112 @@
 #include "BbScene.h"
 #include <QDebug>
 
+static auto strokeCapStyle = [](const QJsonValue &jVal){
+    switch(jVal.toInt()){
+    case 1:     return Qt::FlatCap;
+    case 2:     return Qt::SquareCap;
+    default:    return Qt::RoundCap;
+    }
+};
+static auto jstrokeCapStyle = [](const Qt::PenCapStyle &val){
+    switch(val){
+    case Qt::FlatCap:   return 1;
+    case Qt::SquareCap: return 2;
+    default:            return 0;
+    }
+};
+static auto strokeStyle = [](const QJsonValue &jVal){
+    switch(jVal.toInt()){
+    case 1:     return Qt::SolidLine;
+    case 2:     return Qt::DashLine;
+    case 3:     return Qt::DotLine;
+    case 4:     return Qt::DashDotLine;
+    case 5:     return Qt::DashDotDotLine;
+    case 6:     return Qt::CustomDashLine;
+    default:    return Qt::NoPen;
+    }
+};
+static auto jstrokeStyle = [](const Qt::PenStyle &val){
+    switch(val){
+    case Qt::SolidLine:         return 1;
+    case Qt::DashLine:          return 2;
+    case Qt::DotLine:           return 3;
+    case Qt::DashDotLine:       return 4;
+    case Qt::DashDotDotLine:    return 5;
+    case Qt::CustomDashLine:    return 6;
+    default:                    return 0;
+    }
+};
+static auto strokeJoinStyle = [](const QJsonValue &jVal){
+    switch(jVal.toInt()){
+    case 1:     return Qt::MiterJoin;
+    case 2:     return Qt::BevelJoin;
+    default:    return Qt::RoundJoin;
+    }
+};
+static auto jstrokeJoinStyle = [](const Qt::PenJoinStyle &val){
+    switch(val){
+    case Qt::MiterJoin:     return 1;
+    case Qt::BevelJoin:     return 2;
+    default:                return 0;
+    }
+};
+static auto color = [](const QJsonValue &color){
+    return QColor::fromRgba(color.toInt());
+};
+static auto jcolor = [](const QColor &color){
+    return int(color.rgba());
+};
+static auto readStrokeFromTemplate = [](const QString &templateName, BbItemData &target){
+    // TODO: -Gim
+};
+static auto readStrokeFromJObject = [](const QJsonObject &jstroke, BbItemData &target){
+    target.pen.setWidthF(jstroke["width"].toDouble());
+    target.pen.setColor(color(jstroke["color"]));
+    target.pen.setJoinStyle(strokeJoinStyle(jstroke["join"]));
+    target.pen.setCapStyle(strokeCapStyle(jstroke["cap"]));
+    target.pen.setStyle(strokeStyle(jstroke["style"]));
+};
+
+static auto strokeToJObject = [](const QPen &pen){
+    QJsonObject jpen;
+    jpen["width"] = pen.widthF();
+    jpen["color"] = jcolor(pen.color());
+    jpen["style"] = jstrokeStyle(pen.style());
+    jpen["join"] = jstrokeJoinStyle(pen.joinStyle());
+    jpen["cap"] = jstrokeCapStyle(pen.capStyle());
+    return jpen;
+};
+
+
+
+static auto brushStyle = [](const QJsonValue &jVal){
+    switch(jVal.toInt()){
+    case 1:     return Qt::SolidPattern;
+    default:    return Qt::NoBrush;
+    }
+};
+static auto jbrushStyle = [](const Qt::BrushStyle &val){
+    switch(val){
+    case Qt::SolidPattern: return 1;
+    default:               return 0;
+    }
+};
+static auto readBrushFromTemplate = [](const QString &templateName, BbItemData &target){
+    // TODO: -Gim
+};
+static auto readBrushFromJObject = [](const QJsonObject &jbrush, BbItemData &target){
+    target.brush.setColor(color(jbrush["color"]));
+    target.brush.setStyle(brushStyle(jbrush["style"]));
+};
+static auto brushToJObject = [](const QBrush &brush){
+    QJsonObject jbrush;
+    jbrush["color"] = jcolor(brush.color());
+    jbrush["style"] = jbrushStyle(brush.style());
+    return jbrush;
+};
+
+
 BbItemData::BbItemData(CoordMode mode):
     mode(mode)
 {
@@ -116,81 +222,103 @@ void BbItemData::updatePrevSize()
     prevHeight = height;
 }
 
-void BbItemData::writeStream(QDataStream &stream){
-
-    stream << QJsonDocument(toJsonObject()).toBinaryData();
-}
-
-void BbItemData::readStream(QDataStream &stream){
-    QByteArray data;
-    stream >> data;
-    auto jobj = QJsonDocument::fromBinaryData(data).object();
-    fromJsonObject(jobj);
-}
-
 QJsonObject BbItemData::toJsonObject()
 {
     QJsonObject jobj;
-    jobj["coord_mode"] = mode;
-    jobj["type"] = tooltype;
     jobj["id"] = lid;
-    jobj["x"] = x;
-    jobj["y"] = y;
-    jobj["z"] = z;
-    jobj["prev_x"] = prevX;
-    jobj["prev_y"] = prevY;
-    jobj["prev_z"] = prevZ;
-    if(needPen){
-        QJsonObject jpen;
-        jpen["width"] = pen.widthF();
-        jpen["color"] = int(pen.color().rgba());
-        jpen["style"] = int(pen.style());
-        jpen["join_style"] = int(pen.joinStyle());
-        jpen["cap_style"] = int(pen.capStyle());
-        jobj["pen"] = jpen;
-    }
-    if(needBrush){
-        QJsonObject jbrush;
-        jbrush["color"] = int(brush.color().rgba());
-        jbrush["style"] = int(brush.style());
-        jobj["brush"] = jbrush;
-    }
+    jobj["type"] = tooltype;
+
+    /******** write 'props' ********/
+    QJsonObject jprops;
+    jprops["x"] = x;
+    jprops["y"] = y;
+    jprops["z"] = z;
     if(needSize){
-        jobj["width"] = width;
-        jobj["height"] = height;
-        jobj["prev_width"] = prevWidth;
-        jobj["prev_height"] = prevHeight;
+        jprops["w"] = width;
+        jprops["h"] = height;
     }
+    jobj["props"] = jprops;
+
+    /******** write 'style' ********/
+    if( needPen || needBrush ){
+        QJsonObject jstyles;
+        if(needPen)
+            jstyles["stroke"] = strokeToJObject(pen);
+        if(needBrush)
+            jstyles["brush"] = brushToJObject(brush);
+
+        jobj["style"] = jstyles;
+    }
+    if(needPrivateData)
+        jobj["data"] = privateData();
+
     return jobj;
 }
 
 void BbItemData::fromJsonObject(const QJsonObject &jobj)
 {
-    mode  = CoordMode(jobj["coord_mode"].toInt());
-    if(jobj["type"] != tooltype){
+    if(jobj["type"] != tooltype)
         qWarning() << "unexpected type! wanted: " << tooltype << "got: " << jobj["type"];
-    }
+
     lid   = jobj["id"].toString();
-    x     = jobj["x"].toDouble();
-    y     = jobj["y"].toDouble();
-    z     = jobj["z"].toDouble();
-    prevX = jobj["prev_x"].toDouble();
-    prevY = jobj["prev_y"].toDouble();
-    prevZ = jobj["prev_z"].toDouble();
 
-    auto jpen = jobj["pen"].toObject();
-    pen.setWidthF(jpen["width"].toDouble());
-    pen.setColor(QColor::fromRgba(QRgb(jpen["color"].toInt())));
-    pen.setJoinStyle(Qt::PenJoinStyle(jpen["join_style"].toInt()));
-    pen.setCapStyle(Qt::PenCapStyle(jpen["cap_style"].toInt()));
-    pen.setStyle(Qt::PenStyle(jpen["style"].toInt()));
+    /******** read 'props' ********/
+    auto jprops = jobj["props"].toObject();
+    x       = jprops["x"].toDouble();
+    y       = jprops["y"].toDouble();
+    z       = jprops["z"].toDouble();
+    prevX = x;
+    prevY = y;
+    prevZ = z;
 
-    auto jbrush = jobj["brush"].toObject();
-    brush.setColor(QColor::fromRgba(QRgb(jbrush["color"].toInt())));
-    brush.setStyle(Qt::BrushStyle(jbrush["style"].toInt()));
+    width   = jprops["w"].toDouble();
+    height  = jprops["h"].toDouble();
+    prevWidth = width;
+    prevHeight = height;
 
-    width = jobj["width"].toDouble();
-    height = jobj["height"].toDouble();
-    prevWidth = jobj["prev_width"].toDouble();
-    prevHeight = jobj["prev_height"].toDouble();
+    do { /******** read 'style' ********/
+        auto j = jobj["style"];
+        if(!j.isObject())
+            break;
+        auto jstyle = j.toObject();
+
+        do { /******** read 'style.stroke' ********/
+            auto j = jstyle["stroke"];
+            if(j.isObject()){
+                readStrokeFromJObject(j.toObject(), *this);
+            } else if(j.isString()){
+                readStrokeFromTemplate(j.toString(), *this);
+            } else if(j.isArray()){
+                for(auto i: j.toArray()){
+                    if(i.isObject()){
+                        readStrokeFromJObject(i.toObject(), *this);
+                    } else if(i.isString()){
+                        readStrokeFromTemplate(i.toString(), *this);
+                    }
+                }
+            }
+        } while(0);
+
+        do { /******** read 'style.brush' ********/
+            auto j = jstyle["brush"];
+            if(j.isObject()){
+                readBrushFromJObject(j.toObject(), *this);
+            } else if(j.isString()){
+                readBrushFromTemplate(j.toString(), *this);
+            } else if(j.isArray()){
+                for(auto i: j.toArray()){
+                    if(i.isObject()){
+                        readBrushFromJObject(i.toObject(), *this);
+                    } else if(i.isString()){
+                        readBrushFromTemplate(i.toString(), *this);
+                    }
+                }
+            }
+        } while(0);
+    } while(0);
+
+
+    /******** read 'data' ********/
+    auto jdata = jobj["data"].toObject();
+    readPrivateData(jdata);
 }

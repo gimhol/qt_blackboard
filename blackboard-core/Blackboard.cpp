@@ -725,16 +725,6 @@ bool Blackboard::tabletActive()
     return dptr->tabletActive;
 }
 
-void Blackboard::writeStream(QDataStream &stream)
-{
-    scene()->writeStream(stream);
-}
-
-void Blackboard::readStream(QDataStream &stream)
-{
-    scene()->readStream(stream);
-}
-
 QJsonObject Blackboard::toJsonObject()
 {
     return scene()->toJsonObject();

@@ -5,7 +5,7 @@
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
 #include <QTimer>
-#include "IStreamWR.h"
+
 #include "IItemIndex.h"
 #include "IJsonWR.h"
 

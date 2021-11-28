@@ -4,7 +4,7 @@
 #include <QGraphicsItem>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
-#include "IStreamWR.h"
+
 #include "IItemIndex.h"
 #include "IJsonWR.h"
 
@@ -12,14 +12,10 @@ class BbItemPenData;
 class NSB_BLACKBOARD_EXPORT BbItemPen :
         public QGraphicsRectItem,
         public IItemIndex,
-        public IStreamWR,
+
         public IJsonWR{
     BB_HIDE_POS_SETTER
 protected:
-#ifdef NSB_SAVE_PEN_TO_PIXMAP_WHEN_DONE
-    QPixmap _pixmap;
-#endif
-
     QPainterPath _path;
 
     QList<QPointF> _changed;
@@ -70,12 +66,6 @@ protected:
     void straightLineDragging(const QPointF &point);
 
     void addPointToPath(const QPointF &point);
-
-    // ItemDataWR interface
-public:
-    virtual void writeStream(QDataStream &steam) override;
-    virtual void readStream(QDataStream &steam) override;
-
 
     // IJsonWR interface
 public:

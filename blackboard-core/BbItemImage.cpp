@@ -630,29 +630,6 @@ void BbItemImage::repaint()
     update();
 }
 
-void BbItemImage::writeStream(QDataStream &stream)
-{
-    _data->x = x();
-    _data->y = y();
-    _data->width = rect().width();
-    _data->height = rect().height();
-    _data->z = zValue();
-    _data->writeStream(stream);
-}
-
-void BbItemImage::readStream(QDataStream &stream)
-{
-    _data->readStream(stream);
-    absolutize();
-    repaint();
-    if(_data->pixmap.isNull()){
-        if(!_data->path.isEmpty()) // 通过信号通知外部，尝试读取本地路径
-            emit blackboard()->itemChanged(BBIET_imageHasPath,this);
-        if(!_data->url.isEmpty()) // 通过信号通知外部，尝试读取URL
-            emit blackboard()->itemChanged(BBIET_imageHasUrl,this);
-    }
-}
-
 QJsonObject BbItemImage::toJsonObject()
 {
     _data->x = x();

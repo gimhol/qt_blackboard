@@ -2,10 +2,9 @@
 #define BBITEMDATABASE_H
 
 #include "BbHeader.h"
-#include "IStreamWR.h"
+
 #include "IJsonWR.h"
 #include "BbToolType.h"
-#include <QDataStream>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -18,7 +17,7 @@ class IItemIndex;
  *      黑板上item的数据，
  *      位置、类型、id等基本信息。
  */
-class NSB_BLACKBOARD_EXPORT BbItemData: public IStreamWR, public IJsonWR
+class NSB_BLACKBOARD_EXPORT BbItemData:  public IJsonWR
 {
 public:
     enum CoordMode
@@ -108,9 +107,25 @@ public:
     qreal width = -1, height = -1;
 
     /**
-     * @brief prevWidth, prevHeight 修改前的尺寸, 拖拽图片边缘改变图片尺寸时，此值应为修改前的尺寸，直至松开鼠标。
+     * @brief prevWidth, prevHeight
+     *      修改前的尺寸, 拖拽图片边缘改变图片尺寸时，此值应为修改前的尺寸，直至松开鼠标。
      */
     qreal prevWidth = -1, prevHeight = -1;
+
+    /**
+     * @brief persistence 是否能被持久化贮存
+     */
+    bool persistence = true;
+
+    /**
+     * @brief locked 被锁定的图形仅可被选中。
+     */
+    bool locked = false;
+
+    /**
+     * @brief needPrivateData 是否需要读写自己特有的数据。
+     */
+    bool needPrivateData = true;
 
     virtual qreal weight(){return 1;}
 
@@ -167,17 +182,17 @@ public:
 
     virtual void updatePrevSize();
 
-    // IStreamWR interface
-public:
-    virtual void writeStream(QDataStream &stream) override;
-
-    virtual void readStream(QDataStream &stream) override;
-
     // IJsonWR interface
 public:
     virtual QJsonObject toJsonObject() override;
 
     virtual void fromJsonObject(const QJsonObject &jobj) override;
+
+    // item.data Json interface;
+public:
+    virtual QJsonObject privateData() { return QJsonObject(); }
+
+    virtual void readPrivateData(const QJsonObject &jdata) { Q_UNUSED(jdata); }
 };
 
 #endif // BBITEMDATABASE_H

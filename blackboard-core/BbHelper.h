@@ -17,7 +17,7 @@
 #include "BbItemImage.h"
 #include "BbItemImageData.h"
 #include "BbItemPen2.h"
-#include "BbItemPenData2.h"
+
 #include "BbItemTail.h"
 #include "BbItemTailData.h"
 

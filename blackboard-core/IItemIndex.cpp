@@ -8,10 +8,6 @@
 
 IItemIndex::~IItemIndex(){
     BbItemDeleter::get()->remove(this);
-//    if(last)
-//        last->next = next;
-//    if(next)
-//        next->last = last;
 }
 
 QString IItemIndex::id(){

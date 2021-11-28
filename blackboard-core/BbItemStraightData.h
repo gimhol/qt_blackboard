@@ -21,9 +21,10 @@ public:
 
     qreal weight() override;
 
-    QJsonObject toJsonObject() override;
-
-    void fromJsonObject(const QJsonObject &jobj) override;
+    // BbItemData interface
+public:
+    QJsonObject privateData() override;
+    void readPrivateData(const QJsonObject &jdata) override;
 };
 
 #endif // BBITEMSTRAIGHTDATA_H

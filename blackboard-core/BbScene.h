@@ -6,7 +6,7 @@
 #include <functional>
 #include <cmath>
 #include "BbToolType.h"
-#include "IStreamWR.h"
+
 #include "IItemIndex.h"
 
 class BbFactory;
@@ -28,7 +28,7 @@ class BbItemImageData;
 class Blackboard;
 class NSB_BLACKBOARD_EXPORT BbScene:
         public QGraphicsScene,
-        public IStreamWR,
+        
         public IJsonWR
 {
     Q_OBJECT
@@ -106,10 +106,6 @@ public:
     BbItemImage *addImageItemWithPath(const qreal &width,const qreal &height,const QString &path);
 
     BbItemImage *addImageItemWithUrl(const qreal &width,const qreal &height,const QString &url);
-
-    IItemIndex *copyItemFromStream(QDataStream &stream);
-
-    IItemIndex *readItemFromStream(QDataStream &stream);
 
     BbFactory *factory();
 
@@ -246,12 +242,7 @@ protected:
 
     void drawForeground(QPainter *painter, const QRectF &rect) override;
 
-    // ItemDataWR interface
 public:
-    virtual void writeStream(QDataStream &stream) override;
-
-    virtual void readStream(QDataStream &stream) override;
-
     void emitItemMovingSignals();
 
     void emitItemMovedSignals();

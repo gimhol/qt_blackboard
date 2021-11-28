@@ -1,7 +1,7 @@
 #include "BbItemPen2.h"
 #include "BbScene.h"
 #include "Blackboard.h"
-#include "BbItemPenData2.h"
+#include "BbItemPenData.h"
 #include <QDebug>
 #include <QMessageBox>
 
@@ -342,20 +342,6 @@ QPointF BbItemPen2::straightTo()
 QRectF BbItemPen2::boundingRect() const
 {
     return _path.boundingRect();
-}
-
-void BbItemPen2::writeStream(QDataStream &stream)
-{
-    _data->updatePostion(this);
-    _data->z = zValue();
-    _data->writeStream(stream);
-}
-
-void BbItemPen2::readStream(QDataStream &stream)
-{
-    _data->readStream(stream);
-    absolutize();
-    repaint();
 }
 
 QJsonObject BbItemPen2::toJsonObject()

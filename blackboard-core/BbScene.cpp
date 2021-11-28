@@ -361,6 +361,8 @@ QList<IItemIndex *> BbScene::selectedItems2Clipboard()
         auto writer = dynamic_cast<IJsonW *>(item);
         if(!writer)
             continue;
+        if(!curr->persistence())
+            continue;
         auto boundingRect = item->sceneBoundingRect();
         bounding_left = (std::min)(boundingRect.left(),bounding_left);
         bounding_right = (std::max)(boundingRect.right(),bounding_right);
@@ -702,40 +704,46 @@ void BbScene::updatePickerRect()
 QJsonObject BbScene::toJsonObject()
 {
     QJsonObject ret;
+
+    /* props */
+    QJsonObject jprops;
     auto rect = sceneRect();
-    ret["x"] = rect.x();
-    ret["y"] = rect.y();
-    ret["width"] = rect.width();
-    ret["height"] = rect.height();
+    jprops["x"] = rect.x();
+    jprops["y"] = rect.y();
+    jprops["w"] = rect.width();
+    jprops["h"] = rect.height();
+    ret["props"] = jprops;
 
     QJsonArray jItems;
     for(auto item: items()){
-
         // 忽略正在被移除的item。
         if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
             continue;
-
         auto idx = dynamic_cast<IItemIndex *>(item);
         auto wr = dynamic_cast<IJsonWR *>(item);
         if(!idx || !wr)
             continue;
-
+        if(!idx->persistence())
+            continue;
         jItems << wr->toJsonObject();
     }
     ret["items"] = jItems;
+
+
     return ret;
 }
 
 void BbScene::fromJsonObject(const QJsonObject &jobj)
 {
+    auto jprops = jobj["props"].toObject();
     auto rect = QRectF(
-            jobj["x"].toDouble(),
-            jobj["y"].toDouble(),
-            jobj["width"].toDouble(),
-            jobj["height"].toDouble());
+            jprops["x"].toDouble(),
+            jprops["y"].toDouble(),
+            jprops["w"].toDouble(),
+            jprops["h"].toDouble());
+
     setSceneRect(rect);
     auto jItems = jobj["items"].toArray();
-
     for(auto jVal: jItems){
         auto item = factory()->createItem(jVal.toObject());
         add(item);
@@ -996,23 +1004,6 @@ void BbScene::drawForeground(QPainter *painter, const QRectF &rect)
         drawPageSplitterWhenNeeded(painter,rect);
 }
 
-IItemIndex *BbScene::readItemFromStream(QDataStream &stream)
-{
-    int type;
-    stream >> type;
-    auto index = factory()->createItem(static_cast<BbToolType>(type));
-    if(index)
-    {
-        add(index);
-        auto streamReader = dynamic_cast<IStreamR*>(index);
-        if(streamReader)
-        {
-            streamReader->readStream(stream);
-        }
-    }
-    return index;
-}
-
 BbFactory *BbScene::factory()
 {
     return blackboard()->factory();
@@ -1124,31 +1115,6 @@ IItemIndex *BbScene::readItemData(BbItemData *itemData)
     return item;
 }
 
-void BbScene::writeStream(QDataStream &stream)
-{
-    for(auto item: items()){
-
-        // 忽略正在被移除的item。
-        if(item->data(GRAPHICS_ITEM_DATA_KEY_DELETING).toBool())
-            continue;
-
-        IItemIndex *idx = dynamic_cast<IItemIndex *>(item);
-        IStreamWR *wr = dynamic_cast<IStreamWR *>(item);
-        if(idx && wr){
-            stream << static_cast<int>(idx->toolType());
-            wr->writeStream(stream);
-        }
-    }
-}
-
-void BbScene::readStream(QDataStream &stream)
-{
-    while(!stream.atEnd())
-    {
-        readItemFromStream(stream);
-    }
-}
-
 bool BbScene::isMouseLeftButtonDown()
 {
     return _mouseButtons & Qt::LeftButton;
@@ -1249,22 +1215,6 @@ BbItemImage *BbScene::addImageItemWithUrl(const qreal &width, const qreal &heigh
     item->setId(factory()->makeItemId(item->toolType()));
     emit blackboard()->itemChanged(BBIET_imageAdded,item);
     return item;
-}
-
-IItemIndex *BbScene::copyItemFromStream(QDataStream &stream)
-{
-    static int time = 0;
-    auto index = readItemFromStream(stream);
-    if(index)
-    {
-        index->setId(factory()->makeItemId(index->toolType()));
-        index->setZ(factory()->makeItemZ(index->toolType()));
-        index->updatePrevZ();
-        index->moveByVector2(10,10);
-        index->updatePrevPosition();
-    }
-    ++time;
-    return index;
 }
 
 void BbScene::emitItemMovingSignals()

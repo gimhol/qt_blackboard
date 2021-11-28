@@ -30,37 +30,16 @@ BbItemImageData::BbItemImageData(CoordMode mode):
     needSize = true;
 }
 
-void BbItemImageData::writeStream(QDataStream &stream)
+QJsonObject BbItemImageData::privateData()
 {
-    BbItemData::writeStream(stream);
-    QJsonObject jobj;
-    jobj["path"] = path;
-    jobj["url"] = url;
-    stream << pixmap << QJsonDocument(jobj).toBinaryData();
+    QJsonObject jdata;
+    jdata["path"] = path;
+    jdata["url"] = url;
+    return jdata;
 }
 
-void BbItemImageData::readStream(QDataStream &stream)
+void BbItemImageData::readPrivateData(const QJsonObject &jdata)
 {
-    BbItemData::readStream(stream);
-    QByteArray data;
-    stream >> pixmap >> data;
-    auto jobj = QJsonDocument::fromBinaryData(data).object();
-    path = jobj["path"].toString();
-    url = jobj["url"].toString();
-
-}
-
-QJsonObject BbItemImageData::toJsonObject()
-{
-    QJsonObject ret = BbItemData::toJsonObject();
-    ret["path"] = path;
-    ret["url"] = url;
-    return ret;
-}
-
-void BbItemImageData::fromJsonObject(const QJsonObject &jobj)
-{
-    BbItemData::fromJsonObject(jobj);
-    path = jobj["path"].toString();
-    url = jobj["url"].toString();
+    path = jdata["path"].toString();
+    url = jdata["url"].toString();
 }

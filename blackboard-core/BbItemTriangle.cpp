@@ -243,21 +243,6 @@ QPointF BbItemTriangle::point(int index)
     return _data->points[index];
 }
 
-void BbItemTriangle::writeStream(QDataStream &stream)
-{
-    _data->x = x();
-    _data->y = y();
-    _data->z = zValue();
-    _data->writeStream(stream);
-}
-
-void BbItemTriangle::readStream(QDataStream &stream)
-{
-    _data->readStream(stream);
-    absolutize();
-    repaint();
-}
-
 QJsonObject BbItemTriangle::toJsonObject()
 {
     _data->x = x();

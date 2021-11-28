@@ -42,7 +42,6 @@ public:
      * @brief coords 轨迹的点，[x0,y0,x1,y1...]
      */
     QList<qreal> coords;
-
     /**
      * @brief BbItemTailData 构造函数
      * @param mode 坐标模式

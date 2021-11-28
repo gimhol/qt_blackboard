@@ -79,15 +79,6 @@ void BbItemPen::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         painter->setBrush(Qt::NoBrush);
         painter->drawLine(_straightFrom, _straightTo);
     }
-#ifdef NSB_SAVE_PEN_TO_PIXMAP_WHEN_DONE
-    if(!_pixmap.isNull()){  // draw a finished pixmap
-        auto w = int(rect().width());
-        auto h = int(rect().height());
-        auto halfPenW = int(_data->pen.widthF()/2);
-        painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
-        painter->drawPixmap(-halfPenW,-halfPenW,w,h,_pixmap);
-    }
-#endif
     QGraphicsRectItem::paint(painter,option,widget);
 }
 
@@ -144,39 +135,6 @@ void BbItemPen::done()
 
     _editing = false;
     _data->fixPostion(this);
-
-#ifdef NSB_SAVE_PEN_TO_PIXMAP_WHEN_DONE
-    do{
-        if(!blackboard())
-            break;
-        auto scale = 4; // 倍数绘制, 保证放大后没那么模糊。但在放得过大得情况下无效。
-        auto width = int(scale * rect().width());
-        auto height = int(scale * rect().height());
-        auto halfPenW = _data->pen.widthF()/2;
-        _pixmap = QPixmap(width,height);
-        _pixmap.fill(Qt::transparent);
-        QPainter painter(&_pixmap);
-        painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
-        painter.translate(scale*halfPenW,
-                          scale*halfPenW);
-        painter.scale(scale,scale);
-
-        if(_path.isEmpty()){
-            painter.setPen(Qt::NoPen);
-            painter.setBrush(_data->pen.color());
-            QRectF rect(-halfPenW,-halfPenW,2*halfPenW,2*halfPenW);
-            painter.drawEllipse(rect);
-        }
-        else{
-            painter.setPen(_data->pen);
-            painter.setBrush(Qt::NoBrush);
-            painter.drawPath(_path);
-        }
-        _path.clear();
-        update();
-    }while(false);
-#endif
-
 }
 
 void BbItemPen::straightLineDragging(const QPointF &point)
@@ -354,20 +312,6 @@ void BbItemPen::setStraight(const bool & straight)
 QPointF BbItemPen::straightTo()
 {
     return _straightTo + pos();
-}
-
-void BbItemPen::writeStream(QDataStream &stream)
-{
-    _data->updatePostion(this);
-    _data->z = zValue();
-    _data->writeStream(stream);
-}
-
-void BbItemPen::readStream(QDataStream &stream)
-{
-    _data->readStream(stream);
-    absolutize();
-    repaint();
 }
 
 QJsonObject BbItemPen::toJsonObject()

@@ -96,23 +96,6 @@ void BbItemEllipse::repaint()
     update();
 }
 
-void BbItemEllipse::writeStream(QDataStream &stream)
-{
-    _data->x = x();
-    _data->y = y();
-    _data->z = zValue();
-    _data->width = rect().width();
-    _data->height = rect().height();
-    _data->writeStream(stream);
-}
-
-void BbItemEllipse::readStream(QDataStream &stream)
-{
-    _data->readStream(stream);
-    absolutize();
-    repaint();
-}
-
 void BbItemEllipse::begin(const QPointF &point)
 {
     _editing = true;

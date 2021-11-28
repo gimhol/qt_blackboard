@@ -21,16 +21,10 @@ public:
 
     explicit BbItemImageData(CoordMode mode = CM_ABSOLUTE);
 
-    void writeStream(QDataStream &stream) override;
-
-    void readStream(QDataStream &stream) override;
-
-    // IJsonWR interface
+    // BbItemData interface
 public:
-    virtual QJsonObject toJsonObject() override;
-
-    virtual void fromJsonObject(const QJsonObject &jobj) override;
-
+    QJsonObject privateData() override;
+    void readPrivateData(const QJsonObject &jdata) override;
 };
 
 #endif // BBITEMIMAGEDATA_H
