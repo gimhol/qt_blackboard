@@ -9,6 +9,7 @@ DEFINES += NSB_BLACKBOARD_UTILS_SHARED
 DEFINES += QT_DEPRECATED_WARNINGS
 include(src.pri)
 include(../info.pri)
+include(../vld.pri)
 win32
 {
     QMAKE_CFLAGS_DEBUG += /Zi
