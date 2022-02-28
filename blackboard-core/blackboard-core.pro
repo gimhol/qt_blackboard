@@ -8,7 +8,7 @@ else:                           TARGET = NsbBlackboard
 DEFINES += NSB_BLACKBOARD_SHARED QT_DEPRECATED_WARNINGS
 include(src.pri)
 include(../info.pri)
-include(../get-version-from-git.pri)
+include(get-version-from-git.pri)
 include(../vld.pri)
 win32{
     QMAKE_LFLAGS_RELEASE += /MAP /debug /opt:ref

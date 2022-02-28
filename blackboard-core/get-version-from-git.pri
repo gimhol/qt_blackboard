@@ -24,7 +24,7 @@ exists(.git) {
     }else{
         message("current git branch is not release branch, release branch name should start withs 'release/'.")
     }
-
+    VERSION_NUMBER_LIST_SIZE = 0
     lessThan(VERSION_NUMBER_LIST_SIZE,3){
         #分支名不符合 release/v0.0.0 尝试从最近的tag中读取
         message(try to read version from nearest tag.)

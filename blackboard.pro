@@ -7,8 +7,6 @@ SUBDIRS = \
 
 include(info.pri)
 
-win32{
-    DISTFILES = \
-        $$PWD/logo.ico \
-        $$PWD/README.md
-}
+OTHER_FILES = \
+    $$PWD/logo.ico \
+    $$PWD/README.md

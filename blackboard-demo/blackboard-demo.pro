@@ -6,7 +6,7 @@ else:                           TARGET = NsbBlackboardDemo
 
 include(src/src.pri)
 include(../info.pri)
-include(../get-version-from-git.pri)
+include(get-version-from-git.pri)
 include(../vld.pri)
 RESOURCES += resource.qrc
 win32
