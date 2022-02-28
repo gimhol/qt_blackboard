@@ -72,6 +72,7 @@ BbItemTailData::BbItemTailData(CoordMode mode):
 {
     tooltype = BBTT_Tail;
     needPen = true;
+    persistence = false;
     pen = defaultPen;
     cubic = defaultCubic;
     fadeOutDuration = defaultFadeOutDuration;

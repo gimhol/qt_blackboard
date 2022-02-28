@@ -93,21 +93,20 @@ void BbItemTriangleData::setWeight(qreal weight)
     pen.setWidthF(minPenWidth + weight * (maxPenWidth - minPenWidth));
 }
 
-QJsonObject BbItemTriangleData::toJsonObject()
+QJsonObject BbItemTriangleData::privateData()
 {
-    auto jobj = BbItemData::toJsonObject();
+    QJsonObject jdata;
     QJsonArray jarr;
     for(int i = 0; i < 3; ++i){
         jarr << points[i].x() << points[i].y();
     }
-    jobj["coords"] = jarr;
-    return jobj;
+    jdata["coords"] = jarr;
+    return jdata;
 }
 
-void BbItemTriangleData::fromJsonObject(const QJsonObject &jobj)
+void BbItemTriangleData::readPrivateData(const QJsonObject &jdata)
 {
-    BbItemData::fromJsonObject(jobj);
-    auto jarr = jobj["coords"].toArray();
+    auto jarr = jdata["coords"].toArray();
     empty = jarr.size() < 6;
     if(!empty){
         for(auto i = 0; i < 3; ++i){

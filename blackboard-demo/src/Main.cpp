@@ -8,10 +8,6 @@
 #include "ColorPanel.h"
 #include "MainWindow.h"
 
-#ifdef NSB_PROJECT_VLD_ON
-#include <vld.h>
-#endif
-
 int main(int argc, char *argv[])
 {
     QApplication appCentre(argc,argv);

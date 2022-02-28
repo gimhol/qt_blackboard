@@ -42,9 +42,18 @@ public:
 
     qreal weight() override;
 
-    virtual QJsonObject toJsonObject() override;
+    // BbItemData interface
+public:
+    QJsonObject privateData() override;
+    void readPrivateData(const QJsonObject &jdata) override;
+};
 
-    virtual void fromJsonObject(const QJsonObject &jobj) override;
+class NSB_BLACKBOARD_EXPORT BbItemPenData2 : public BbItemPenData {
+public:
+    BbItemPenData2(CoordMode mode = CM_ABSOLUTE):
+        BbItemPenData(mode){
+        tooltype = BBTT_Pen2;
+    }
 };
 
 #endif // CITEMPENDATA_H

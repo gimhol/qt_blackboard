@@ -253,21 +253,6 @@ QPointF BbItemStraight::b()
     return _data->b;
 }
 
-void BbItemStraight::writeStream(QDataStream &stream)
-{
-    _data->x = x();
-    _data->y = y();
-    _data->z = zValue();
-    _data->writeStream(stream);
-}
-
-void BbItemStraight::readStream(QDataStream &stream)
-{
-    _data->readStream(stream);
-    absolutize();
-    repaint();
-}
-
 QJsonObject BbItemStraight::toJsonObject()
 {
     _data->x = x();

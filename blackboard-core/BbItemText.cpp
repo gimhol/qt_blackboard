@@ -264,22 +264,6 @@ void BbItemText::setText(QString text, bool emitSignal)
 
 }
 
-void BbItemText::writeStream(QDataStream &stream)
-{
-    _data->text = text();
-    _data->x = x();
-    _data->y = y();
-    _data->z = zValue();
-    _data->writeStream(stream);
-}
-
-void BbItemText::readStream(QDataStream &stream)
-{
-    _data->readStream(stream);
-    absolutize();
-    repaint();
-}
-
 QJsonObject BbItemText::toJsonObject()
 {
     _data->text = text();

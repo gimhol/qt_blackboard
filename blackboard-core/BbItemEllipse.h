@@ -3,14 +3,14 @@
 
 #include "BbHeader.h"
 #include <QGraphicsItem>
-#include "IStreamWR.h"
+
 #include "IItemIndex.h"
 
 class BbItemEllipseData;
 class NSB_BLACKBOARD_EXPORT BbItemEllipse:
         public QGraphicsRectItem,
         public IItemIndex,
-        public IStreamWR,
+        
         public IJsonWR
 {
     BB_HIDE_POS_SETTER
@@ -37,10 +37,6 @@ public:
     void init();
 
     void repaint() override;
-
-    void writeStream(QDataStream &stream) override;
-
-    void readStream(QDataStream &stream) override;
 
     void begin(const QPointF & point);
 

@@ -2,7 +2,7 @@
 #define CANVASELEMENTTEXT_HPP
 
 #include "IItemIndex.h"
-#include "IStreamWR.h"
+
 #include <QGraphicsItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QTextCursor>
@@ -14,7 +14,7 @@ class BbItemTextData;
 class NSB_BLACKBOARD_EXPORT BbItemText :
         public QGraphicsTextItem,
         public IItemIndex,
-        public IStreamWR,
+
         public IJsonWR
 {
     BB_HIDE_POS_SETTER
@@ -58,11 +58,6 @@ public:
     bool isEmpty();
 
     void setText(QString text, bool emitSignal = false);
-
-    // ItemDataWR interface
-public:
-    virtual void writeStream(QDataStream &stream) override;
-    virtual void readStream(QDataStream &stream) override;
 
     // IJsonWR interface
 public:

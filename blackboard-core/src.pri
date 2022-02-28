@@ -8,13 +8,11 @@ HEADERS += \
     $$PWD/BbItemDeleter.h \
     $$PWD/BbItemInnerDataKey.h \
     $$PWD/BbItemPen2.h \
-    $$PWD/BbItemPenData2.h \
     $$PWD/BbItemTail.h \
     $$PWD/BbItemTailData.h \
     $$PWD/BbOperatorLabel.h \
     $$PWD/BbScene.h \
     $$PWD/IJsonWR.h \
-    $$PWD/IStreamWR.h \
     $$PWD/Blackboard.h \
     $$PWD/BbItemPen.h \
     $$PWD/BbItemPenData.h \
@@ -41,7 +39,6 @@ SOURCES += \
     $$PWD/BbHelper.cpp \
     $$PWD/BbItemDeleter.cpp \
     $$PWD/BbItemPen2.cpp \
-    $$PWD/BbItemPenData2.cpp \
     $$PWD/BbItemTail.cpp \
     $$PWD/BbItemTailData.cpp \
     $$PWD/BbOperatorLabel.cpp \

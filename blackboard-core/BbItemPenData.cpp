@@ -68,22 +68,21 @@ qreal BbItemPenData::weight()
     return (pen.widthF() - minWidth) / (maxWidth - minWidth);
 }
 
-QJsonObject BbItemPenData::toJsonObject()
+QJsonObject BbItemPenData::privateData()
 {
-    auto jobj = BbItemData::toJsonObject();
+    QJsonObject jdata;
     QJsonArray jarrs;
     for(auto coord: coords)
         jarrs << coord;
-    jobj["coords"] = jarrs;
-    jobj["cubic"] = cubic;
-    return jobj;
+    jdata["coords"] = jarrs;
+    jdata["cubic"] = cubic;
+    return jdata;
 }
 
-void BbItemPenData::fromJsonObject(const QJsonObject &jobj)
+void BbItemPenData::readPrivateData(const QJsonObject &jdata)
 {
-    BbItemData::fromJsonObject(jobj);
-    for(auto jval: jobj["coords"].toArray())
+    for(auto jval: jdata["coords"].toArray())
         coords.append(jval.toDouble());
-    cubic = jobj["cubic"].toBool(false);
+    cubic = jdata["cubic"].toBool(false);
     empty = coords.isEmpty();
 }

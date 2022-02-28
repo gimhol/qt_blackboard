@@ -50,23 +50,6 @@ void BbItemRect::repaint()
     update();
 }
 
-void BbItemRect::writeStream(QDataStream &stream)
-{
-    _data->x = x();
-    _data->y = y();
-    _data->z = z();
-    _data->width = rect().width();
-    _data->height = rect().height();
-    _data->writeStream(stream);
-}
-
-void BbItemRect::readStream(QDataStream &stream)
-{
-    _data->readStream(stream);
-    absolutize();
-    repaint();
-}
-
 void BbItemRect::begin(const QPointF &point)
 {
     _editing = true;

@@ -48,22 +48,21 @@ qreal BbItemStraightData::weight()
     return (pen.widthF() - minWidth) / (maxWidth - minWidth);
 }
 
-QJsonObject BbItemStraightData::toJsonObject()
+QJsonObject BbItemStraightData::privateData()
 {
-    auto jobj = BbItemData::toJsonObject();
-    jobj["a_x"] = a.x();
-    jobj["a_y"] = a.y();
-    jobj["b_x"] = b.x();
-    jobj["b_y"] = b.y();
-    return jobj;
+    QJsonObject jdata;
+    jdata["a_x"] = a.x();
+    jdata["a_y"] = a.y();
+    jdata["b_x"] = b.x();
+    jdata["b_y"] = b.y();
+    return jdata;
 }
 
-void BbItemStraightData::fromJsonObject(const QJsonObject &jobj)
+void BbItemStraightData::readPrivateData(const QJsonObject &jdata)
 {
-    BbItemData::fromJsonObject(jobj);
-    a.setX(jobj["a_x"].toDouble());
-    a.setY(jobj["a_y"].toDouble());
-    b.setX(jobj["b_x"].toDouble());
-    b.setY(jobj["b_y"].toDouble());
+    a.setX(jdata["a_x"].toDouble());
+    a.setY(jdata["a_y"].toDouble());
+    b.setX(jdata["b_x"].toDouble());
+    b.setY(jdata["b_y"].toDouble());
     empty = false;
 }

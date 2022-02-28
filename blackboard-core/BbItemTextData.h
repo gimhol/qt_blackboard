@@ -51,11 +51,13 @@ public:
 
     qreal fontSizeFactor();
 
-    QJsonObject toJsonObject() override;
-
-    void fromJsonObject(const QJsonObject &jobj) override;
-
     void setFont(const QFont &font);
+
+    // BbItemData interface
+public:
+    QJsonObject privateData() override;
+
+    void readPrivateData(const QJsonObject &jdata) override;
 };
 
 #endif // BBITEMTEXTDATA_H

@@ -82,6 +82,7 @@ BbItemRectData::BbItemRectData(CoordMode mode):
     needPen = true;
     needBrush = true;
     needSize = true;
+    needPrivateData = false;
     pen = defaultPen;
     brush = defaultBrush;
 }

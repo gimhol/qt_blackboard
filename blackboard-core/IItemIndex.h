@@ -141,18 +141,13 @@ public:
     virtual QPointF position();
     virtual qreal positionX();
     virtual qreal positionY();
-//    /**
-//     * @brief last 前一个item
-//     *      仅应该在BbScene的enumSelected与enumAll中被重置，
-//     *      用于快速的遍历一系列item
-//     */
-//    IItemIndex *last = nullptr;
-//    /**
-//     * @brief next 下一个item
-//     *      仅应该在BbScene的enumSelected与enumAll中被重置，
-//     *      用于快速的遍历一系列item
-//     */
-//    IItemIndex *next = nullptr;
+    virtual bool persistence(){
+        auto d = data();
+        if(d)
+            return d->persistence;
+        else
+            return false;
+    }
 };
 
 

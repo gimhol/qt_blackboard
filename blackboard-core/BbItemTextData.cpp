@@ -73,37 +73,36 @@ qreal BbItemTextData::fontSizeFactor()
     return (font.pixelSize()-minFontSize)/(maxFontSize-minFontSize);
 }
 
-QJsonObject BbItemTextData::toJsonObject()
-{
-    auto jobj = BbItemData::toJsonObject();
-    jobj["family"]              = font.family();
-    jobj["weight"]              = font.weight();
-    jobj["italic"]              = font.italic();
-    jobj["bold"]                = font.bold();
-    jobj["color"]               = int(color.rgba());
-    jobj["text"]                = text;
-    jobj["prev_text"]           = prevText;
-    jobj["font_size_factor"]    = fontSizeFactor();
-    return jobj;
-}
-
-void BbItemTextData::fromJsonObject(const QJsonObject &jobj)
-{
-    BbItemData::fromJsonObject(jobj);
-    font.setFamily(jobj["family"].toString());
-    font.setWeight(jobj["weight"].toInt());
-    font.setItalic(jobj["italic"].toBool());
-    font.setBold(jobj["bold"].toBool());
-    color.setRgba(QRgb(jobj["color"].toInt()));
-    text = jobj["text"].toString();
-    prevText = jobj["prev_text"].toString();
-    empty = text.length() == 0;
-    setFontSizeFactor(jobj["font_size_factor"].toDouble());
-}
-
 void BbItemTextData::setFont(const QFont &font)
 {
     auto factor = fontSizeFactor();
     this->font = font;
     setFontSizeFactor(factor);
+}
+
+QJsonObject BbItemTextData::privateData()
+{
+    QJsonObject jdata;
+    jdata["family"]              = font.family();
+    jdata["weight"]              = font.weight();
+    jdata["italic"]              = font.italic();
+    jdata["bold"]                = font.bold();
+    jdata["color"]               = int(color.rgba());
+    jdata["text"]                = text;
+    jdata["prev_text"]           = prevText;
+    jdata["font_size_factor"]    = fontSizeFactor();
+    return jdata;
+}
+
+void BbItemTextData::readPrivateData(const QJsonObject &jdata)
+{
+    font.setFamily(jdata["family"].toString());
+    font.setWeight(jdata["weight"].toInt());
+    font.setItalic(jdata["italic"].toBool());
+    font.setBold(jdata["bold"].toBool());
+    color.setRgba(QRgb(jdata["color"].toInt()));
+    text = jdata["text"].toString();
+    prevText = jdata["prev_text"].toString();
+    empty = text.length() == 0;
+    setFontSizeFactor(jdata["font_size_factor"].toDouble());
 }

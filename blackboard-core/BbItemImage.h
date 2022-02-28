@@ -2,14 +2,14 @@
 #define BBITEMIMAGE_H
 
 #include <QGraphicsPixmapItem>
-#include "IStreamWR.h"
+
 #include "IItemIndex.h"
 
 class BbItemImageData;
 class NSB_BLACKBOARD_EXPORT BbItemImage :
         public QGraphicsRectItem,
         public IItemIndex,
-        public IStreamWR,
+        
         public IJsonWR
 {
     BB_HIDE_POS_SETTER
@@ -49,10 +49,6 @@ public:
 
 public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) override;
-
-public: // IStreamWR
-    void writeStream(QDataStream &stream) override;
-    void readStream(QDataStream &stream) override;
 
     // IJsonWR interface
 public:
