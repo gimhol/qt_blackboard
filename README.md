@@ -8,7 +8,7 @@ For English, see [README.en.md](README.en.md)
 
 ## 效果预览
 
-[![Watch the video](docs/demo1.png)](docs/demo1.mp4)
+![demo](docs/demo1.gif)
 
 ## 软件架构
 

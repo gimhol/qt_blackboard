@@ -4,11 +4,11 @@ For Chinese, see [README.md](README.md)
 
 ## Project Introduction
 
-A blackboard module used in the Niushi Bang Online Classroom. It provides some drawing functions.
+A blackboard module used in the NiushiBang Online Classroom. It provides some drawing functions.
 
 ## Effect Preview
 
-[![Watch the video](docs/demo1.png)](docs/demo1.mp4)
+![demo](docs/demo1.gif)
 
 ## Software Architecture
 
